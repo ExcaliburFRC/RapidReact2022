@@ -5,10 +5,7 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Constants;
 
 public class Climber extends SubsystemBase {
@@ -68,5 +65,13 @@ public class Climber extends SubsystemBase {
 
   public Command closeAnglerCommand() {
     return new InstantCommand(() -> closeAngler(), this);
+  }
+
+  public Command climbCommandGroup() {
+    return upCommand() // TODO: Drive forwards after upCommand
+            .andThen(downCommand())
+            .andThen(upCommand())
+            .andThen(openAnglerCommand())
+            .andThen(closeAnglerCommand());
   }
 }
