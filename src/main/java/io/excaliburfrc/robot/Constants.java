@@ -59,4 +59,13 @@ public final class Constants {
     public static final int RIGHT_LEADER_ID = 19;
     public static final int RIGHT_FOLLOWER_ID = 15;
   }
+
+  public static final class TranporterConstants {
+      public static final int LOWER_MOTOR_ID = 5;
+      public static final int UPPER_MOTOR_ID = 4;
+      public static final int PING = 55;
+      public static final int ECHO = 56;
+      public static final int COLOR_LIMIT = 69;
+      public static final int SONIC_LIMIT = 69;
+  }
 }
