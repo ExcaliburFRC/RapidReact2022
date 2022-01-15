@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package io.excaliburfrc.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
@@ -57,10 +53,12 @@ public class RobotContainer {
     final int upperAxis = 2;
     final int intakeButton = 3;
 
-    transporter.manualCommand(
-        () -> armJoystick.getRawAxis(intakeAxis),
-        () -> armJoystick.getRawAxis(upperAxis),
-        () -> armJoystick.getRawButton(intakeButton));
+    transporter
+        .manualCommand(
+            () -> armJoystick.getRawAxis(intakeAxis),
+            () -> armJoystick.getRawAxis(upperAxis),
+            () -> armJoystick.getRawButton(intakeButton))
+        .schedule();
 
     drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
     shooter.manualCommand(() -> 0.5 * armJoystick.getY()).schedule();

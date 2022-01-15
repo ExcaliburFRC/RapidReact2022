@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package io.excaliburfrc.robot;
 
 /**
@@ -43,10 +39,20 @@ public final class Constants {
     public static final int FOLLOWER_ID = 1;
     public static final int ENCODER_A = 2;
     public static final int ENCODER_B = 3;
+
+    @SuppressWarnings("HungarianNotationConstants")
     public static final double kS = 0;
+
+    @SuppressWarnings("HungarianNotationConstants")
     public static final double kV = 0;
+
+    @SuppressWarnings("HungarianNotationConstants")
     public static final double kP = 0;
+
+    @SuppressWarnings("HungarianNotationConstants")
     public static final double kI = 0;
+
+    @SuppressWarnings("HungarianNotationConstants")
     public static final double kD = 0;
 
     public static final double FENDER_SHOT_RPM = 2500;
