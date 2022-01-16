@@ -47,6 +47,7 @@ public class Transporter extends SubsystemBase {
 //        } else {
 //          lower.set(Mode.IN.lower); // pushes the ball to the top engine
 //          upper.set(Mode.IN.upper);// catches the ball
+//          activate(true);
 //        }
 //      } else {
 //        lower.set(Mode.OUT.lower);
