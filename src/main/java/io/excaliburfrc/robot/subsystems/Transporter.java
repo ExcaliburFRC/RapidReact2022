@@ -35,6 +35,27 @@ public class Transporter extends SubsystemBase {
     public final double lower, upper;
   }
 
+
+//  public void activate(boolean skip){
+//    if (isColorReady() || skip) { // Check if there is a ball in the lower engine
+//
+//      if (color.getColor().equals(getAlliance()) || skip) { // FIXME
+//        if (isSonicReady()) { // Checks of there is a ball in the upper engine
+//          stop(); // Stops both engines
+//        } else if (skip){
+//          activate(true);
+//        } else {
+//          lower.set(Mode.IN.lower); // pushes the ball to the top engine
+//          upper.set(Mode.IN.upper);// catches the ball
+//        }
+//      } else {
+//        lower.set(Mode.OUT.lower);
+//      }
+//    } else {
+//      lower.set(Mode.CHECK.lower);
+//    }
+//  }
+
   public DriverStation.Alliance getAlliance() {
     return DriverStation.getAlliance();
   }
