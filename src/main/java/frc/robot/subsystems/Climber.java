@@ -19,12 +19,12 @@ public class Climber extends SubsystemBase {
           Constants.ClimberConstants.CLIMBER_SPARKMAX, CANSparkMaxLowLevel.MotorType.kBrushless);
   private DigitalInput sensor = new DigitalInput(Constants.ClimberConstants.SENSOR_CHANNEL);
 
-  private enum MotorMode {
+  public enum MotorMode {
     OFF(0),
     UP(0.6),
     DOWN(-0.4);
 
-    private final double dutyCycle;
+    final double dutyCycle;
 
     MotorMode(double v) {
       dutyCycle = v;
@@ -69,9 +69,13 @@ public class Climber extends SubsystemBase {
 
   public Command climbCommandGroup() {
     return upCommand() // TODO: Drive forwards after upCommand
-            .andThen(downCommand())
-            .andThen(upCommand())
-            .andThen(openAnglerCommand())
-            .andThen(closeAnglerCommand());
+        .andThen(downCommand())
+        .andThen(upCommand())
+        .andThen(openAnglerCommand())
+        .andThen(closeAnglerCommand());
+  }
+
+  double _getSpeed() {
+    return motor.get();
   }
 }
