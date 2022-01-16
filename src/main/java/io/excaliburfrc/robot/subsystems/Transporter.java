@@ -1,4 +1,6 @@
-package io.excaliburfrc.robot.subsystems;
+package frc.robot.subsystems;
+
+import static frc.robot.Constants.TranporterConstants.*;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -6,20 +8,23 @@ import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Ultrasonic;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.ejml.data.ElementLocation;
-
-import static frc.robot.Constants.TranporterConstants.*;
-
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Transporter extends SubsystemBase {
+  private final AtomicInteger ballCount = new AtomicInteger(0);
+
   private final CANSparkMax lower = new CANSparkMax(LOWER_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax upper = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
-  private final ColorSensorV3 color = new ColorSensorV3(I2C.Port.kOnboard); // FIXME
+  private final ColorSensorV3 color = new ColorSensorV3(I2C.Port.kMXP); // FIXME
   private final Ultrasonic sonic = new Ultrasonic(PING, ECHO);
 
+  public int getBallCount() {
+    return ballCount.get();
+  }
 
-  public enum Mode {
+  private enum Mode {
     // (lower, upper)
     SHOOT(0.4, 0.4),
     IN(0.3, 0),
@@ -35,63 +40,17 @@ public class Transporter extends SubsystemBase {
     public final double lower, upper;
   }
 
-
-//  public void activate(boolean skip){
-//    if (isColorReady() || skip) { // Check if there is a ball in the lower engine
-//
-//      if (color.getColor().equals(getAlliance()) || skip) { // FIXME
-//        if (isSonicReady()) { // Checks of there is a ball in the upper engine
-//          stop(); // Stops both engines
-//        } else if (skip){
-//          activate(true);
-//        } else {
-//          lower.set(Mode.IN.lower); // pushes the ball to the top engine
-//          upper.set(Mode.IN.upper);// catches the ball
-//          activate(true);
-//        }
-//      } else {
-//        lower.set(Mode.OUT.lower);
-//      }
-//    } else {
-//      lower.set(Mode.CHECK.lower);
-//    }
-//  }
-
-  public DriverStation.Alliance getAlliance() {
-    return DriverStation.getAlliance();
-  }
-
-  public boolean isSonicReady() {
-    return sonic.getRangeMM() > SONIC_LIMIT;
-  }
-
-  public boolean isColorReady() {
-    return color.getProximity() > COLOR_LIMIT;
-  }
-
-  public void stopLower() {
-    lower.set(Mode.OFF.lower);
-  }
-
-  public void stopUpper() {
-    upper.set(Mode.OFF.lower);
-  }
-
-  public void stop() {
-    stopLower();
-    stopUpper();
-  }
-
   @Override
   public void periodic() {
-    if (isColorReady()) { // Check if there is a ball in the lower engine
-
-      if (color.getColor().equals(getAlliance())) { // FIXME
-        if (isSonicReady()) { // Checks of there is a ball in the upper engine
-          stop(); // Stops both engines
+    if (color.getProximity() > COLOR_LIMIT) { // Check if there is a ball in the lower motor
+      if (isOurColor()) {
+        if (sonic.getRangeMM() > SONIC_LIMIT) { // Checks of there is a ball in the upper motor
+          // Stops both engines
+          lower.set(0);
+          upper.set(0);
         } else {
           lower.set(Mode.IN.lower); // pushes the ball to the top engine
-          upper.set(Mode.IN.upper);// catches the ball
+          upper.set(Mode.IN.upper); // catches the ball
         }
       } else {
         lower.set(Mode.OUT.lower);
@@ -99,5 +58,49 @@ public class Transporter extends SubsystemBase {
     } else {
       lower.set(Mode.CHECK.lower);
     }
+  }
+
+  private final Trigger ballEntryTrigger = new Trigger(() -> color.getProximity() > COLOR_LIMIT);
+  private final Trigger ballStopTrigger = new Trigger(() -> sonic.getRangeMM() > SONIC_LIMIT);
+
+  void init() {
+    // input until upper sensor detects a ball
+    var in =
+        new RunCommand(
+                () -> {
+                  lower.set(Mode.OUT.lower);
+                  upper.set(Mode.OUT.upper);
+                },
+                this)
+            .withInterrupt(ballStopTrigger).withName("in");
+
+    // output sets motor until ball entry sensor no longer sees a ball
+    var out =
+        new RunCommand(() -> lower.set(Mode.OUT.lower), this)
+            .withInterrupt(ballEntryTrigger.negate()).withName("out");
+
+    Command conditional = new ConditionalCommand(in, out, this::isOurColor);
+
+    // schedule the command whenever the entry sensor newly activates ...
+    ballEntryTrigger.whenActive(conditional);
+    // ... and cancel whenever the exit sensor newly act
+    ballStopTrigger.cancelWhenActive(conditional);
+
+    // update the counter whenever we shoot a ball
+    ballStopTrigger.whenInactive(ballCount::decrementAndGet, this);
+    // and report if we pass the limit
+    new Trigger(() -> ballCount.get() > MAX_BALLS)
+        .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
+  }
+
+  boolean isOurColor() {
+    switch (DriverStation.getAlliance()) {
+      case Red:
+        return color.getRed() > RED_THRESHOLD;
+      case Blue:
+        return color.getBlue() > BLUE_THRESHOLD;
+    }
+    DriverStation.reportError("DS Alliance is invalid!", false);
+    return false;
   }
 }
