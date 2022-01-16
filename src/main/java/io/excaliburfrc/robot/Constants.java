@@ -37,6 +37,13 @@ public final class Constants {
   public static class ShooterConstants {
     public static final int LEADER_ID = 0;
     public static final int FOLLOWER_ID = 1;
+    public static final int ENCODER_A = 2;
+    public static final int ENCODER_B = 3;
+    public static final double kS = 0;
+    public static final double kV = 0;
+    public static final double kP = 0;
+    public static final double kI = 0;
+    public static final double kD = 0;
   }
 
   public static class DrivetrainConstants {

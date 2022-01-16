@@ -49,7 +49,7 @@ public class RobotContainer {
         () -> armJoystick.getRawButton(intakeButton));
 
     drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
-    shooter.activateCommand(armJoystick::getY).schedule();
+    shooter.manualCommand(armJoystick::getY).schedule();
   }
 
   /**
