@@ -1,6 +1,4 @@
-package frc.robot.subsystems;
-
-import static frc.robot.Constants.TranporterConstants.*;
+package io.excaliburfrc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -10,15 +8,19 @@ import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import io.excaliburfrc.robot.Constants.TranporterConstants;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Transporter extends SubsystemBase {
   private final AtomicInteger ballCount = new AtomicInteger(0);
 
-  private final CANSparkMax lower = new CANSparkMax(LOWER_MOTOR_ID, MotorType.kBrushless);
-  private final CANSparkMax upper = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
+  private final CANSparkMax lower =
+      new CANSparkMax(TranporterConstants.LOWER_MOTOR_ID, MotorType.kBrushless);
+  private final CANSparkMax upper =
+      new CANSparkMax(TranporterConstants.UPPER_MOTOR_ID, MotorType.kBrushless);
   private final ColorSensorV3 color = new ColorSensorV3(I2C.Port.kMXP); // FIXME
-  private final Ultrasonic sonic = new Ultrasonic(PING, ECHO);
+  private final Ultrasonic sonic =
+      new Ultrasonic(TranporterConstants.PING, TranporterConstants.ECHO);
 
   public int getBallCount() {
     return ballCount.get();
@@ -42,9 +44,11 @@ public class Transporter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (color.getProximity() > COLOR_LIMIT) { // Check if there is a ball in the lower motor
+    if (color.getProximity()
+        > TranporterConstants.COLOR_LIMIT) { // Check if there is a ball in the lower motor
       if (isOurColor()) {
-        if (sonic.getRangeMM() > SONIC_LIMIT) { // Checks of there is a ball in the upper motor
+        if (sonic.getRangeMM()
+            > TranporterConstants.SONIC_LIMIT) { // Checks of there is a ball in the upper motor
           // Stops both engines
           lower.set(0);
           upper.set(0);
@@ -60,8 +64,10 @@ public class Transporter extends SubsystemBase {
     }
   }
 
-  private final Trigger ballEntryTrigger = new Trigger(() -> color.getProximity() > COLOR_LIMIT);
-  private final Trigger ballStopTrigger = new Trigger(() -> sonic.getRangeMM() > SONIC_LIMIT);
+  private final Trigger ballEntryTrigger =
+      new Trigger(() -> color.getProximity() > TranporterConstants.COLOR_LIMIT);
+  private final Trigger ballStopTrigger =
+      new Trigger(() -> sonic.getRangeMM() > TranporterConstants.SONIC_LIMIT);
 
   void init() {
     // input until upper sensor detects a ball
@@ -72,12 +78,14 @@ public class Transporter extends SubsystemBase {
                   upper.set(Mode.OUT.upper);
                 },
                 this)
-            .withInterrupt(ballStopTrigger).withName("in");
+            .withInterrupt(ballStopTrigger)
+            .withName("in");
 
     // output sets motor until ball entry sensor no longer sees a ball
     var out =
         new RunCommand(() -> lower.set(Mode.OUT.lower), this)
-            .withInterrupt(ballEntryTrigger.negate()).withName("out");
+            .withInterrupt(ballEntryTrigger.negate())
+            .withName("out");
 
     Command conditional = new ConditionalCommand(in, out, this::isOurColor);
 
@@ -89,16 +97,16 @@ public class Transporter extends SubsystemBase {
     // update the counter whenever we shoot a ball
     ballStopTrigger.whenInactive(ballCount::decrementAndGet, this);
     // and report if we pass the limit
-    new Trigger(() -> ballCount.get() > MAX_BALLS)
+    new Trigger(() -> ballCount.get() > TranporterConstants.MAX_BALLS)
         .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
   }
 
   boolean isOurColor() {
     switch (DriverStation.getAlliance()) {
       case Red:
-        return color.getRed() > RED_THRESHOLD;
+        return color.getRed() > TranporterConstants.RED_THRESHOLD;
       case Blue:
-        return color.getBlue() > BLUE_THRESHOLD;
+        return color.getBlue() > TranporterConstants.BLUE_THRESHOLD;
     }
     DriverStation.reportError("DS Alliance is invalid!", false);
     return false;
