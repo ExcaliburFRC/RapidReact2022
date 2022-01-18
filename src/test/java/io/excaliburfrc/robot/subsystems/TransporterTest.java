@@ -23,7 +23,6 @@ public class TransporterTest {
     assert HAL.initialize(500, 1);
 
     transporter = new Transporter();
-    transporter.init();
 
     sensorSim = new ColorSensorSim(I2C.Port.kMXP);
 
