@@ -1,23 +1,25 @@
 package io.excaliburfrc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj2.command.*;
-import io.excaliburfrc.robot.Constants;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import io.excaliburfrc.robot.Constants.ClimberConstants;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
   private final DoubleSolenoid anglerPiston =
       new DoubleSolenoid(
           PneumaticsModuleType.CTREPCM,
-          Constants.ClimberConstants.FORWARD_CHANNEL,
-          Constants.ClimberConstants.REVERSE_CHANNEL);
+          ClimberConstants.FORWARD_CHANNEL,
+          ClimberConstants.REVERSE_CHANNEL);
   private final CANSparkMax motor =
-      new CANSparkMax(
-          Constants.ClimberConstants.CLIMBER_SPARKMAX, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final DigitalInput sensor = new DigitalInput(Constants.ClimberConstants.SENSOR_CHANNEL);
+      new CANSparkMax(ClimberConstants.CLIMBER_SPARKMAX, MotorType.kBrushless);
+  private final DigitalInput sensor = new DigitalInput(ClimberConstants.SENSOR_CHANNEL);
 
   @Override
   public void close() {
@@ -77,9 +79,9 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   public Command climbCommandGroup() {
     return upCommand() // TODO: Drive forwards after upCommand
         .andThen(downCommand())
+        .andThen(closeAnglerCommand())
         .andThen(upCommand())
-        .andThen(openAnglerCommand())
-        .andThen(closeAnglerCommand());
+        .andThen(openAnglerCommand());
   }
 
   double _getSpeed() {
