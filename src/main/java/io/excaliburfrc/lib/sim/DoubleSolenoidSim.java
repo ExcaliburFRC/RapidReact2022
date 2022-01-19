@@ -18,13 +18,17 @@ public class DoubleSolenoidSim {
     int fwd = (pcm.getSolenoidOutput(m_fwd) ? 1 : 0) << 1;
 
     switch (rev | fwd) {
-      case 0b0:
+      case 0b00:
         return DoubleSolenoid.Value.kOff;
-      case 0b1:
+      case 0b01:
         return DoubleSolenoid.Value.kReverse;
       case 0b10:
         return DoubleSolenoid.Value.kForward;
     }
     throw new AssertionError("In-Valid state");
+  }
+
+  public void resetData() {
+    pcm.resetData();
   }
 }

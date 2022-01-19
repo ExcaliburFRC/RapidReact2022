@@ -30,6 +30,7 @@ class DoubleSolenoidSimTest {
   void tearDown() {
     real.close();
     real = null;
+    sim.resetData();
     sim = null;
   }
 

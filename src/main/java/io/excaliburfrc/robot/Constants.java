@@ -12,4 +12,11 @@ package io.excaliburfrc.robot;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants {}
+public final class Constants {
+  public static class ClimberConstants {
+    public static final int FORWARD_CHANNEL = 0;
+    public static final int REVERSE_CHANNEL = 1;
+    public static final int CLIMBER_SPARKMAX = 1;
+    public static final int SENSOR_CHANNEL = 1;
+  }
+}
