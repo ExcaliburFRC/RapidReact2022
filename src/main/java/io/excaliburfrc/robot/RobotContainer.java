@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import io.excaliburfrc.robot.subsystems.Drive;
+import io.excaliburfrc.robot.subsystems.Intake;
 import io.excaliburfrc.robot.subsystems.Shooter;
 
 /**
@@ -21,6 +22,7 @@ public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
   private final Joystick armJoystick = new Joystick(1);
   // The robot's subsystems and commands are defined here...
+  private final Intake transporter = new Intake();
 
   private final Shooter shooter = new Shooter();
   private final Drive drive = new Drive();
@@ -36,6 +38,15 @@ public class RobotContainer {
   void manualButton() {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
+
+    final int intakeAxis = 1;
+    final int upperAxis = 2;
+    final int intakeButton = 3;
+
+    transporter.manualCommand(
+        () -> armJoystick.getRawAxis(intakeAxis),
+        () -> armJoystick.getRawAxis(upperAxis),
+        () -> armJoystick.getRawButton(intakeButton));
 
     drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
     shooter.activateCommand(armJoystick::getY).schedule();
