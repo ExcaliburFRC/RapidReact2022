@@ -7,6 +7,8 @@ package io.excaliburfrc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import io.excaliburfrc.robot.subsystems.Intake;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -18,6 +20,7 @@ public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
   private final Joystick armJoystick = new Joystick(1);
   // The robot's subsystems and commands are defined here...
+  private final Intake transporter = new Intake();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -26,6 +29,20 @@ public class RobotContainer {
   }
 
   private void configureButtonBindings() {}
+
+  void manualButton() {
+    CommandScheduler.getInstance().clearButtons();
+    CommandScheduler.getInstance().cancelAll();
+
+    final int intakeAxis = 1;
+    final int upperAxis = 2;
+    final int intakeButton = 3;
+
+    transporter.manualCommand(
+        () -> armJoystick.getRawAxis(intakeAxis),
+        () -> armJoystick.getRawAxis(upperAxis),
+        () -> armJoystick.getRawButton(intakeButton));
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

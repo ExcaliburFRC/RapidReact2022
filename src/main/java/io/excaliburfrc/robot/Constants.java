@@ -12,4 +12,18 @@ package io.excaliburfrc.robot;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants {}
+public final class Constants {
+  public static final class IntakeConstants {
+    public static final int INTAKE_MOTOR_ID = 22;
+    public static final int UPPER_MOTOR_ID = 21;
+    public static final int PING = 5;
+    public static final int ECHO = 6;
+    public static final int COLOR_LIMIT = 69;
+    public static final int SONIC_LIMIT = 69;
+    public static final int RED_THRESHOLD = 100;
+    public static final int BLUE_THRESHOLD = 100;
+    public static final int MAX_BALLS = 2;
+    public static final int FWD_CHANNEL = 8;
+    public static final int REV_CHANNEL = 9;
+  }
+}
