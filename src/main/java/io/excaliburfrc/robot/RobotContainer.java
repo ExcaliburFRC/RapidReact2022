@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import io.excaliburfrc.robot.subsystems.Drive;
 import io.excaliburfrc.robot.subsystems.Shooter;
 
 /**
@@ -22,6 +23,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
   private final Shooter shooter = new Shooter();
+  private final Drive drive = new Drive();
 
   /** The container for the robot. Contains frc.robot.subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -35,6 +37,7 @@ public class RobotContainer {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
+    drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
     shooter.activateCommand(armJoystick::getY).schedule();
   }
 
