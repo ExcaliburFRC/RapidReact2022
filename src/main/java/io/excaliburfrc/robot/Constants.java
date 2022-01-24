@@ -19,4 +19,9 @@ public final class Constants {
     public static final int CLIMBER_SPARKMAX = 1;
     public static final int SENSOR_CHANNEL = 1;
   }
+
+  public static class ShooterConstants {
+    public static final int LEADER_ID = 0;
+    public static final int FOLLOWER_ID = 1;
+  }
 }

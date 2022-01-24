@@ -7,6 +7,8 @@ package io.excaliburfrc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import io.excaliburfrc.robot.subsystems.Shooter;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -19,13 +21,22 @@ public class RobotContainer {
   private final Joystick armJoystick = new Joystick(1);
   // The robot's subsystems and commands are defined here...
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  private final Shooter shooter = new Shooter();
+
+  /** The container for the robot. Contains frc.robot.subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
   }
 
   private void configureButtonBindings() {}
+
+  void manualButton() {
+    CommandScheduler.getInstance().clearButtons();
+    CommandScheduler.getInstance().cancelAll();
+
+    shooter.activateCommand(armJoystick::getY).schedule();
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
