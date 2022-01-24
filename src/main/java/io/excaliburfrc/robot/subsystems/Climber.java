@@ -5,11 +5,10 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
   private final DoubleSolenoid anglerPiston =
@@ -69,11 +68,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   }
 
   public Command openAnglerCommand() {
-    return new InstantCommand(() -> openAngler(), this);
+    return new InstantCommand(this::openAngler, this);
   }
 
   public Command closeAnglerCommand() {
-    return new InstantCommand(() -> closeAngler(), this);
+    return new InstantCommand(this::closeAngler, this);
   }
 
   public Command climbCommandGroup() {
@@ -86,5 +85,13 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   double _getSpeed() {
     return motor.get();
+  }
+
+  public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
+    return new RunCommand(
+        () -> {
+          motor.set(motorSpeed.getAsDouble());
+          if (piston.getAsBoolean()) anglerPiston.toggle();
+        });
   }
 }
