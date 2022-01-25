@@ -7,8 +7,10 @@ import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,8 +26,11 @@ public class Drive extends SubsystemBase {
       new CANSparkMax(DrivetrainConstants.RIGHT_LEADER_ID, MotorType.kBrushless);
   private final CANSparkMax rightFollower =
       new CANSparkMax(DrivetrainConstants.RIGHT_FOLLOWER_ID, MotorType.kBrushless);
-
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
+  private final AnalogPotentiometer rightLineSensor =
+      new AnalogPotentiometer(DrivetrainConstants.RIGHT_LINE_SENSOR_CHANNEL, 100);
+  private final AnalogPotentiometer leftLineSensor =
+      new AnalogPotentiometer(DrivetrainConstants.LEFT_LINE_SENSOR_CHANNEL, 100);
 
   public Drive() {
     ValidateREVCAN(
@@ -62,5 +67,17 @@ public class Drive extends SubsystemBase {
   public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return new RunCommand(
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
+  }
+
+  private Command alignCommand(
+      AnalogPotentiometer firstSensor,
+      AnalogPotentiometer secondSensor,
+      MotorController firstMotor,
+      MotorController secondMotor) {
+    return new RunCommand(() -> secondMotor.set(0.2), this)
+        .withInterrupt(() -> secondSensor.get() < DrivetrainConstants.BLACK_THRESHOLD)
+        .andThen(
+            new RunCommand(() -> firstMotor.set(-0.2), this)
+                .withInterrupt(() -> firstSensor.get() < DrivetrainConstants.BLACK_THRESHOLD));
   }
 }

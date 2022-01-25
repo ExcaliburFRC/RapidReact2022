@@ -57,5 +57,8 @@ public final class Constants {
     public static final int LEFT_FOLLOWER_ID = 17;
     public static final int RIGHT_LEADER_ID = 19;
     public static final int RIGHT_FOLLOWER_ID = 15;
+    public static final int RIGHT_LINE_SENSOR_CHANNEL = 0;
+    public static final int LEFT_LINE_SENSOR_CHANNEL = 1;
+    public static final double BLACK_THRESHOLD = 10;
   }
 }
