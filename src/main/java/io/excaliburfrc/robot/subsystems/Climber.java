@@ -92,6 +92,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         () -> {
           motor.set(motorSpeed.getAsDouble());
           if (piston.getAsBoolean()) anglerPiston.toggle();
-        });
+        },
+        this);
   }
 }

@@ -48,8 +48,7 @@ public class RobotContainer {
   }
 
   void manualButton() {
-    final int motorAxis = 1;
-    final int anglePiston = 2;
+    final int anglePiston = 4;
 
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
@@ -66,8 +65,7 @@ public class RobotContainer {
     drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
     shooter.manualCommand(() -> 0.5 * armJoystick.getY()).schedule();
     climber
-        .climberManualCommand(
-            () -> armJoystick.getRawAxis(motorAxis), () -> armJoystick.getRawButton(anglePiston))
+        .climberManualCommand(armJoystick::getY, () -> armJoystick.getRawButton(anglePiston))
         .schedule();
   }
 
