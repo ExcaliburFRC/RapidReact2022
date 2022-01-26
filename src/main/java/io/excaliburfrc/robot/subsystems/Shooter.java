@@ -45,7 +45,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private void release() {
-    pid.setSetpoint(0); // for safety reasons
+    leader.set(0);
     isControl = false;
   }
 
