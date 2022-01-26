@@ -49,18 +49,18 @@ public class Shooter extends SubsystemBase {
     isControl = false;
   }
 
-  private double prev_x = 0;
-  private double prev_t = Timer.getFPGATimestamp() - 0.02;
+  private double x = 0;
+  private double t = Timer.getFPGATimestamp() - 0.02;
 
   public double getVelocity() {
-    double _prevX = prev_x;
-    double _prevT = prev_t;
+    double prevX = x;
+    double prevT = t;
 
-    prev_x = encoder.getDistance();
-    prev_t = Timer.getFPGATimestamp();
+    x = encoder.getDistance();
+    t = Timer.getFPGATimestamp();
 
-    double dx = prev_x - _prevX;
-    double dt = prev_t - _prevT;
+    double dx = x - prevX;
+    double dt = t - prevT;
 
     return dx / dt;
   }
