@@ -11,9 +11,8 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
 import java.util.function.DoubleSupplier;
 
@@ -31,6 +30,10 @@ public class Drive extends SubsystemBase {
       new AnalogPotentiometer(DrivetrainConstants.RIGHT_LINE_SENSOR_CHANNEL, 100);
   private final AnalogPotentiometer leftLineSensor =
       new AnalogPotentiometer(DrivetrainConstants.LEFT_LINE_SENSOR_CHANNEL, 100);
+  private final Trigger rightTrigger =
+      new Trigger(() -> rightLineSensor.get() < DrivetrainConstants.BLACK_THRESHOLD);
+  private final Trigger leftTrigger =
+      new Trigger(() -> leftLineSensor.get() < DrivetrainConstants.BLACK_THRESHOLD);
 
   public Drive() {
     ValidateREVCAN(
@@ -69,15 +72,28 @@ public class Drive extends SubsystemBase {
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
   }
 
+  private Command moveToLineCommand() {
+    return arcadeDriveCommend(() -> 0.2, () -> 0)
+        .withInterrupt(leftTrigger.or(rightTrigger))
+        .andThen(
+            new SelectCommand(
+                () -> {
+                  if (rightTrigger.get())
+                    return alignCommand(rightTrigger, leftTrigger, rightLeader, leftLeader);
+                  if (leftTrigger.get())
+                    return alignCommand(leftTrigger, rightTrigger, leftLeader, rightLeader);
+                  return new PrintCommand(
+                      "ASSERTION FAILED!!!!!\nCall the programmers, something is borked");
+                }));
+  }
+
   private Command alignCommand(
-      AnalogPotentiometer firstSensor,
-      AnalogPotentiometer secondSensor,
+      Trigger firstSensor,
+      Trigger secondSensor,
       MotorController firstMotor,
       MotorController secondMotor) {
     return new RunCommand(() -> secondMotor.set(0.2), this)
-        .withInterrupt(() -> secondSensor.get() < DrivetrainConstants.BLACK_THRESHOLD)
-        .andThen(
-            new RunCommand(() -> firstMotor.set(-0.2), this)
-                .withInterrupt(() -> firstSensor.get() < DrivetrainConstants.BLACK_THRESHOLD));
+        .withInterrupt(secondSensor)
+        .andThen(new RunCommand(() -> firstMotor.set(-0.2), this).withInterrupt(firstSensor));
   }
 }
