@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.subsystems.Drive;
 import io.excaliburfrc.robot.subsystems.Intake;
 import io.excaliburfrc.robot.subsystems.Shooter;
@@ -27,13 +28,22 @@ public class RobotContainer {
   private final Shooter shooter = new Shooter();
   private final Drive drive = new Drive();
 
-  /** The container for the robot. Contains frc.robot.subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
   }
 
-  private void configureButtonBindings() {}
+  private static final int POV_UP = 0;
+  private static final int POV_DOWN = 180;
+
+  private void configureButtonBindings() {
+    CommandScheduler.getInstance().clearButtons();
+    CommandScheduler.getInstance().cancelAll();
+
+    var fenderShotCommand = shooter.accelerateFenderCommand();
+    new POVButton(armJoystick, POV_UP).whenPressed(fenderShotCommand);
+    new POVButton(armJoystick, POV_DOWN).whenPressed(fenderShotCommand);
+  }
 
   void manualButton() {
     CommandScheduler.getInstance().clearButtons();
@@ -49,7 +59,7 @@ public class RobotContainer {
         () -> armJoystick.getRawButton(intakeButton));
 
     drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
-    shooter.activateCommand(armJoystick::getY).schedule();
+    shooter.manualCommand(() -> 0.5 * armJoystick.getY()).schedule();
   }
 
   /**
