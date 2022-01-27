@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import io.excaliburfrc.robot.subsystems.Climber;
 import io.excaliburfrc.robot.subsystems.Drive;
 import io.excaliburfrc.robot.subsystems.Intake;
 import io.excaliburfrc.robot.subsystems.Shooter;
@@ -25,6 +26,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Intake transporter = new Intake();
 
+  private final Climber climber = new Climber();
   private final Shooter shooter = new Shooter();
   private final Drive drive = new Drive();
 
@@ -46,6 +48,8 @@ public class RobotContainer {
   }
 
   void manualButton() {
+    final int anglePiston = 4;
+
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
@@ -60,6 +64,9 @@ public class RobotContainer {
 
     drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
     shooter.manualCommand(() -> 0.5 * armJoystick.getY()).schedule();
+    climber
+        .climberManualCommand(armJoystick::getY, () -> armJoystick.getRawButton(anglePiston))
+        .schedule();
   }
 
   /**
