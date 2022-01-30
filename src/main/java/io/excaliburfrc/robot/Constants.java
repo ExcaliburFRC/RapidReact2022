@@ -1,5 +1,7 @@
 package io.excaliburfrc.robot;
 
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -68,6 +70,21 @@ public final class Constants {
     public static final int LEFT_FOLLOWER_ID = 17;
     public static final int RIGHT_LEADER_ID = 19;
     public static final int RIGHT_FOLLOWER_ID = 15;
+    public static final int RIGHT_ENCODER_PORT_A = 0;
+    public static final int RIGHT_ENCODER_PORT_B = 0;
+    public static final int LEFT_ENCODER_PORT_A = 0;
+    public static final int LEFT_ENCODER_PORT_B = 0;
+    public static final double kS = 1;
+    public static final double kV = 2;
+    public static final double kA = 1;
+    public static final double kP = 0;
+    public static final double TRACKWIDTH_METERS = 0.69;
+    public static final DifferentialDriveKinematics DRIVE_KINEMATICS =
+        new DifferentialDriveKinematics(TRACKWIDTH_METERS);
+    public static final double MAX_SPEED_METERS_PER_SECOND = 3;
+    public static final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
+    public static final double RAMSETE_B = 2;
+    public static final double RAMSETE_ZETA = 0.7;
   }
 
   public static class LedsConstants {
