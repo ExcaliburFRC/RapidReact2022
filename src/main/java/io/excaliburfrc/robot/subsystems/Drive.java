@@ -92,8 +92,13 @@ public class Drive extends SubsystemBase {
       Trigger secondSensor,
       MotorController firstMotor,
       MotorController secondMotor) {
-    return new RunCommand(() -> secondMotor.set(0.2), this)
-        .withInterrupt(secondSensor)
-        .andThen(new RunCommand(() -> firstMotor.set(-0.2), this).withInterrupt(firstSensor));
+    return getSideReachCommand(secondMotor, secondSensor, 0.2)
+        .andThen(getSideReachCommand(firstMotor, firstSensor, -0.2));
+  }
+
+  private FunctionalCommand getSideReachCommand(
+      MotorController firstMotor, Trigger firstSensor, double speed) {
+    return new FunctionalCommand(
+        () -> {}, () -> firstMotor.set(speed), __ -> firstMotor.set(0), firstSensor);
   }
 }
