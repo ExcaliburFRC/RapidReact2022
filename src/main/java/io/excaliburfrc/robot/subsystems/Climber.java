@@ -5,8 +5,11 @@ import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
 import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
+import static java.lang.Math.abs;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
@@ -14,11 +17,9 @@ import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -92,6 +93,45 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   public void closeAngler() {
     anglerPiston.set(DoubleSolenoid.Value.kReverse);
+  }
+
+  private Command reachSideHeight(
+      SparkMaxPIDController controller, RelativeEncoder encoder, double height) {
+    return new Command() {
+      @Override
+      public void initialize() {
+        controller.setReference(height, ControlType.kPosition);
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        controller.setReference(0, ControlType.kDutyCycle);
+      }
+
+      @Override
+      public boolean isFinished() {
+        double position = encoder.getPosition();
+        return abs(height - position) <= THRESHOLD;
+      }
+
+      @Override
+      public Set<Subsystem> getRequirements() {
+        return Set.of(Climber.this);
+      }
+    };
+  }
+
+  private Command reachBothHeight(double height) {
+    return reachSideHeight(leftController, leftEncoder, height)
+        .alongWith(reachSideHeight(rightController, rightEncoder, height));
+  }
+
+  public Command upCommand() {
+    return reachBothHeight(MAX_HEIGHT);
+  }
+
+  public Command downCommand() {
+    return reachBothHeight(0);
   }
 
   public Command offCommand() {
