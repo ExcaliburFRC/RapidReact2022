@@ -33,7 +33,6 @@ public class ClimberTest {
     anglerSim = null;
   }
 
-
   @Test
   public void anglerOpens() {
     final var testCommand = climber.openAnglerCommand();
