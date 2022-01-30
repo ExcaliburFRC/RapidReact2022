@@ -118,7 +118,8 @@ public class Shooter extends SubsystemBase {
         double ffOutput = feedforward.calculate(pid.getSetpoint());
         double pidOutput = pid.calculate(velocity);
         leader.set(pidOutput + ffOutput);
-        SmartDashboard.putBoolean("Is At Reference", Math.abs(getVelocity() - pid.getSetpoint()) < 0.01);
+        SmartDashboard.putBoolean(
+            "Is At Reference", Math.abs(getVelocity() - pid.getSetpoint()) < 0.01);
         break;
     }
   }
@@ -128,6 +129,4 @@ public class Shooter extends SubsystemBase {
     MANUAL,
     CLOSED_LOOP
   }
-
-
 }
