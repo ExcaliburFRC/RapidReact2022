@@ -5,6 +5,7 @@ import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -34,10 +35,10 @@ public class Drive extends SubsystemBase {
         rightLeader.restoreFactoryDefaults(),
         rightFollower.restoreFactoryDefaults(),
         // set the motors to coast mode -- we don't want to break them!
-        leftLeader.setIdleMode(CANSparkMax.IdleMode.kBrake),
-        leftFollower.setIdleMode(CANSparkMax.IdleMode.kBrake),
-        rightLeader.setIdleMode(CANSparkMax.IdleMode.kBrake),
-        rightFollower.setIdleMode(CANSparkMax.IdleMode.kBrake),
+        leftLeader.setIdleMode(IdleMode.kBrake),
+        leftFollower.setIdleMode(IdleMode.kBrake),
+        rightLeader.setIdleMode(IdleMode.kBrake),
+        rightFollower.setIdleMode(IdleMode.kBrake),
         // have the leader send its applied output as frequently as possible,
         // to speed up follower response
         leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, minimal_FRAME_PERIOD),
