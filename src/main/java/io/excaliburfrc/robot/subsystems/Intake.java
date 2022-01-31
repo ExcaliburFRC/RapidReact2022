@@ -5,7 +5,7 @@ import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -19,9 +19,9 @@ import java.util.function.DoubleSupplier;
 
 public class Intake extends SubsystemBase {
   private final CANSparkMax intakeMotor =
-      new CANSparkMax(IntakeConstants.INTAKE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+      new CANSparkMax(IntakeConstants.INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax upperMotor =
-      new CANSparkMax(IntakeConstants.UPPER_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+      new CANSparkMax(IntakeConstants.UPPER_MOTOR_ID, MotorType.kBrushless);
   private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kMXP);
   private final Ultrasonic upperSensor = new Ultrasonic(IntakeConstants.PING, IntakeConstants.ECHO);
   private final DoubleSolenoid piston =
