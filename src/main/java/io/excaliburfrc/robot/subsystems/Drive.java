@@ -14,6 +14,7 @@ import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -27,7 +28,6 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
@@ -48,11 +48,8 @@ public class Drive extends SubsystemBase {
   private final CANSparkMax rightFollower =
       new CANSparkMax(DrivetrainConstants.RIGHT_FOLLOWER_ID, MotorType.kBrushless);
 
-  private final Encoder rightEncoder =
-      new Encoder(
-          DrivetrainConstants.RIGHT_ENCODER_PORT_A, DrivetrainConstants.RIGHT_ENCODER_PORT_B);
-  private final Encoder leftEncoder =
-      new Encoder(DrivetrainConstants.LEFT_ENCODER_PORT_A, DrivetrainConstants.LEFT_ENCODER_PORT_B);
+  private final RelativeEncoder rightEncoder = rightLeader.getEncoder();
+  private final RelativeEncoder leftEncoder = leftLeader.getEncoder();
 
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
 
@@ -68,7 +65,7 @@ public class Drive extends SubsystemBase {
               DrivetrainConstants.MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
           .setKinematics(driveKinematics)
           .addConstraint(autoVoltageConstraint);
-  private final Trajectory trajectory =
+  public final Trajectory trajectory =
       TrajectoryGenerator.generateTrajectory(
           new Pose2d(0, 0, new Rotation2d(0)),
           List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
@@ -77,6 +74,7 @@ public class Drive extends SubsystemBase {
 
   private final DifferentialDriveOdometry odometry;
   private final AHRS ahrs = new AHRS();
+  private Rotation2d offset = new Rotation2d(0);
 
   public Drive() {
     ValidateREVCAN(
@@ -109,7 +107,20 @@ public class Drive extends SubsystemBase {
         leftFollower.follow(leftLeader),
         rightFollower.follow(rightLeader));
 
+    resetEncoders();
+
     odometry = new DifferentialDriveOdometry(ahrs.getRotation2d());
+  }
+
+  public void resetEncoders() {
+    leftEncoder.setPosition(0);
+    rightEncoder.setPosition(0);
+  }
+
+  public void resetOdometry(Pose2d pose) {
+    resetEncoders();
+    offset = pose.getRotation();
+    odometry.resetPosition(pose, ahrs.getRotation2d());
   }
 
   public Pose2d getPose() {
@@ -117,7 +128,7 @@ public class Drive extends SubsystemBase {
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeed() {
-    return new DifferentialDriveWheelSpeeds(leftEncoder.getRate(), rightEncoder.getRate());
+    return new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity());
   }
 
   public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
@@ -148,6 +159,6 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
-    odometry.update(ahrs.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
+    odometry.update(ahrs.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
   }
 }
