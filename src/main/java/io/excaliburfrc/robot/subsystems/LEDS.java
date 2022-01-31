@@ -28,11 +28,11 @@ public class LEDS extends SubsystemBase {
     public final double dutyCycle;
   }
 
-  public Command setColor(LedMode color) {
+  public Command setColorCommand(LedMode color) {
     return new RunCommand(() -> leds.setSpeed(color.dutyCycle), this);
   }
 
-  public Command ledsOff() {
+  public Command ledsOffCommand() {
     return new RunCommand(() -> leds.setSpeed(LedMode.OFF.dutyCycle), this);
   }
 }
