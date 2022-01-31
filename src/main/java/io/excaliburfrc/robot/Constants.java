@@ -60,5 +60,6 @@ public final class Constants {
     public static final int RIGHT_LINE_SENSOR_CHANNEL = 0;
     public static final int LEFT_LINE_SENSOR_CHANNEL = 1;
     public static final double BLACK_THRESHOLD = 10;
+    public static final int LINE_SENSOR_SCALE = 100;
   }
 }

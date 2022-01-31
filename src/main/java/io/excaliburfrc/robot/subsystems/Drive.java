@@ -7,8 +7,8 @@ import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.*;
@@ -27,9 +27,11 @@ public class Drive extends SubsystemBase {
       new CANSparkMax(DrivetrainConstants.RIGHT_FOLLOWER_ID, MotorType.kBrushless);
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
   private final AnalogPotentiometer rightLineSensor =
-      new AnalogPotentiometer(DrivetrainConstants.RIGHT_LINE_SENSOR_CHANNEL, 100);
+      new AnalogPotentiometer(
+          DrivetrainConstants.RIGHT_LINE_SENSOR_CHANNEL, DrivetrainConstants.LINE_SENSOR_SCALE);
   private final AnalogPotentiometer leftLineSensor =
-      new AnalogPotentiometer(DrivetrainConstants.LEFT_LINE_SENSOR_CHANNEL, 100);
+      new AnalogPotentiometer(
+          DrivetrainConstants.LEFT_LINE_SENSOR_CHANNEL, DrivetrainConstants.LINE_SENSOR_SCALE);
   private final Trigger rightTrigger =
       new Trigger(() -> rightLineSensor.get() < DrivetrainConstants.BLACK_THRESHOLD);
   private final Trigger leftTrigger =
@@ -79,26 +81,18 @@ public class Drive extends SubsystemBase {
             new SelectCommand(
                 () -> {
                   if (rightTrigger.get())
-                    return alignCommand(rightTrigger, leftTrigger, rightLeader, leftLeader);
+                    return getSideReachCommand(leftLeader, leftTrigger, 0.2)
+                        .andThen(getSideReachCommand(rightLeader, rightTrigger, -0.2));
                   if (leftTrigger.get())
-                    return alignCommand(leftTrigger, rightTrigger, leftLeader, rightLeader);
+                    return getSideReachCommand(rightLeader, rightTrigger, 0.2)
+                        .andThen(getSideReachCommand(leftLeader, leftTrigger, -0.2));
                   return new PrintCommand(
                       "ASSERTION FAILED!!!!!\nCall the programmers, something is borked");
                 }));
   }
 
-  private Command alignCommand(
-      Trigger firstSensor,
-      Trigger secondSensor,
-      MotorController firstMotor,
-      MotorController secondMotor) {
-    return getSideReachCommand(secondMotor, secondSensor, 0.2)
-        .andThen(getSideReachCommand(firstMotor, firstSensor, -0.2));
-  }
-
   private FunctionalCommand getSideReachCommand(
-      MotorController firstMotor, Trigger firstSensor, double speed) {
-    return new FunctionalCommand(
-        () -> {}, () -> firstMotor.set(speed), __ -> firstMotor.set(0), firstSensor);
+      MotorController motor, Trigger sensor, double speed) {
+    return new FunctionalCommand(() -> {}, () -> motor.set(speed), __ -> motor.set(0), sensor);
   }
 }
