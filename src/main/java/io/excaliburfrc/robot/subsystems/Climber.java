@@ -14,6 +14,8 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -37,6 +39,12 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final RelativeEncoder rightEncoder = rightMotor.getEncoder();
   private final SparkMaxPIDController leftController = leftMotor.getPIDController();
   private final SparkMaxPIDController rightController = rightMotor.getPIDController();
+
+  private final ElevatorFeedforward feedforward =
+      new ElevatorFeedforward(0, MG * Math.cos(ANGLE), kV, kA);
+  private double target;
+
+  private TrapezoidProfile profile;
 
   public Climber() {
     ValidateREVCAN(
@@ -95,17 +103,41 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     anglerPiston.set(DoubleSolenoid.Value.kReverse);
   }
 
+  private void getVelocityFromPosition(double pos) {
+    profile =
+        new TrapezoidProfile(
+            new TrapezoidProfile.Constraints(
+                feedforward.maxAchievableVelocity(12, kA),
+                feedforward.maxAchievableAcceleration(12, kV)),
+            new TrapezoidProfile.State(0, 0),
+            new TrapezoidProfile.State(pos, 0));
+  }
+
   private Command reachSideHeight(
       SparkMaxPIDController controller, RelativeEncoder encoder, double height) {
+    var maxV = feedforward.maxAchievableVelocity(12, kA);
+    var maxA = feedforward.maxAchievableAcceleration(12, kV);
     return new Command() {
       @Override
       public void initialize() {
-        controller.setReference(height, ControlType.kPosition);
+        getVelocityFromPosition(height);
+        controller.setReference(
+            height,
+            ControlType.kPosition,
+            0,
+            feedforward.calculate(profile.calculate(DT).velocity),
+            SparkMaxPIDController.ArbFFUnits.kVoltage);
       }
 
       @Override
       public void end(boolean interrupted) {
-        controller.setReference(0, ControlType.kDutyCycle);
+        getVelocityFromPosition(0);
+        controller.setReference(
+            0,
+            ControlType.kDutyCycle,
+            0,
+            feedforward.calculate(profile.calculate(DT).velocity),
+            SparkMaxPIDController.ArbFFUnits.kVoltage);
       }
 
       @Override

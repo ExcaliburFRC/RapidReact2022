@@ -41,6 +41,9 @@ public final class Constants {
     public static final double kD = 0;
     public static final double MG = 1000;
     public static final double ANGLE = 90;
+    public static final double DT = 0.02;
+    public static final double kV = 0;
+    public static final double kA = 0;
   }
 
   public static class ShooterConstants {
