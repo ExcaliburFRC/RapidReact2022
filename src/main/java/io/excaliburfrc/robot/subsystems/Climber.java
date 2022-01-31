@@ -146,6 +146,18 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new InstantCommand(this::closeAngler, this);
   }
 
+  public Command climbCommandGroup() {
+    return upCommand() // TODO: Drive forwards after upCommand
+        .andThen(downCommand())
+        .andThen(closeAnglerCommand())
+        .andThen(upCommand())
+        .andThen(openAnglerCommand());
+  }
+
+  double getSpeed() {
+    return leftMotor.get();
+  }
+
   public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
     return new RunCommand(
         () -> {
