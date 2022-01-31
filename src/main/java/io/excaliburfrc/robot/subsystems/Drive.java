@@ -1,8 +1,7 @@
 package io.excaliburfrc.robot.subsystems;
 
 import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
-import static io.excaliburfrc.robot.Constants.DrivetrainConstants.kA;
-import static io.excaliburfrc.robot.Constants.DrivetrainConstants.kS;
+import static io.excaliburfrc.robot.Constants.DrivetrainConstants.*;
 import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
@@ -12,10 +11,12 @@ import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.math.controller.PIDController;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,7 +24,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
@@ -58,7 +58,7 @@ public class Drive extends SubsystemBase {
 
   private final DifferentialDriveVoltageConstraint autoVoltageConstraint =
       new DifferentialDriveVoltageConstraint(
-          new SimpleMotorFeedforward(kS, DrivetrainConstants.kV, kA), driveKinematics, 10);
+          new SimpleMotorFeedforward(kS, kV, kA), driveKinematics, 10);
   private final TrajectoryConfig config =
       new TrajectoryConfig(
               DrivetrainConstants.MAX_SPEED_METERS_PER_SECOND,
@@ -74,7 +74,10 @@ public class Drive extends SubsystemBase {
 
   private final DifferentialDriveOdometry odometry;
   private final AHRS ahrs = new AHRS();
+  private final SparkMaxPIDController leftController = leftLeader.getPIDController();
+  private final SparkMaxPIDController rightController = rightLeader.getPIDController();
   private Rotation2d offset = new Rotation2d(0);
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public Drive() {
     ValidateREVCAN(
@@ -107,18 +110,12 @@ public class Drive extends SubsystemBase {
         leftFollower.follow(leftLeader),
         rightFollower.follow(rightLeader));
 
-    resetEncoders();
-
     odometry = new DifferentialDriveOdometry(ahrs.getRotation2d());
   }
 
-  public void resetEncoders() {
+  public void resetOdometry(Pose2d pose) {
     leftEncoder.setPosition(0);
     rightEncoder.setPosition(0);
-  }
-
-  public void resetOdometry(Pose2d pose) {
-    resetEncoders();
     offset = pose.getRotation();
     odometry.resetPosition(pose, ahrs.getRotation2d());
   }
@@ -127,8 +124,11 @@ public class Drive extends SubsystemBase {
     return odometry.getPoseMeters();
   }
 
-  public DifferentialDriveWheelSpeeds getWheelSpeed() {
-    return new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity());
+  public void achieveVelocity(double left, double right) {
+    leftController.setReference(
+        left, ControlType.kVelocity, 0, feedforward.calculate(left), ArbFFUnits.kVoltage);
+    rightController.setReference(
+        right, ControlType.kVelocity, 0, feedforward.calculate(right), ArbFFUnits.kVoltage);
   }
 
   public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
@@ -146,14 +146,9 @@ public class Drive extends SubsystemBase {
     return new RamseteCommand(
         trajectory,
         this::getPose,
-        new RamseteController(DrivetrainConstants.RAMSETE_B, DrivetrainConstants.RAMSETE_ZETA),
-        new SimpleMotorFeedforward(
-            DrivetrainConstants.kS, DrivetrainConstants.kV, DrivetrainConstants.kA),
+        new RamseteController(),
         driveKinematics,
-        this::getWheelSpeed,
-        new PIDController(DrivetrainConstants.kP, 0, 0),
-        new PIDController(DrivetrainConstants.kP, 0, 0),
-        this::tankDrive,
+        this::achieveVelocity,
         this);
   }
 
