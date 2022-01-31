@@ -15,6 +15,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -52,18 +53,21 @@ public class Drive extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
 
-  private DifferentialDriveVoltageConstraint autoVoltageConstraint =
+  private final DifferentialDriveKinematics driveKinematics =
+          new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
+
+  private final DifferentialDriveVoltageConstraint autoVoltageConstraint =
       new DifferentialDriveVoltageConstraint(
           new SimpleMotorFeedforward(kS, DrivetrainConstants.kV, kA),
-          DrivetrainConstants.DRIVE_KINEMATICS,
+          driveKinematics,
           10);
-  TrajectoryConfig config =
+  private final TrajectoryConfig config =
       new TrajectoryConfig(
               DrivetrainConstants.MAX_SPEED_METERS_PER_SECOND,
               DrivetrainConstants.MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
-          .setKinematics(DrivetrainConstants.DRIVE_KINEMATICS)
+          .setKinematics(driveKinematics)
           .addConstraint(autoVoltageConstraint);
-  Trajectory trajectory =
+  private final Trajectory trajectory =
       TrajectoryGenerator.generateTrajectory(
           new Pose2d(0, 0, new Rotation2d(0)),
           List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
@@ -133,7 +137,7 @@ public class Drive extends SubsystemBase {
         new RamseteController(DrivetrainConstants.RAMSETE_B, DrivetrainConstants.RAMSETE_ZETA),
         new SimpleMotorFeedforward(
             DrivetrainConstants.kS, DrivetrainConstants.kV, DrivetrainConstants.kA),
-        DrivetrainConstants.DRIVE_KINEMATICS,
+            driveKinematics,
         this::getWheelSpeed,
         new PIDController(DrivetrainConstants.kP, 0, 0),
         new PIDController(DrivetrainConstants.kP, 0, 0),

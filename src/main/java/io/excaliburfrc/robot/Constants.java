@@ -79,8 +79,6 @@ public final class Constants {
     public static final double kA = 1;
     public static final double kP = 0;
     public static final double TRACKWIDTH_METERS = 0.69;
-    public static final DifferentialDriveKinematics DRIVE_KINEMATICS =
-        new DifferentialDriveKinematics(TRACKWIDTH_METERS);
     public static final double MAX_SPEED_METERS_PER_SECOND = 3;
     public static final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
     public static final double RAMSETE_B = 2;
