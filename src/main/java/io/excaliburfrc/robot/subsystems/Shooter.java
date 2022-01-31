@@ -10,14 +10,10 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
 import java.util.function.DoubleSupplier;
 
@@ -37,6 +33,7 @@ public class Shooter extends SubsystemBase {
       new PIDController(ShooterConstants.kP, ShooterConstants.kI, ShooterConstants.kD);
 
   private Mode controlMode = Mode.OFF;
+  private double velocity = 0;
 
   public Shooter() {
     ValidateREVCAN(
@@ -60,16 +57,26 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command manualCommand(DoubleSupplier speed) {
-    return new InstantCommand(() -> controlMode = Mode.MANUAL, this)
-        .andThen(new RunCommand(() -> leader.set(speed.getAsDouble()), this));
+    return new FunctionalCommand(
+        () -> controlMode = Mode.MANUAL,
+        () -> leader.set(speed.getAsDouble()),
+        __ -> leader.set(0),
+        () -> false,
+        this);
   }
 
   public Command accelerateFenderCommand() {
-    return accelerateToVelocityCommand(ShooterConstants.FENDER_SHOT_RPM);
+    return new StartEndCommand(
+        () -> accelerate(ShooterConstants.FENDER_SHOT_RPM), this::release, this);
   }
 
-  private Command accelerateToVelocityCommand(double rpm) {
-    return new StartEndCommand(() -> accelerate(rpm), this::release, this);
+  public double getVelocity() {
+    return velocity;
+  }
+
+  public boolean isAtSetpoint() {
+    return controlMode == Mode.CLOSED_LOOP
+        && Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
   }
 
   private void accelerate(double setpoint) {
@@ -85,7 +92,7 @@ public class Shooter extends SubsystemBase {
   private double x = 0;
   private double t = Timer.getFPGATimestamp() - 0.02;
 
-  public double getVelocity() {
+  private void updateVelocity() {
     double prevX = x;
     double prevT = t;
 
@@ -95,14 +102,12 @@ public class Shooter extends SubsystemBase {
     double dx = x - prevX;
     double dt = t - prevT;
 
-    return dx / dt;
+    velocity = dx / dt;
   }
 
   @Override
   public void periodic() {
-    double velocity = getVelocity();
-
-    SmartDashboard.putNumber("Shooter Velocity", velocity);
+    updateVelocity();
 
     switch (controlMode) {
       case OFF:
@@ -118,8 +123,6 @@ public class Shooter extends SubsystemBase {
         double ffOutput = feedforward.calculate(pid.getSetpoint());
         double pidOutput = pid.calculate(velocity);
         leader.set(pidOutput + ffOutput);
-        SmartDashboard.putBoolean(
-            "Is At Reference", Math.abs(getVelocity() - pid.getSetpoint()) < 0.01);
         break;
     }
   }
@@ -128,5 +131,13 @@ public class Shooter extends SubsystemBase {
     OFF,
     MANUAL,
     CLOSED_LOOP
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    super.initSendable(builder);
+    builder.addDoubleProperty("velocity", this::getVelocity, null);
+    builder.addDoubleProperty("targetVelocity", pid::getSetpoint, null);
+    builder.addBooleanProperty("isAtReference", this::isAtSetpoint, null);
   }
 }
