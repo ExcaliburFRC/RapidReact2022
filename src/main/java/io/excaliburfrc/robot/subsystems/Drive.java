@@ -57,13 +57,11 @@ public class Drive extends SubsystemBase {
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
 
   private final DifferentialDriveKinematics driveKinematics =
-          new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
+      new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
 
   private final DifferentialDriveVoltageConstraint autoVoltageConstraint =
       new DifferentialDriveVoltageConstraint(
-          new SimpleMotorFeedforward(kS, DrivetrainConstants.kV, kA),
-          driveKinematics,
-          10);
+          new SimpleMotorFeedforward(kS, DrivetrainConstants.kV, kA), driveKinematics, 10);
   private final TrajectoryConfig config =
       new TrajectoryConfig(
               DrivetrainConstants.MAX_SPEED_METERS_PER_SECOND,
@@ -140,7 +138,7 @@ public class Drive extends SubsystemBase {
         new RamseteController(DrivetrainConstants.RAMSETE_B, DrivetrainConstants.RAMSETE_ZETA),
         new SimpleMotorFeedforward(
             DrivetrainConstants.kS, DrivetrainConstants.kV, DrivetrainConstants.kA),
-            driveKinematics,
+        driveKinematics,
         this::getWheelSpeed,
         new PIDController(DrivetrainConstants.kP, 0, 0),
         new PIDController(DrivetrainConstants.kP, 0, 0),
