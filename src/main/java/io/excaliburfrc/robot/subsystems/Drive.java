@@ -6,6 +6,11 @@ import static io.excaliburfrc.robot.Constants.DrivetrainConstants.kS;
 import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
+import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
+import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
+
+import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
@@ -22,10 +27,8 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -75,7 +78,7 @@ public class Drive extends SubsystemBase {
           config);
 
   private final DifferentialDriveOdometry odometry;
-  private final Gyro gyro = new ADXRS450_Gyro();
+  private final AHRS ahrs = new AHRS();
 
   public Drive() {
     ValidateREVCAN(
@@ -108,7 +111,7 @@ public class Drive extends SubsystemBase {
         leftFollower.follow(leftLeader),
         rightFollower.follow(rightLeader));
 
-    odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
+    odometry = new DifferentialDriveOdometry(ahrs.getRotation2d());
   }
 
   public Pose2d getPose() {
@@ -147,6 +150,6 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
-    odometry.update(gyro.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
+    odometry.update(ahrs.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
   }
 }
