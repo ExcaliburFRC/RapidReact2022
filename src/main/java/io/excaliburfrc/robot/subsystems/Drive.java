@@ -11,6 +11,7 @@ import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
@@ -94,5 +95,11 @@ public class Drive extends SubsystemBase {
   private FunctionalCommand getSideReachCommand(
       MotorController motor, Trigger sensor, double speed) {
     return new FunctionalCommand(() -> {}, () -> motor.set(speed), __ -> motor.set(0), sensor);
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putBoolean("left sensor:", leftTrigger.get());
+    SmartDashboard.putBoolean("right sensor:", rightTrigger.get());
   }
 }
