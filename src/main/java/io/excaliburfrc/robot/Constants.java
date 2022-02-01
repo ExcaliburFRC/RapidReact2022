@@ -30,12 +30,12 @@ public final class Constants {
   public static class ClimberConstants {
     public static final int FORWARD_CHANNEL = 0;
     public static final int REVERSE_CHANNEL = 1;
+    public static final int LEFT_MOTOR_ID = 1;
+    public static final int RIGHT_MOTOR_ID = 2;
 
     public static final double MAX_HEIGHT = 10.0; // Rotations
 
-    public static final int LEFT_MOTOR_ID = 51;
-    public static final int RIGHT_MOTOR_ID = 52;
-
+    public static final double THRESHOLD = 0.3;
     public static final double kP = 0;
     public static final double kI = 0;
     public static final double kD = 0;
