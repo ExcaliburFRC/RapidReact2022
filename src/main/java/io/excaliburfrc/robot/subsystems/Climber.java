@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
-import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -43,8 +42,6 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final ElevatorFeedforward feedforward =
       new ElevatorFeedforward(0, MG * Math.cos(ANGLE), kV, kA);
   private double target;
-
-  private double velocitySetpoint;
 
   public Climber() {
     ValidateREVCAN(
@@ -103,50 +100,29 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     anglerPiston.set(DoubleSolenoid.Value.kReverse);
   }
 
-  private TrapezoidProfileCommand getVelocityFromPosition(
-      double positionSetpointGoal, double positionSetpointInit) {
-    return new TrapezoidProfileCommand(
-        new TrapezoidProfile(
-            new TrapezoidProfile.Constraints(
-                feedforward.maxAchievableVelocity(12, kA),
-                feedforward.maxAchievableAcceleration(12, kV)),
-            new TrapezoidProfile.State(positionSetpointGoal, 0),
-            new TrapezoidProfile.State(positionSetpointInit, 0)),
-        setpoint -> velocitySetpoint = setpoint.velocity,
-        this);
-  }
-
   private Command reachSideHeight(
       SparkMaxPIDController controller, RelativeEncoder encoder, double height) {
-    return getVelocityFromPosition(height, encoder.getPosition())
-        .andThen(
-            new Command() {
-              @Override
-              public void initialize() {
+    return new TrapezoidProfileCommand(
+            new TrapezoidProfile(
+                new TrapezoidProfile.Constraints(
+                    feedforward.maxAchievableVelocity(12, kA),
+                    feedforward.maxAchievableAcceleration(12, kV)),
+                new TrapezoidProfile.State(height, 0),
+                new TrapezoidProfile.State(encoder.getPosition(), 0)),
+            velocitySetpoint ->
                 controller.setReference(
                     height,
                     ControlType.kPosition,
                     0,
-                    feedforward.calculate(velocitySetpoint),
-                    SparkMaxPIDController.ArbFFUnits.kVoltage);
-              }
-
-              @Override
-              public void end(boolean interrupted) {
-                controller.setReference(0, ControlType.kDutyCycle);
-              }
-
-              @Override
-              public boolean isFinished() {
-                double position = encoder.getPosition();
-                return abs(height - position) <= THRESHOLD;
-              }
-
-              @Override
-              public Set<Subsystem> getRequirements() {
-                return Set.of(Climber.this);
-              }
-            });
+                    feedforward.calculate(velocitySetpoint.velocity),
+                    SparkMaxPIDController.ArbFFUnits.kVoltage),
+            this)
+        .withInterrupt(
+            () -> {
+              double position = encoder.getPosition();
+              return abs(height - position) <= THRESHOLD;
+            })
+        .andThen(() -> controller.setReference(0, ControlType.kDutyCycle));
   }
 
   private Command reachBothHeight(double height) {
