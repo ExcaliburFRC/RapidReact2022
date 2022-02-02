@@ -41,7 +41,12 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   private final ElevatorFeedforward feedforward =
       new ElevatorFeedforward(0, MG * Math.cos(ANGLE), kV, kA);
-  private double target;
+
+  private final TrapezoidProfile.Constraints trapezoidConstraints =
+      new TrapezoidProfile.Constraints(
+          feedforward.maxAchievableVelocity(12, kA), feedforward.maxAchievableAcceleration(12, kV));
+  private final TrapezoidProfile.State trapezoidGoal = new TrapezoidProfile.State(0, 0);
+  private final TrapezoidProfile.State trapezoidInit = new TrapezoidProfile.State(0, 0);
 
   public Climber() {
     ValidateREVCAN(
@@ -102,13 +107,10 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   private Command reachSideHeight(
       SparkMaxPIDController controller, RelativeEncoder encoder, double height) {
+    trapezoidGoal.position = height;
+    trapezoidInit.position = encoder.getPosition();
     return new TrapezoidProfileCommand(
-            new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(
-                    feedforward.maxAchievableVelocity(12, kA),
-                    feedforward.maxAchievableAcceleration(12, kV)),
-                new TrapezoidProfile.State(height, 0),
-                new TrapezoidProfile.State(encoder.getPosition(), 0)),
+            new TrapezoidProfile(trapezoidConstraints, trapezoidGoal, trapezoidInit),
             velocitySetpoint ->
                 controller.setReference(
                     height,
