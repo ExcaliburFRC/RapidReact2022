@@ -41,6 +41,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   private ElevatorFeedforward feedforward;
 
+  private TrapezoidProfile profile;
   private final TrapezoidProfile.State trapezoidGoal = new TrapezoidProfile.State(0, 0);
   private final TrapezoidProfile.State trapezoidInit = new TrapezoidProfile.State(0, 0);
 
@@ -107,34 +108,24 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       double height,
       double mg,
       double angle) {
-    trapezoidGoal.position = height;
-    trapezoidInit.position = encoder.getPosition();
+    profile =
+        new TrapezoidProfile(
+            new TrapezoidProfile.Constraints(
+                feedforward.maxAchievableVelocity(12, kA),
+                feedforward.maxAchievableAcceleration(12, kV)),
+            new TrapezoidProfile.State(height, 0),
+            new TrapezoidProfile.State(encoder.getPosition(), 0));
     feedforward = new ElevatorFeedforward(0, mg * Math.cos(angle), kV, kA);
     return new TrapezoidProfileCommand(
-            new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(
-                    feedforward.maxAchievableVelocity(12, kA),
-                    feedforward.maxAchievableAcceleration(12, kV)),
-                trapezoidGoal,
-                trapezoidInit),
-            velocitySetpoint ->
+            profile,
+            setpoint ->
                 controller.setReference(
                     height,
                     ControlType.kPosition,
                     0,
-                    feedforward.calculate(velocitySetpoint.velocity),
+                    feedforward.calculate(setpoint.velocity),
                     SparkMaxPIDController.ArbFFUnits.kVoltage),
-            this)
-        .withInterrupt(
-            () -> {
-              double position = encoder.getPosition();
-              return abs(height - position) <= THRESHOLD;
-            })
-        .andThen(
-            new ConditionalCommand(
-                new InstantCommand(() -> reachSideHeight(controller, encoder, height, mg, angle)),
-                new InstantCommand(() -> controller.setReference(0, ControlType.kDutyCycle)),
-                () -> abs(height - encoder.getPosition()) <= THRESHOLD));
+            this);
   }
 
   private Command reachBothHeight(double height, double mg, double angle) {
