@@ -20,7 +20,7 @@ public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
   private final Joystick armJoystick = new Joystick(1);
   // The robot's subsystems and commands are defined here...
-  private final Intake transporter = new Intake();
+  private final Intake intake = new Intake();
 
   private final Climber climber = new Climber();
   private final Shooter shooter = new Shooter();
@@ -53,7 +53,7 @@ public class RobotContainer {
     final int upperAxis = 2;
     final int intakeButton = 3;
 
-    transporter
+    intake
         .manualCommand(
             () -> armJoystick.getRawAxis(intakeAxis),
             () -> armJoystick.getRawAxis(upperAxis),
