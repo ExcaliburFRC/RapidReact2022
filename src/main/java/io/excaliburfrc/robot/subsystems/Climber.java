@@ -1,6 +1,7 @@
 package io.excaliburfrc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -9,6 +10,12 @@ import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+
+import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
+import static io.excaliburfrc.robot.Constants.ClimberConstants.kD;
+import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
+import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
   private final DoubleSolenoid anglerPiston =
@@ -19,6 +26,31 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final CANSparkMax motor =
       new CANSparkMax(ClimberConstants.CLIMBER_SPARKMAX, MotorType.kBrushless);
   private final DigitalInput sensor = new DigitalInput(ClimberConstants.SENSOR_CHANNEL);
+
+  public Climber() {
+      ValidateREVCAN(
+              // reset factory settings
+              leftMotor.restoreFactoryDefaults(),
+              rightMotor.restoreFactoryDefaults(),
+              // set the motors to brake mode
+              leftMotor.setIdleMode(CANSparkMax.IdleMode.kBrake),
+              rightMotor.setIdleMode(CANSparkMax.IdleMode.kBrake),
+              leftMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+              leftMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+              leftMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+              rightMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+              rightMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+              rightMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+              // set up PID parameters
+              leftController.setFeedbackDevice(leftEncoder),
+              leftController.setP(kP),
+              leftController.setI(kI),
+              leftController.setD(kD),
+              rightController.setFeedbackDevice(rightEncoder),
+              rightController.setP(kP),
+              rightController.setI(kI),
+              rightController.setD(kD));
+  }
 
   @Override
   public void close() {
