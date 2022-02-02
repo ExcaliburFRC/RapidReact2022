@@ -1,8 +1,14 @@
 package io.excaliburfrc.robot.subsystems;
 
+import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
+import static io.excaliburfrc.robot.Constants.ClimberConstants.kD;
+import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
+import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
+
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -12,12 +18,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-
-import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
-import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
-import static io.excaliburfrc.robot.Constants.ClimberConstants.kD;
-import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
-import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
   private final DoubleSolenoid anglerPiston =
@@ -34,20 +34,19 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final SparkMaxPIDController controller = motor.getPIDController();
 
   public Climber() {
-      ValidateREVCAN(
-              // reset factory settings
-              motor.restoreFactoryDefaults(),
-              // set the motors to brake mode
-              motor.setIdleMode(CANSparkMax.IdleMode.kBrake),
-              motor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-              motor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-              motor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
-              // set up PID parameters
-              controller.setFeedbackDevice(encoder),
-              controller.setP(kP),
-              controller.setI(kI),
-              controller.setD(kD)
-      );
+    ValidateREVCAN(
+        // reset factory settings
+        motor.restoreFactoryDefaults(),
+        // set the motors to brake mode
+        motor.setIdleMode(CANSparkMax.IdleMode.kBrake),
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+        motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+        // set up PID parameters
+        controller.setFeedbackDevice(encoder),
+        controller.setP(kP),
+        controller.setI(kI),
+        controller.setD(kD));
   }
 
   @Override
