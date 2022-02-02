@@ -124,7 +124,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
               double position = encoder.getPosition();
               return abs(height - position) <= THRESHOLD;
             })
-        .andThen(() -> controller.setReference(0, ControlType.kDutyCycle));
+        .andThen(
+            new ConditionalCommand(
+                new InstantCommand(() -> reachSideHeight(controller, encoder, height)),
+                new InstantCommand(() -> controller.setReference(0, ControlType.kDutyCycle)),
+                () -> abs(height - encoder.getPosition()) <= THRESHOLD));
   }
 
   private Command reachBothHeight(double height) {
