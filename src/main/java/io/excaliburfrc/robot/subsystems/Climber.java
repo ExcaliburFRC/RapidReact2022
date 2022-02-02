@@ -14,6 +14,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -120,11 +121,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
             profile,
             setpoint ->
                 controller.setReference(
-                    height,
+                    setpoint.velocity,
                     ControlType.kPosition,
                     0,
                     feedforward.calculate(setpoint.velocity),
-                    SparkMaxPIDController.ArbFFUnits.kVoltage),
+                    ArbFFUnits.kVoltage),
             this);
   }
 
