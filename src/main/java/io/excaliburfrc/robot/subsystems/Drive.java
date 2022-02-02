@@ -1,9 +1,6 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
 import static io.excaliburfrc.robot.Constants.DrivetrainConstants.*;
-import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
-import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
 import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
@@ -14,28 +11,21 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
-import java.util.List;
 import java.util.function.DoubleSupplier;
 
 
@@ -61,18 +51,13 @@ public class Drive extends SubsystemBase {
   private final AHRS ahrs = new AHRS();
   private final SparkMaxPIDController leftController = leftLeader.getPIDController();
   private final SparkMaxPIDController rightController = rightLeader.getPIDController();
-  private Rotation2d offset = new Rotation2d(0);
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public Drive() {
-    odometry = new DifferentialDriveOdometry(ahrs.getRotation2d());
-  }
+    leftFollower.follow(leftLeader);
+    rightFollower.follow(rightLeader);
 
-  public void resetOdometry(Pose2d pose) {
-    leftEncoder.setPosition(0);
-    rightEncoder.setPosition(0);
-    offset = pose.getRotation();
-    odometry.resetPosition(pose, ahrs.getRotation2d());
+    odometry = new DifferentialDriveOdometry(ahrs.getRotation2d());
   }
 
   public Pose2d getPose() {
