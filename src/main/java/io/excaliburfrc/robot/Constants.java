@@ -36,6 +36,9 @@ public final class Constants {
     public static final int REVERSE_CHANNEL = 1;
     public static final int CLIMBER_SPARKMAX = 1;
     public static final int SENSOR_CHANNEL = 1;
+    public static final double kP = 0;
+    public static final double kI = 0;
+    public static final double kD = 0;
   }
 
   public static class ShooterConstants {
