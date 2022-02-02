@@ -39,12 +39,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final SparkMaxPIDController leftController = leftMotor.getPIDController();
   private final SparkMaxPIDController rightController = rightMotor.getPIDController();
 
-  private final ElevatorFeedforward feedforward =
-      new ElevatorFeedforward(0, MG * Math.cos(ANGLE), kV, kA);
+  private ElevatorFeedforward feedforward;
 
-  private final TrapezoidProfile.Constraints trapezoidConstraints =
-      new TrapezoidProfile.Constraints(
-          feedforward.maxAchievableVelocity(12, kA), feedforward.maxAchievableAcceleration(12, kV));
   private final TrapezoidProfile.State trapezoidGoal = new TrapezoidProfile.State(0, 0);
   private final TrapezoidProfile.State trapezoidInit = new TrapezoidProfile.State(0, 0);
 
@@ -106,11 +102,21 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   }
 
   private Command reachSideHeight(
-      SparkMaxPIDController controller, RelativeEncoder encoder, double height) {
+      SparkMaxPIDController controller,
+      RelativeEncoder encoder,
+      double height,
+      double mg,
+      double angle) {
     trapezoidGoal.position = height;
     trapezoidInit.position = encoder.getPosition();
+    feedforward = new ElevatorFeedforward(0, mg * Math.cos(angle), kV, kA);
     return new TrapezoidProfileCommand(
-            new TrapezoidProfile(trapezoidConstraints, trapezoidGoal, trapezoidInit),
+            new TrapezoidProfile(
+                new TrapezoidProfile.Constraints(
+                    feedforward.maxAchievableVelocity(12, kA),
+                    feedforward.maxAchievableAcceleration(12, kV)),
+                trapezoidGoal,
+                trapezoidInit),
             velocitySetpoint ->
                 controller.setReference(
                     height,
@@ -126,22 +132,38 @@ public class Climber extends SubsystemBase implements AutoCloseable {
             })
         .andThen(
             new ConditionalCommand(
-                new InstantCommand(() -> reachSideHeight(controller, encoder, height)),
+                new InstantCommand(() -> reachSideHeight(controller, encoder, height, mg, angle)),
                 new InstantCommand(() -> controller.setReference(0, ControlType.kDutyCycle)),
                 () -> abs(height - encoder.getPosition()) <= THRESHOLD));
   }
 
-  private Command reachBothHeight(double height) {
-    return reachSideHeight(leftController, leftEncoder, height)
-        .alongWith(reachSideHeight(rightController, rightEncoder, height));
+  private Command reachBothHeight(double height, double mg, double angle) {
+    return reachSideHeight(leftController, leftEncoder, height, mg, angle)
+        .alongWith(reachSideHeight(rightController, rightEncoder, height, mg, angle));
   }
 
   public Command upCommand() {
-    return reachBothHeight(MAX_HEIGHT);
+    return reachBothHeight(MAX_HEIGHT, MG_WITHOUT_ROBOT, 90);
   }
 
   public Command downCommand() {
-    return reachBothHeight(0);
+    return reachBothHeight(0, MG_WITHOUT_ROBOT, 90);
+  }
+
+  public Command upDiagonalCommand(double distance) {
+    return reachBothHeight(distance, MG_WITHOUT_ROBOT, ANGLE);
+  }
+
+  public Command downDiagonalCommand() {
+    return reachBothHeight(0, MG_WITHOUT_ROBOT, ANGLE);
+  }
+
+  public Command toFirst() {
+    return reachBothHeight(FIRST_POSITION, -MG_WITH_ROBOT, 90);
+  }
+
+  public Command toNext(double distance) {
+    return reachBothHeight(distance, -MG_WITH_ROBOT, 45);
   }
 
   public Command offCommand() {

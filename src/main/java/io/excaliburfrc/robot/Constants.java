@@ -39,11 +39,15 @@ public final class Constants {
     public static final double kP = 0;
     public static final double kI = 0;
     public static final double kD = 0;
-    public static final double MG = 1000;
-    public static final double ANGLE = 90;
+    public static final double MG_WITHOUT_ROBOT = 1000;
+    public static final double MG_WITH_ROBOT = 10000;
+    public static final double ANGLE = 45;
     public static final double DT = 0.02;
     public static final double kV = 0;
     public static final double kA = 0;
+    public static final double FIRST_POSITION = 50;
+    public static final double secondPosition = 10;
+    public static final double thirdPosition = 15;
   }
 
   public static class ShooterConstants {
