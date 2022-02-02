@@ -50,6 +50,7 @@ public final class Constants {
     public static final double kD = 0;
 
     public static final double FENDER_SHOT_RPM = 2500;
+    public static final double TOLERANCE = 10;
   }
 
   public static class DrivetrainConstants {
@@ -60,6 +61,6 @@ public final class Constants {
   }
 
   public static class LedsConstants {
-    public static final int LEDS_PORT = 15;
+    public static final int LEDS_PORT = 3;
   }
 }

@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import io.excaliburfrc.robot.Constants.LedsConstants;
 
 import static io.excaliburfrc.robot.Constants.LedsConstants.LEDS_PORT;
 
@@ -16,6 +17,10 @@ public class LEDs extends SubsystemBase {
     GREEN(0.73),
     YELLOW(0.67),
     RAINBOW(-0.97),
+    WHITE(0.93),
+    PINK(0.57),
+    GOLD(0.67),
+    BLACK(0.99),
     OFF(0.99);
 
     LedMode(double c) {
@@ -29,11 +34,11 @@ public class LEDs extends SubsystemBase {
     return leds;
   }
 
-  public Command setColor(LedMode color) {
+  public Command setColorCommand(LedMode color) {
     return new RunCommand(() -> leds.setSpeed(color.dutyCycle), this);
   }
 
-  public Command ledsOff() {
+  public Command ledsOffCommand() {
     return new RunCommand(() -> leds.setSpeed(LedMode.OFF.dutyCycle), this);
   }
 }
