@@ -10,6 +10,7 @@ import static java.lang.Math.abs;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
@@ -118,15 +119,15 @@ public class Climber extends SubsystemBase implements AutoCloseable {
             new TrapezoidProfile.State(encoder.getPosition(), 0));
     feedforward = new ElevatorFeedforward(0, mg * Math.cos(angle), kV, kA);
     return new TrapezoidProfileCommand(
-            profile,
-            setpoint ->
-                controller.setReference(
-                    setpoint.velocity,
-                    ControlType.kPosition,
-                    0,
-                    feedforward.calculate(setpoint.velocity),
-                    ArbFFUnits.kVoltage),
-            this);
+        profile,
+        setpoint ->
+            controller.setReference(
+                setpoint.velocity,
+                ControlType.kVelocity,
+                0,
+                feedforward.calculate(setpoint.velocity),
+                ArbFFUnits.kVoltage),
+        this);
   }
 
   private Command reachBothHeight(double height, double mg, double angle) {
