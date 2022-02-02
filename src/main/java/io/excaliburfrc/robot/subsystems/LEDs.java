@@ -4,10 +4,11 @@ import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import io.excaliburfrc.robot.Constants.LedsConstants;
 
-public class LEDS extends SubsystemBase {
-  private final PWM leds = new PWM(LedsConstants.LEDS_PORT);
+import static io.excaliburfrc.robot.Constants.LedsConstants.LEDS_PORT;
+
+public class LEDs extends SubsystemBase {
+  private static final PWM leds = new PWM(LEDS_PORT);
 
   public enum LedMode {
     BLUE(0.87),
@@ -22,6 +23,10 @@ public class LEDS extends SubsystemBase {
     }
 
     public final double dutyCycle;
+  }
+
+  public static PWM getInstance(){
+    return leds;
   }
 
   public Command setColor(LedMode color) {
