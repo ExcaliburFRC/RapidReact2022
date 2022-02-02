@@ -108,9 +108,7 @@ public class Intake extends SubsystemBase {
         this);
   }
 
-  /**
-   * Shoot *one* ball; will end after a ball is shot.
-   */
+  /** Shoot *one* ball; will end after a ball is shot. */
   public Command shootBallCommand() {
     return new FunctionalCommand(
         // init
