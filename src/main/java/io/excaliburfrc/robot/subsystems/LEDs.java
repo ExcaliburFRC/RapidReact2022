@@ -1,12 +1,11 @@
 package io.excaliburfrc.robot.subsystems;
 
+import static io.excaliburfrc.robot.Constants.LedsConstants.LEDS_PORT;
+
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import io.excaliburfrc.robot.Constants.LedsConstants;
-
-import static io.excaliburfrc.robot.Constants.LedsConstants.LEDS_PORT;
 
 public class LEDs extends SubsystemBase {
   private static final PWM leds = new PWM(LEDS_PORT);
@@ -30,7 +29,7 @@ public class LEDs extends SubsystemBase {
     public final double dutyCycle;
   }
 
-  public static PWM getInstance(){
+  public static PWM getInstance() {
     return leds;
   }
 
