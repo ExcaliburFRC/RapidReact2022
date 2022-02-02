@@ -31,13 +31,13 @@ public class IntakeTest {
 
   @Test
   public void ensureCommandScheduling() {
-    sensorSim.setProximity(COLOR_LIMIT - 50);
+    sensorSim.setProximity(COLOR_LIMIT + 50);
     AtomicInteger scheduledCounter = new AtomicInteger(0);
     CommandScheduler.getInstance().onCommandInitialize(cmd -> scheduledCounter.incrementAndGet());
     CommandScheduler.getInstance().run();
     assertEquals(0, scheduledCounter.get());
 
-    sensorSim.setProximity(COLOR_LIMIT + 50);
+    sensorSim.setProximity(COLOR_LIMIT - 50);
     CommandScheduler.getInstance().run();
     assertEquals(1, scheduledCounter.get());
   }

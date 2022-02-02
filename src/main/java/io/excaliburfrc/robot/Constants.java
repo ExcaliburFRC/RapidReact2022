@@ -23,8 +23,8 @@ public final class Constants {
     public static final int RED_THRESHOLD = 100;
     public static final int BLUE_THRESHOLD = 100;
     public static final int MAX_BALLS = 2;
-    public static final int FWD_CHANNEL = 8;
-    public static final int REV_CHANNEL = 9;
+    public static final int FWD_CHANNEL = 6;
+    public static final int REV_CHANNEL = 7;
   }
 
   public static class ClimberConstants {

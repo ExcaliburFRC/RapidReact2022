@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-public class Intake extends SubsystemBase {
+public class Intake extends SubsystemBase implements AutoCloseable {
   private final AtomicInteger ballCount = new AtomicInteger(0);
 
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
@@ -137,6 +137,13 @@ public class Intake extends SubsystemBase {
     }
     DriverStation.reportError("DS Alliance color is invalid!", false);
     return false;
+  }
+
+  @Override
+  public void close() {
+    this.intakeMotor.close();
+    this.upperMotor.close();
+    this.upperSensor.close();
   }
 
   private enum Speeds {
