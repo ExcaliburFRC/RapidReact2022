@@ -121,12 +121,6 @@ public class Drive extends SubsystemBase {
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
   }
 
-  public void tankDrive(double left, double right) {
-    leftLeader.set(left);
-    rightLeader.set(right);
-    drive.feed();
-  }
-
   public RamseteCommand ramseteCommand(Trajectory trajectory) {
     return new RamseteCommand(
         trajectory,
