@@ -160,10 +160,6 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         .andThen(openAnglerCommand());
   }
 
-  double getSpeed() {
-    return leftMotor.get();
-  }
-
   public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
     return new RunCommand(
         () -> {
