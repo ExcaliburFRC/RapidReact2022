@@ -74,7 +74,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    drive.resetOdometry(drive.trajectory.getInitialPose());
-    return drive.ramseteCommand().andThen(() -> drive.tankDrive(0, 0));
+    return null;
   }
 }

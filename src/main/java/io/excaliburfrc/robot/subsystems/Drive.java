@@ -56,22 +56,6 @@ public class Drive extends SubsystemBase {
   private final DifferentialDriveKinematics driveKinematics =
       new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
 
-  private final DifferentialDriveVoltageConstraint autoVoltageConstraint =
-      new DifferentialDriveVoltageConstraint(
-          new SimpleMotorFeedforward(kS, kV, kA), driveKinematics, 10);
-  private final TrajectoryConfig config =
-      new TrajectoryConfig(
-              DrivetrainConstants.MAX_SPEED_METERS_PER_SECOND,
-              DrivetrainConstants.MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
-          .setKinematics(driveKinematics)
-          .addConstraint(autoVoltageConstraint);
-  public final Trajectory trajectory =
-      TrajectoryGenerator.generateTrajectory(
-          new Pose2d(0, 0, new Rotation2d(0)),
-          List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-          new Pose2d(3, 0, new Rotation2d(0)),
-          config);
-
   private final DifferentialDriveOdometry odometry;
   private final AHRS ahrs = new AHRS();
   private final SparkMaxPIDController leftController = leftLeader.getPIDController();
@@ -142,7 +126,7 @@ public class Drive extends SubsystemBase {
     drive.feed();
   }
 
-  public RamseteCommand ramseteCommand() {
+  public RamseteCommand ramseteCommand(Trajectory trajectory) {
     return new RamseteCommand(
         trajectory,
         this::getPose,
