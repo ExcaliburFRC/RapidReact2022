@@ -69,4 +69,8 @@ public final class Constants {
     public static final int RIGHT_LEADER_ID = 19;
     public static final int RIGHT_FOLLOWER_ID = 15;
   }
+
+  public static class LedsConstants {
+    public static final int LEDS_PORT = 3;
+  }
 }
