@@ -38,11 +38,24 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final SparkMaxPIDController leftController = leftMotor.getPIDController();
   private final SparkMaxPIDController rightController = rightMotor.getPIDController();
 
-  private ElevatorFeedforward feedforward;
+  private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, MG, kV, kA);
+  private final TrapezoidProfile.Constraints upConstraints =
+      new TrapezoidProfile.Constraints(
+          upFF.maxAchievableVelocity(12, 1), upFF.maxAchievableAcceleration(12, 1));
 
-  private TrapezoidProfile profile;
-  private final TrapezoidProfile.State trapezoidGoal = new TrapezoidProfile.State(0, 0);
-  private final TrapezoidProfile.State trapezoidInit = new TrapezoidProfile.State(0, 0);
+  private final ElevatorFeedforward diagonalFF =
+      new ElevatorFeedforward(kS, MG * Math.cos(ANGLE), kV, kA);
+  private final TrapezoidProfile.Constraints diagonalConstraints =
+      new TrapezoidProfile.Constraints(
+          diagonalFF.maxAchievableVelocity(12, 1), diagonalFF.maxAchievableAcceleration(12, 1));
+
+  private final TrapezoidProfile fullUpProfile =
+      new TrapezoidProfile(upConstraints, new TrapezoidProfile.State(FULL_UP_HEIGHT, 0));
+  private final TrapezoidProfile someUpProfile =
+      new TrapezoidProfile(upConstraints, new TrapezoidProfile.State(SOME_UP_HEIGHT, 0));
+  private final TrapezoidProfile diagonalProfile =
+      new TrapezoidProfile(
+          diagonalConstraints, new TrapezoidProfile.State(FULL_UP_HEIGHT - SOME_UP_HEIGHT, 0));
 
   public Climber() {
     ValidateREVCAN(
@@ -102,19 +115,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   }
 
   private Command reachSideHeight(
-      SparkMaxPIDController controller,
-      RelativeEncoder encoder,
-      double height,
-      double mg,
-      double angle) {
-    profile =
-        new TrapezoidProfile(
-            new TrapezoidProfile.Constraints(
-                feedforward.maxAchievableVelocity(12, kA),
-                feedforward.maxAchievableAcceleration(12, kV)),
-            new TrapezoidProfile.State(height, 0),
-            new TrapezoidProfile.State(encoder.getPosition(), 0));
-    feedforward = new ElevatorFeedforward(0, mg * Math.cos(angle), kV, kA);
+      SparkMaxPIDController controller, ElevatorFeedforward feedforward, TrapezoidProfile profile) {
     return new TrapezoidProfileCommand(
         profile,
         setpoint ->
@@ -127,33 +128,21 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         this);
   }
 
-  private Command reachBothHeight(double height, double mg, double angle) {
-    return reachSideHeight(leftController, leftEncoder, height, mg, angle)
-        .alongWith(reachSideHeight(rightController, rightEncoder, height, mg, angle));
+  private Command reachBothHeight(ElevatorFeedforward feedforward, TrapezoidProfile profile) {
+    return reachSideHeight(leftController, feedforward, profile)
+        .alongWith(reachSideHeight(rightController, feedforward, profile));
   }
 
-  public Command upCommand() {
-    return reachBothHeight(MAX_HEIGHT, MG_WITHOUT_ROBOT, 90);
+  public Command fullUpCommand() {
+    return reachBothHeight(upFF, fullUpProfile);
   }
 
-  public Command downCommand() {
-    return reachBothHeight(0, MG_WITHOUT_ROBOT, 90);
+  public Command someUpCommand() {
+    return reachBothHeight(upFF, someUpProfile);
   }
 
-  public Command upDiagonalCommand(double distance) {
-    return reachBothHeight(distance, MG_WITHOUT_ROBOT, ANGLE);
-  }
-
-  public Command downDiagonalCommand() {
-    return reachBothHeight(0, MG_WITHOUT_ROBOT, ANGLE);
-  }
-
-  public Command toFirst() {
-    return reachBothHeight(FIRST_POSITION, -MG_WITH_ROBOT, 90);
-  }
-
-  public Command toNext(double distance) {
-    return reachBothHeight(distance, -MG_WITH_ROBOT, 45);
+  public Command diagonalCommand() {
+    return reachBothHeight(diagonalFF, diagonalProfile);
   }
 
   public Command offCommand() {
@@ -166,14 +155,6 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   public Command closeAnglerCommand() {
     return new InstantCommand(this::closeAngler, this);
-  }
-
-  public Command climbCommandGroup() {
-    return upCommand() // TODO: Drive forwards after upCommand
-        .andThen(downCommand())
-        .andThen(closeAnglerCommand())
-        .andThen(upCommand())
-        .andThen(openAnglerCommand());
   }
 
   public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
