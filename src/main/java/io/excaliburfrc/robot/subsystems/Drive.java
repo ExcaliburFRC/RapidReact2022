@@ -8,10 +8,12 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
 import java.util.function.DoubleSupplier;
 
@@ -24,8 +26,17 @@ public class Drive extends SubsystemBase {
       new CANSparkMax(DrivetrainConstants.RIGHT_LEADER_ID, MotorType.kBrushless);
   private final CANSparkMax rightFollower =
       new CANSparkMax(DrivetrainConstants.RIGHT_FOLLOWER_ID, MotorType.kBrushless);
-
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
+  private final AnalogPotentiometer rightLineSensor =
+      new AnalogPotentiometer(
+          DrivetrainConstants.RIGHT_LINE_SENSOR_CHANNEL, DrivetrainConstants.LINE_SENSOR_SCALE);
+  private final AnalogPotentiometer leftLineSensor =
+      new AnalogPotentiometer(
+          DrivetrainConstants.LEFT_LINE_SENSOR_CHANNEL, DrivetrainConstants.LINE_SENSOR_SCALE);
+  private final Trigger rightTrigger =
+      new Trigger(() -> rightLineSensor.get() < DrivetrainConstants.BLACK_THRESHOLD);
+  private final Trigger leftTrigger =
+      new Trigger(() -> leftLineSensor.get() < DrivetrainConstants.BLACK_THRESHOLD);
 
   public Drive() {
     ValidateREVCAN(
@@ -62,5 +73,33 @@ public class Drive extends SubsystemBase {
   public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return new RunCommand(
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
+  }
+
+  private Command moveToLineCommand() {
+    return arcadeDriveCommend(() -> 0.2, () -> 0)
+        .withInterrupt(leftTrigger.or(rightTrigger))
+        .andThen(
+            new SelectCommand(
+                () -> {
+                  if (rightTrigger.get())
+                    return getSideReachCommand(leftLeader, leftTrigger, 0.2)
+                        .andThen(getSideReachCommand(rightLeader, rightTrigger, -0.2));
+                  if (leftTrigger.get())
+                    return getSideReachCommand(rightLeader, rightTrigger, 0.2)
+                        .andThen(getSideReachCommand(leftLeader, leftTrigger, -0.2));
+                  return new PrintCommand(
+                      "ASSERTION FAILED!!!!!\nCall the programmers, something is borked");
+                }));
+  }
+
+  private FunctionalCommand getSideReachCommand(
+      MotorController motor, Trigger sensor, double speed) {
+    return new FunctionalCommand(() -> {}, () -> motor.set(speed), __ -> motor.set(0), sensor);
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putBoolean("left sensor:", leftTrigger.get());
+    SmartDashboard.putBoolean("right sensor:", rightTrigger.get());
   }
 }
