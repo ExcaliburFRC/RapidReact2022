@@ -5,12 +5,9 @@ import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
 import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
-import static java.lang.Math.abs;
-
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
