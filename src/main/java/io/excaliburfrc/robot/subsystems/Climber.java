@@ -1,11 +1,23 @@
 package io.excaliburfrc.robot.subsystems;
 
+import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
+import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
+import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
+
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import edu.wpi.first.wpilibj.DigitalInput;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -16,15 +28,45 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           PneumaticsModuleType.CTREPCM,
           ClimberConstants.FORWARD_CHANNEL,
           ClimberConstants.REVERSE_CHANNEL);
-  private final CANSparkMax motor =
-      new CANSparkMax(ClimberConstants.CLIMBER_SPARKMAX, MotorType.kBrushless);
-  private final DigitalInput sensor = new DigitalInput(ClimberConstants.SENSOR_CHANNEL);
+  private final CANSparkMax leftMotor =
+      new CANSparkMax(ClimberConstants.LEFT_MOTOR_ID, MotorType.kBrushless);
+  private final CANSparkMax rightMotor =
+      new CANSparkMax(ClimberConstants.RIGHT_MOTOR_ID, MotorType.kBrushless);
+  private final RelativeEncoder leftEncoder = leftMotor.getEncoder();
+  private final RelativeEncoder rightEncoder = rightMotor.getEncoder();
+  private final SparkMaxPIDController leftController = leftMotor.getPIDController();
+  private final SparkMaxPIDController rightController = rightMotor.getPIDController();
+
+  public Climber() {
+    ValidateREVCAN(
+        // reset factory settings
+        leftMotor.restoreFactoryDefaults(),
+        rightMotor.restoreFactoryDefaults(),
+        // set the motors to brake mode
+        leftMotor.setIdleMode(IdleMode.kBrake),
+        rightMotor.setIdleMode(IdleMode.kBrake),
+        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+        // set up PID parameters
+        leftController.setFeedbackDevice(leftEncoder),
+        leftController.setP(kP),
+        leftController.setI(kI),
+        leftController.setD(kD),
+        rightController.setFeedbackDevice(rightEncoder),
+        rightController.setP(kP),
+        rightController.setI(kI),
+        rightController.setD(kD));
+  }
 
   @Override
   public void close() {
+    leftMotor.close();
+    rightMotor.close();
     anglerPiston.close();
-    motor.close();
-    sensor.close();
   }
 
   public enum MotorMode {
@@ -39,8 +81,9 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     }
   }
 
-  public void activateLeader(MotorMode m) {
-    motor.set(m.dutyCycle);
+  public void activateMotors(MotorMode m) {
+    leftMotor.set(m.dutyCycle);
+    rightMotor.set(m.dutyCycle);
   }
 
   public void openAngler() {
@@ -51,20 +94,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     anglerPiston.set(DoubleSolenoid.Value.kReverse);
   }
 
-  public Command upCommand() {
-    return new RunCommand(() -> activateLeader(MotorMode.UP), this)
-        .withInterrupt(sensor::get)
-        .andThen(offCommand());
-  }
-
-  public Command downCommand() {
-    return new RunCommand(() -> activateLeader(MotorMode.DOWN), this)
-        .withInterrupt(sensor::get)
-        .andThen(offCommand());
-  }
-
   public Command offCommand() {
-    return new InstantCommand(() -> activateLeader(MotorMode.OFF));
+    return new InstantCommand(() -> activateMotors(MotorMode.OFF));
   }
 
   public Command openAnglerCommand() {
@@ -75,24 +106,20 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new InstantCommand(this::closeAngler, this);
   }
 
-  public Command climbCommandGroup() {
-    return upCommand() // TODO: Drive forwards after upCommand
-        .andThen(downCommand())
-        .andThen(closeAnglerCommand())
-        .andThen(upCommand())
-        .andThen(openAnglerCommand());
-  }
-
-  double _getSpeed() {
-    return motor.get();
-  }
-
   public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
     return new RunCommand(
         () -> {
-          motor.set(motorSpeed.getAsDouble());
-          if (piston.getAsBoolean()) anglerPiston.toggle();
+          leftMotor.set(motorSpeed.getAsDouble());
+          rightMotor.set(motorSpeed.getAsDouble());
+          if (piston.getAsBoolean()) this.anglerPiston.toggle();
         },
         this);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    super.initSendable(builder);
+    builder.addDoubleProperty("leftHeight", leftEncoder::getPosition, null);
+    builder.addDoubleProperty("rightHeight", rightEncoder::getPosition, null);
   }
 }
