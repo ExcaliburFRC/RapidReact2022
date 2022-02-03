@@ -8,7 +8,11 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LEDs extends SubsystemBase {
-  private static final PWM leds = new PWM(LEDS_PORT);
+  private final PWM leds = new PWM(LEDS_PORT);
+
+  private LEDs(){ }
+
+  private static final LEDs instance = new LEDs();
 
   public enum LedMode {
     BLUE(0.87),
@@ -29,8 +33,8 @@ public class LEDs extends SubsystemBase {
     public final double dutyCycle;
   }
 
-  public static PWM getInstance() {
-    return leds;
+  public static LEDs getInstance() {
+    return instance;
   }
 
   public Command setColorCommand(LedMode color) {
