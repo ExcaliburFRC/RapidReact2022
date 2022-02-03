@@ -74,7 +74,7 @@ public class Shooter extends SubsystemBase {
     return velocity;
   }
 
-  public boolean isAtSetpoint() {
+  public boolean isAtTargetVelocity() {
     return controlMode == Mode.CLOSED_LOOP
         && Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
   }
@@ -138,6 +138,6 @@ public class Shooter extends SubsystemBase {
     super.initSendable(builder);
     builder.addDoubleProperty("velocity", this::getVelocity, null);
     builder.addDoubleProperty("targetVelocity", pid::getSetpoint, null);
-    builder.addBooleanProperty("isAtReference", this::isAtSetpoint, null);
+    builder.addBooleanProperty("isAtReference", this::isAtTargetVelocity, null);
   }
 }
