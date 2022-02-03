@@ -163,4 +163,8 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
     builder.addBooleanProperty("Automatic Active", automaticCommand::isScheduled, null);
   }
+
+  public boolean isEmpty() {
+    return ballCount.get() < 1;
+  }
 }
