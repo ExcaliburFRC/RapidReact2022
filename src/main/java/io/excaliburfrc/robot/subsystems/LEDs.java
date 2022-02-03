@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class LEDs extends SubsystemBase {
   private final PWM leds = new PWM(LEDS_PORT);
 
-  private LEDs(){ }
+  private LEDs() {}
 
   private static final LEDs instance = new LEDs();
 
