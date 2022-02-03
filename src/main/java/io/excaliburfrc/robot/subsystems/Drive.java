@@ -2,10 +2,6 @@ package io.excaliburfrc.robot.subsystems;
 
 import static io.excaliburfrc.robot.Constants.DrivetrainConstants.*;
 
-import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
-import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
-import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
-
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
@@ -27,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
 import java.util.function.DoubleSupplier;
-
 
 public class Drive extends SubsystemBase {
   private final CANSparkMax leftLeader =
