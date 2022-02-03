@@ -52,37 +52,38 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD));
 
-    automaticCommand = new ConditionalCommand(
-        // increment ball count; input until upper sensor detects a ball
-        new FunctionalCommand(
-            // init
-            ballCount::incrementAndGet,
-            // exe
-            () -> {
-              intakeMotor.set(Speeds.intakeInDutyCycle);
-              upperMotor.set(Speeds.upperInDutyCycle);
-            },
-            // end
-            _interrupted -> {
-              intakeMotor.set(0);
-              upperMotor.set(0);
-            },
-            // isFinished
-            upperBallTrigger,
-            this),
+    automaticCommand =
+        new ConditionalCommand(
+            // increment ball count; input until upper sensor detects a ball
+            new FunctionalCommand(
+                // init
+                ballCount::incrementAndGet,
+                // exe
+                () -> {
+                  intakeMotor.set(Speeds.intakeInDutyCycle);
+                  upperMotor.set(Speeds.upperInDutyCycle);
+                },
+                // end
+                _interrupted -> {
+                  intakeMotor.set(0);
+                  upperMotor.set(0);
+                },
+                // isFinished
+                upperBallTrigger,
+                this),
 
-        // output sets motor until ball entry sensor no longer sees a ball
-        new FunctionalCommand(
-            // init
-            () -> {},
-            // exe
-            () -> intakeMotor.set(Speeds.ejectDutyCycle),
-            // end
-            _interrupted -> intakeMotor.set(0),
-            // isFinished
-            intakeBallTrigger.negate()),
-        // decides by ball color
-        this::isOurColor);
+            // output sets motor until ball entry sensor no longer sees a ball
+            new FunctionalCommand(
+                // init
+                () -> {},
+                // exe
+                () -> intakeMotor.set(Speeds.ejectDutyCycle),
+                // end
+                _interrupted -> intakeMotor.set(0),
+                // isFinished
+                intakeBallTrigger.negate()),
+            // decides by ball color
+            this::isOurColor);
     // schedule the command whenever the entry sensor newly activates ...
     intakeBallTrigger.whenActive(automaticCommand);
 
