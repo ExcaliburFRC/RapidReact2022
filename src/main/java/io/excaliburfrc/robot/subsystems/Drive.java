@@ -1,12 +1,16 @@
 package io.excaliburfrc.robot.subsystems;
 
+import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
 import static io.excaliburfrc.robot.Constants.DrivetrainConstants.*;
+import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
+import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
@@ -57,34 +61,34 @@ public class Drive extends SubsystemBase {
 
   public Pose2d getPose() {
     ValidateREVCAN(
-            // reset factory settings
-            leftLeader.restoreFactoryDefaults(),
-            leftFollower.restoreFactoryDefaults(),
-            rightLeader.restoreFactoryDefaults(),
-            rightFollower.restoreFactoryDefaults(),
-            // set the motors to coast mode -- we don't want to break them!
-            leftLeader.setIdleMode(IdleMode.kBrake),
-            leftFollower.setIdleMode(IdleMode.kBrake),
-            rightLeader.setIdleMode(IdleMode.kBrake),
-            rightFollower.setIdleMode(IdleMode.kBrake),
-            // have the leader send its applied output as frequently as possible,
-            // to speed up follower response
-            leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, minimal_FRAME_PERIOD),
-            leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, minimal_FRAME_PERIOD),
-            leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
-            rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, minimal_FRAME_PERIOD),
-            rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, minimal_FRAME_PERIOD),
-            rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
-            // other status frames can be reduced to almost never
-            leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-            leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-            leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
-            rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-            rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-            rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
-            // setup following
-            leftFollower.follow(leftLeader),
-            rightFollower.follow(rightLeader));
+        // reset factory settings
+        leftLeader.restoreFactoryDefaults(),
+        leftFollower.restoreFactoryDefaults(),
+        rightLeader.restoreFactoryDefaults(),
+        rightFollower.restoreFactoryDefaults(),
+        // set the motors to coast mode -- we don't want to break them!
+        leftLeader.setIdleMode(IdleMode.kBrake),
+        leftFollower.setIdleMode(IdleMode.kBrake),
+        rightLeader.setIdleMode(IdleMode.kBrake),
+        rightFollower.setIdleMode(IdleMode.kBrake),
+        // have the leader send its applied output as frequently as possible,
+        // to speed up follower response
+        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, minimal_FRAME_PERIOD),
+        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, minimal_FRAME_PERIOD),
+        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, minimal_FRAME_PERIOD),
+        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, minimal_FRAME_PERIOD),
+        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+        // other status frames can be reduced to almost never
+        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
+        rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+        rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+        rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
+        // setup following
+        leftFollower.follow(leftLeader),
+        rightFollower.follow(rightLeader));
 
     return odometry.getPoseMeters();
   }
