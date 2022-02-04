@@ -49,13 +49,17 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       new TrapezoidProfile.Constraints(
           diagonalFF.maxAchievableVelocity(12, 1), diagonalFF.maxAchievableAcceleration(12, 1));
 
+  private final TrapezoidProfile.State initState = new TrapezoidProfile.State(0, 0);
+
   private final TrapezoidProfile fullUpProfile =
-      new TrapezoidProfile(upConstraints, new TrapezoidProfile.State(FULL_UP_HEIGHT, 0));
+      new TrapezoidProfile(upConstraints, new TrapezoidProfile.State(FULL_UP_HEIGHT, 0), initState);
   private final TrapezoidProfile someUpProfile =
-      new TrapezoidProfile(upConstraints, new TrapezoidProfile.State(SOME_UP_HEIGHT, 0));
+      new TrapezoidProfile(upConstraints, new TrapezoidProfile.State(SOME_UP_HEIGHT, 0), initState);
   private final TrapezoidProfile diagonalProfile =
       new TrapezoidProfile(
-          diagonalConstraints, new TrapezoidProfile.State(FULL_UP_HEIGHT - SOME_UP_HEIGHT, 0));
+          diagonalConstraints,
+          new TrapezoidProfile.State(FULL_UP_HEIGHT, 0),
+          new TrapezoidProfile.State(SOME_UP_HEIGHT, 0));
 
   public Climber() {
     ValidateREVCAN(
