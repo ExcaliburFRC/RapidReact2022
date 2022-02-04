@@ -20,8 +20,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -47,19 +49,12 @@ public class Drive extends SubsystemBase {
       new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
 
   private final DifferentialDriveOdometry odometry;
-  private final AHRS ahrs = new AHRS();
+  private final AHRS gyro = new AHRS();
   private final SparkMaxPIDController leftController = leftLeader.getPIDController();
   private final SparkMaxPIDController rightController = rightLeader.getPIDController();
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public Drive() {
-    leftFollower.follow(leftLeader);
-    rightFollower.follow(rightLeader);
-
-    odometry = new DifferentialDriveOdometry(ahrs.getRotation2d());
-  }
-
-  public Pose2d getPose() {
     ValidateREVCAN(
         // reset factory settings
         leftLeader.restoreFactoryDefaults(),
@@ -90,6 +85,10 @@ public class Drive extends SubsystemBase {
         leftFollower.follow(leftLeader),
         rightFollower.follow(rightLeader));
 
+    odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
+  }
+
+  public Pose2d getPose() {
     return odometry.getPoseMeters();
   }
 
@@ -105,6 +104,10 @@ public class Drive extends SubsystemBase {
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
   }
 
+  public Command followTrajectoryCommand(Trajectory trajectory) {
+    return resetOdometryCommand(trajectory.getInitialPose()).andThen(ramseteCommand(trajectory));
+  }
+
   public RamseteCommand ramseteCommand(Trajectory trajectory) {
     return new RamseteCommand(
         trajectory,
@@ -115,8 +118,25 @@ public class Drive extends SubsystemBase {
         this);
   }
 
+  public Command resetOdometryCommand(Pose2d pose) {
+    return new InstantCommand(
+        () -> {
+          odometry.resetPosition(pose, gyro.getRotation2d());
+          leftEncoder.setPosition(0);
+          rightEncoder.setPosition(0);
+        },
+        this);
+  }
+
   @Override
   public void periodic() {
-    odometry.update(ahrs.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+    odometry.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    super.initSendable(builder);
+    builder.addDoubleProperty(
+        "heading", () -> odometry.getPoseMeters().getRotation().getDegrees(), null);
   }
 }
