@@ -1,15 +1,30 @@
 package io.excaliburfrc.robot.subsystems;
 
 import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.robot.Constants.DrivetrainConstants.*;
 import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
+import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
@@ -25,7 +40,19 @@ public class Drive extends SubsystemBase {
   private final CANSparkMax rightFollower =
       new CANSparkMax(DrivetrainConstants.RIGHT_FOLLOWER_ID, MotorType.kBrushless);
 
+  private final RelativeEncoder rightEncoder = rightLeader.getEncoder();
+  private final RelativeEncoder leftEncoder = leftLeader.getEncoder();
+
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
+
+  private final DifferentialDriveKinematics driveKinematics =
+      new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
+
+  private final DifferentialDriveOdometry odometry;
+  private final AHRS gyro = new AHRS();
+  private final SparkMaxPIDController leftController = leftLeader.getPIDController();
+  private final SparkMaxPIDController rightController = rightLeader.getPIDController();
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public Drive() {
     ValidateREVCAN(
@@ -57,10 +84,59 @@ public class Drive extends SubsystemBase {
         // setup following
         leftFollower.follow(leftLeader),
         rightFollower.follow(rightLeader));
+
+    odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
+  }
+
+  public Pose2d getPose() {
+    return odometry.getPoseMeters();
+  }
+
+  public void achieveVelocity(double left, double right) {
+    leftController.setReference(
+        left, ControlType.kVelocity, 0, feedforward.calculate(left), ArbFFUnits.kVoltage);
+    rightController.setReference(
+        right, ControlType.kVelocity, 0, feedforward.calculate(right), ArbFFUnits.kVoltage);
   }
 
   public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return new RunCommand(
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
+  }
+
+  public Command followTrajectoryCommand(Trajectory trajectory) {
+    return resetOdometryCommand(trajectory.getInitialPose()).andThen(ramseteCommand(trajectory));
+  }
+
+  public RamseteCommand ramseteCommand(Trajectory trajectory) {
+    return new RamseteCommand(
+        trajectory,
+        this::getPose,
+        new RamseteController(),
+        driveKinematics,
+        this::achieveVelocity,
+        this);
+  }
+
+  public Command resetOdometryCommand(Pose2d pose) {
+    return new InstantCommand(
+        () -> {
+          odometry.resetPosition(pose, gyro.getRotation2d());
+          leftEncoder.setPosition(0);
+          rightEncoder.setPosition(0);
+        },
+        this);
+  }
+
+  @Override
+  public void periodic() {
+    odometry.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    super.initSendable(builder);
+    builder.addDoubleProperty(
+        "heading", () -> odometry.getPoseMeters().getRotation().getDegrees(), null);
   }
 }
