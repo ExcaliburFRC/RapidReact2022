@@ -144,10 +144,10 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   public Command raiseRobotCommand() {
     return new ParallelCommandGroup(
         new RunCommand(() -> leftMotor.set(-1), this)
-            .withInterrupt(() -> leftEncoder.getPosition() <= 0.001)
+            .withInterrupt(() -> leftEncoder.getPosition() <= SAFETY_DISTANCE)
             .andThen(() -> leftMotor.set(0)),
         new RunCommand(() -> rightMotor.set(-1))
-            .withInterrupt(() -> rightEncoder.getPosition() <= 0.001)
+            .withInterrupt(() -> rightEncoder.getPosition() <= SAFETY_DISTANCE)
             .andThen(() -> rightMotor.set(0)));
   }
 
