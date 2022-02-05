@@ -45,7 +45,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   private final TrapezoidProfile elevatorProfile =
       new TrapezoidProfile(
-          new TrapezoidProfile.Constraints(MAX_V, MAX_A),
+          new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
           new TrapezoidProfile.State(HEIGHT, 0), // The goal state
           new TrapezoidProfile.State(0, 0)); // The init state
 
@@ -106,7 +106,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     anglerPiston.set(DoubleSolenoid.Value.kReverse);
   }
 
-  private void toSetpoint(TrapezoidProfile.State setpoint) {
+  private void achieveState(TrapezoidProfile.State setpoint) {
     ElevatorFeedforward ff =
         anglerPiston.get() == DoubleSolenoid.Value.kForward ? diagonalFF : upFF;
     leftController.setReference(
@@ -123,24 +123,22 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         ArbFFUnits.kVoltage);
   }
 
-  private void toSetpointWithDiagonal(TrapezoidProfile.State setpoint) {
-    if (setpoint.position >= HEIGHT_TO_OPEN_PISTON
-        && anglerPiston.get() != DoubleSolenoid.Value.kForward) {
-      anglerPiston.set(DoubleSolenoid.Value.kForward);
-    }
-    toSetpoint(setpoint);
-  }
-
-  private Command runForEverySetpoint(Consumer<TrapezoidProfile.State> toRun) {
+  private Command reachBarCommand(Consumer<TrapezoidProfile.State> toRun) {
     return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
   }
 
   public Command toFirstBar() {
-    return runForEverySetpoint(this::toSetpoint);
+    return reachBarCommand(this::achieveState);
   }
 
   public Command toNextBar() {
-    return runForEverySetpoint(this::toSetpointWithDiagonal);
+    return reachBarCommand(
+        setpoint -> {
+          if (setpoint.position >= HEIGHT_TO_OPEN_PISTON
+              && anglerPiston.get() != DoubleSolenoid.Value.kForward) {
+            anglerPiston.set(DoubleSolenoid.Value.kForward);
+          }
+        });
   }
 
   public Command offCommand() {
