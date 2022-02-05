@@ -33,20 +33,17 @@ public final class Constants {
     public static final int LEFT_MOTOR_ID = 1;
     public static final int RIGHT_MOTOR_ID = 2;
 
-    public static final double MAX_HEIGHT = 10.0; // Rotations
-
-    public static final double THRESHOLD = 0.3;
     public static final double kP = 0;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final double MG = 1000;
     public static final double ANGLE = 45;
-    public static final double DT = 0.02;
     public static final double kS = 0;
     public static final double kV = 0;
     public static final double kA = 0;
-    public static final double FULL_UP_HEIGHT = 50;
-    public static final double SOME_UP_HEIGHT = 10;
+    public static final double kMaxV = 0.5;
+    public static final double kMaxA = 1;
+    public static final double HEIGHT = 50;
   }
 
   public static class ShooterConstants {

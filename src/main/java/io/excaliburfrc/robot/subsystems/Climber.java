@@ -39,27 +39,14 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final SparkMaxPIDController rightController = rightMotor.getPIDController();
 
   private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, MG, kV, kA);
-  private final TrapezoidProfile.Constraints upConstraints =
-      new TrapezoidProfile.Constraints(
-          upFF.maxAchievableVelocity(12, 1), upFF.maxAchievableAcceleration(12, 1));
 
   private final ElevatorFeedforward diagonalFF =
       new ElevatorFeedforward(kS, MG * Math.cos(ANGLE), kV, kA);
-  private final TrapezoidProfile.Constraints diagonalConstraints =
-      new TrapezoidProfile.Constraints(
-          diagonalFF.maxAchievableVelocity(12, 1), diagonalFF.maxAchievableAcceleration(12, 1));
 
-  private final TrapezoidProfile.State initState = new TrapezoidProfile.State(0, 0);
-
-  private final TrapezoidProfile fullUpProfile =
-      new TrapezoidProfile(upConstraints, new TrapezoidProfile.State(FULL_UP_HEIGHT, 0), initState);
-  private final TrapezoidProfile someUpProfile =
-      new TrapezoidProfile(upConstraints, new TrapezoidProfile.State(SOME_UP_HEIGHT, 0), initState);
-  private final TrapezoidProfile diagonalProfile =
-      new TrapezoidProfile(
-          diagonalConstraints,
-          new TrapezoidProfile.State(FULL_UP_HEIGHT, 0),
-          new TrapezoidProfile.State(SOME_UP_HEIGHT, 0));
+  private final TrapezoidProfile elevatorProfile = new TrapezoidProfile(
+          new TrapezoidProfile.Constraints(kMaxV, kMaxA),
+          new TrapezoidProfile.State(HEIGHT, 0),
+          new TrapezoidProfile.State(0, 0));
 
   public Climber() {
     ValidateREVCAN(
@@ -118,35 +105,26 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     anglerPiston.set(DoubleSolenoid.Value.kReverse);
   }
 
-  private Command reachSideHeight(
-      SparkMaxPIDController controller, ElevatorFeedforward feedforward, TrapezoidProfile profile) {
+  private Command getToHeightCommand() {
     return new TrapezoidProfileCommand(
-        profile,
-        setpoint ->
-            controller.setReference(
-                setpoint.velocity,
-                ControlType.kVelocity,
-                0,
-                feedforward.calculate(setpoint.velocity),
-                ArbFFUnits.kVoltage),
+        elevatorProfile,
+        setpoint -> {
+          ElevatorFeedforward ff =
+              anglerPiston.get() == DoubleSolenoid.Value.kForward ? upFF : diagonalFF;
+          leftController.setReference(
+              setpoint.velocity,
+              ControlType.kVelocity,
+              0,
+              ff.calculate(setpoint.velocity),
+              ArbFFUnits.kVoltage);
+          rightController.setReference(
+              setpoint.velocity,
+              ControlType.kVelocity,
+              0,
+              ff.calculate(setpoint.velocity),
+              ArbFFUnits.kVoltage);
+        },
         this);
-  }
-
-  private Command reachBothHeight(ElevatorFeedforward feedforward, TrapezoidProfile profile) {
-    return reachSideHeight(leftController, feedforward, profile)
-        .alongWith(reachSideHeight(rightController, feedforward, profile));
-  }
-
-  public Command fullUpCommand() {
-    return reachBothHeight(upFF, fullUpProfile);
-  }
-
-  public Command someUpCommand() {
-    return reachBothHeight(upFF, someUpProfile);
-  }
-
-  public Command diagonalCommand() {
-    return reachBothHeight(diagonalFF, diagonalProfile);
   }
 
   public Command offCommand() {
