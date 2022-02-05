@@ -31,8 +31,6 @@ public final class Constants {
     public static final int FORWARD_CHANNEL = 0;
     public static final int REVERSE_CHANNEL = 1;
 
-    public static final double MAX_HEIGHT = 10.0; // Rotations
-
     public static final int LEFT_MOTOR_ID = 51;
     public static final int RIGHT_MOTOR_ID = 52;
 
@@ -47,6 +45,7 @@ public final class Constants {
     public static final double kMaxV = 0.5;
     public static final double kMaxA = 1;
     public static final double HEIGHT = 50;
+    public static final double HEIGHT_TO_OPEN_PISTON = 20;
   }
 
   public static class ShooterConstants {

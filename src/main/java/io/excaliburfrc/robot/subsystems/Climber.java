@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
@@ -46,8 +47,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final TrapezoidProfile elevatorProfile =
       new TrapezoidProfile(
           new TrapezoidProfile.Constraints(kMaxV, kMaxA),
-          new TrapezoidProfile.State(HEIGHT, 0),
-          new TrapezoidProfile.State(0, 0));
+          new TrapezoidProfile.State(HEIGHT, 0), // The goal state
+          new TrapezoidProfile.State(0, 0)); // The init state
 
   public Climber() {
     ValidateREVCAN(
@@ -106,26 +107,41 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     anglerPiston.set(DoubleSolenoid.Value.kReverse);
   }
 
-  private Command getToHeightCommand() {
-    return new TrapezoidProfileCommand(
-        elevatorProfile,
-        setpoint -> {
-          ElevatorFeedforward ff =
-              anglerPiston.get() == DoubleSolenoid.Value.kForward ? upFF : diagonalFF;
-          leftController.setReference(
-              setpoint.velocity,
-              ControlType.kVelocity,
-              0,
-              ff.calculate(setpoint.velocity),
-              ArbFFUnits.kVoltage);
-          rightController.setReference(
-              setpoint.velocity,
-              ControlType.kVelocity,
-              0,
-              ff.calculate(setpoint.velocity),
-              ArbFFUnits.kVoltage);
-        },
-        this);
+  private void toSetpoint(TrapezoidProfile.State setpoint) {
+    ElevatorFeedforward ff =
+        anglerPiston.get() == DoubleSolenoid.Value.kForward ? diagonalFF : upFF;
+    leftController.setReference(
+        setpoint.velocity,
+        ControlType.kVelocity,
+        0,
+        ff.calculate(setpoint.velocity),
+        ArbFFUnits.kVoltage);
+    rightController.setReference(
+        setpoint.velocity,
+        ControlType.kVelocity,
+        0,
+        ff.calculate(setpoint.velocity),
+        ArbFFUnits.kVoltage);
+  }
+
+  private void toSetpointWithDiagonal(TrapezoidProfile.State setpoint) {
+    if (setpoint.position >= HEIGHT_TO_OPEN_PISTON
+        && anglerPiston.get() != DoubleSolenoid.Value.kForward) {
+      anglerPiston.set(DoubleSolenoid.Value.kForward);
+    }
+    toSetpoint(setpoint);
+  }
+
+  private Command runForEverySetpoint(Consumer<TrapezoidProfile.State> toRun) {
+    return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
+  }
+
+  public Command toFirstBar() {
+    return runForEverySetpoint(this::toSetpoint);
+  }
+
+  public Command toNextBar() {
+    return runForEverySetpoint(this::toSetpointWithDiagonal);
   }
 
   public Command offCommand() {
