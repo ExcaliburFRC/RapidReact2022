@@ -43,7 +43,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final ElevatorFeedforward diagonalFF =
       new ElevatorFeedforward(kS, MG * Math.cos(ANGLE), kV, kA);
 
-  private final TrapezoidProfile elevatorProfile = new TrapezoidProfile(
+  private final TrapezoidProfile elevatorProfile =
+      new TrapezoidProfile(
           new TrapezoidProfile.Constraints(kMaxV, kMaxA),
           new TrapezoidProfile.State(HEIGHT, 0),
           new TrapezoidProfile.State(0, 0));
