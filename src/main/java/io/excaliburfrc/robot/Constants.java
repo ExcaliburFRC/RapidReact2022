@@ -42,8 +42,8 @@ public final class Constants {
     public static final double kS = 0;
     public static final double kV = 0;
     public static final double kA = 0;
-    public static final double kMaxV = 0.5;
-    public static final double kMaxA = 1;
+    public static final double MAX_V = 0.5;
+    public static final double MAX_A = 1;
     public static final double HEIGHT = 50;
     public static final double HEIGHT_TO_OPEN_PISTON = 20;
   }

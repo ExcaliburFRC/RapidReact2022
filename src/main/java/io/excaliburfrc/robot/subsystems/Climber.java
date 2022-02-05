@@ -40,13 +40,12 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final SparkMaxPIDController rightController = rightMotor.getPIDController();
 
   private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, MG, kV, kA);
-
   private final ElevatorFeedforward diagonalFF =
       new ElevatorFeedforward(kS, MG * Math.cos(ANGLE), kV, kA);
 
   private final TrapezoidProfile elevatorProfile =
       new TrapezoidProfile(
-          new TrapezoidProfile.Constraints(kMaxV, kMaxA),
+          new TrapezoidProfile.Constraints(MAX_V, MAX_A),
           new TrapezoidProfile.State(HEIGHT, 0), // The goal state
           new TrapezoidProfile.State(0, 0)); // The init state
 
