@@ -127,11 +127,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
   }
 
-  public Command toFirstBar() {
+  public Command openToFirstCommand() {
     return reachBarCommand(this::achieveState);
   }
 
-  public Command toNextBar() {
+  public Command openToSecondCommand() {
     return reachBarCommand(
         setpoint -> {
           if (setpoint.position >= HEIGHT_TO_OPEN_PISTON
