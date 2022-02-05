@@ -141,6 +141,16 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         });
   }
 
+  public Command raiseRobotCommand() {
+    return new ParallelCommandGroup(
+        new RunCommand(() -> leftMotor.set(-1), this)
+            .withInterrupt(() -> leftEncoder.getPosition() <= 0.001)
+            .andThen(() -> leftMotor.set(0)),
+        new RunCommand(() -> rightMotor.set(-1))
+            .withInterrupt(() -> rightEncoder.getPosition() <= 0.001)
+            .andThen(() -> rightMotor.set(0)));
+  }
+
   public Command offCommand() {
     return new InstantCommand(() -> activateMotors(MotorMode.OFF));
   }
