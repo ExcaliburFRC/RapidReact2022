@@ -134,6 +134,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   public Command openToSecondCommand() {
     return reachBarCommand(
         setpoint -> {
+          achieveState(setpoint);
           if (setpoint.position >= HEIGHT_TO_OPEN_PISTON
               && anglerPiston.get() != DoubleSolenoid.Value.kForward) {
             anglerPiston.set(DoubleSolenoid.Value.kForward);
@@ -141,14 +142,16 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         });
   }
 
+  public Command downCommand(CANSparkMax motor, RelativeEncoder encoder) {
+    return new FunctionalCommand(
+        () -> {},
+        () -> motor.set(-1),
+        __ -> motor.set(0),
+        () -> encoder.getPosition() <= SAFETY_DISTANCE);
+  }
+
   public Command raiseRobotCommand() {
-    return new ParallelCommandGroup(
-        new RunCommand(() -> leftMotor.set(-1), this)
-            .withInterrupt(() -> leftEncoder.getPosition() <= SAFETY_DISTANCE)
-            .andThen(() -> leftMotor.set(0)),
-        new RunCommand(() -> rightMotor.set(-1))
-            .withInterrupt(() -> rightEncoder.getPosition() <= SAFETY_DISTANCE)
-            .andThen(() -> rightMotor.set(0)));
+    return downCommand(leftMotor, leftEncoder).alongWith(downCommand(rightMotor, rightEncoder));
   }
 
   public Command offCommand() {
