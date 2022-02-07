@@ -142,7 +142,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         });
   }
 
-  public Command downCommand(CANSparkMax motor, RelativeEncoder encoder) {
+  private Command downCommand(CANSparkMax motor, RelativeEncoder encoder) {
     return new FunctionalCommand(
         () -> {},
         () -> motor.set(-1),
