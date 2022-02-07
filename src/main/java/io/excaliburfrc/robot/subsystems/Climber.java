@@ -6,20 +6,22 @@ import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
@@ -36,6 +38,16 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final RelativeEncoder rightEncoder = rightMotor.getEncoder();
   private final SparkMaxPIDController leftController = leftMotor.getPIDController();
   private final SparkMaxPIDController rightController = rightMotor.getPIDController();
+
+  private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, MG, kV, kA);
+  private final ElevatorFeedforward diagonalFF =
+      new ElevatorFeedforward(kS, MG * Math.cos(ANGLE), kV, kA);
+
+  private final TrapezoidProfile elevatorProfile =
+      new TrapezoidProfile(
+          new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
+          new TrapezoidProfile.State(HEIGHT, 0), // The goal state
+          new TrapezoidProfile.State(0, 0)); // The init state
 
   public Climber() {
     ValidateREVCAN(
@@ -92,6 +104,54 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   public void closeAngler() {
     anglerPiston.set(DoubleSolenoid.Value.kReverse);
+  }
+
+  private void achieveState(TrapezoidProfile.State setpoint) {
+    ElevatorFeedforward ff =
+        anglerPiston.get() == DoubleSolenoid.Value.kForward ? diagonalFF : upFF;
+    leftController.setReference(
+        setpoint.velocity,
+        ControlType.kVelocity,
+        0,
+        ff.calculate(setpoint.velocity),
+        ArbFFUnits.kVoltage);
+    rightController.setReference(
+        setpoint.velocity,
+        ControlType.kVelocity,
+        0,
+        ff.calculate(setpoint.velocity),
+        ArbFFUnits.kVoltage);
+  }
+
+  private Command reachBarCommand(Consumer<TrapezoidProfile.State> toRun) {
+    return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
+  }
+
+  public Command openToFirstCommand() {
+    return reachBarCommand(this::achieveState);
+  }
+
+  public Command openToSecondCommand() {
+    return reachBarCommand(
+        setpoint -> {
+          achieveState(setpoint);
+          if (setpoint.position >= HEIGHT_TO_OPEN_PISTON
+              && anglerPiston.get() != DoubleSolenoid.Value.kForward) {
+            anglerPiston.set(DoubleSolenoid.Value.kForward);
+          }
+        });
+  }
+
+  private Command downCommand(CANSparkMax motor, RelativeEncoder encoder) {
+    return new FunctionalCommand(
+        () -> {},
+        () -> motor.set(-1),
+        __ -> motor.set(0),
+        () -> encoder.getPosition() <= SAFETY_DISTANCE);
+  }
+
+  public Command raiseRobotCommand() {
+    return downCommand(leftMotor, leftEncoder).alongWith(downCommand(rightMotor, rightEncoder));
   }
 
   public Command offCommand() {
