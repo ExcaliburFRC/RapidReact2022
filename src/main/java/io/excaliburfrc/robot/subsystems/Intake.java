@@ -34,7 +34,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
       new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
-  private final ConditionalCommand automaticCommand;
+  private final ConditionalCommand inOrOutCommand;
 
   public Intake() {
     ValidateREVCAN(
@@ -52,7 +52,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD));
 
-    automaticCommand =
+    inOrOutCommand =
         new ConditionalCommand(
             // increment ball count; input until upper sensor detects a ball
             new FunctionalCommand(
@@ -85,13 +85,21 @@ public class Intake extends SubsystemBase implements AutoCloseable {
             // decides by ball color
             this::isOurColor);
     // schedule the command whenever the entry sensor newly activates ...
-    intakeBallTrigger.whenActive(automaticCommand);
+    intakeBallTrigger.whenActive(inOrOutCommand);
 
     // update the counter whenever we shoot a ball
     upperBallTrigger.whenInactive(ballCount::decrementAndGet, this);
     // and report if we pass the limit
     new Trigger(() -> ballCount.get() > MAX_BALLS)
         .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
+  }
+
+  public Command automaticCommand() {
+    return new FunctionalCommand(
+        () -> intakePiston.set(DoubleSolenoid.Value.kForward),
+        () -> {},
+        __ -> intakePiston.set(DoubleSolenoid.Value.kReverse),
+        intakeBallTrigger);
   }
 
   public Command manualCommand(
@@ -161,7 +169,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
 
-    builder.addBooleanProperty("Automatic Active", automaticCommand::isScheduled, null);
+    builder.addBooleanProperty("Automatic Active", inOrOutCommand::isScheduled, null);
   }
 
   public boolean isEmpty() {
