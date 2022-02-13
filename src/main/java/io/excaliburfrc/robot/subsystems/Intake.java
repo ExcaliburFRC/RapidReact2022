@@ -18,16 +18,12 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonUtils;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-
-import java.lang.annotation.Target;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonUtils;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Intake extends SubsystemBase implements AutoCloseable {
   private final AtomicInteger ballCount = new AtomicInteger(0);
@@ -173,7 +169,8 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   private double getDistanceToTarget(PhotonTrackedTarget target) {
-    return PhotonUtils.calculateDistanceToTargetMeters(CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_PITCH, Units.degreesToRadians(target.getPitch()));
+    return PhotonUtils.calculateDistanceToTargetMeters(
+        CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_PITCH, Units.degreesToRadians(target.getPitch()));
   }
 
   @Override
