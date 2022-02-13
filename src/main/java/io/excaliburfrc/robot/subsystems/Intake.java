@@ -51,8 +51,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD));
 
-    // schedule the command whenever the entry sensor newly activates ...
-
     // update the counter whenever we shoot a ball
     upperBallTrigger.whenInactive(ballCount::decrementAndGet, this);
     // and report if we pass the limit
@@ -64,7 +62,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     return new FunctionalCommand(
             () -> intakePiston.set(DoubleSolenoid.Value.kForward),
             () -> intakeMotor.set(Speeds.intakeInDutyCycle),
-            __ -> {},
+            __ -> intakeMotor.set(0),
             intakeBallTrigger)
         .andThen(
             new ConditionalCommand(
