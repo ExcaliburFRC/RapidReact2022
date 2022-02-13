@@ -58,7 +58,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
   }
 
-  public Command automaticCommand() {
+  public Command intakeBallCommand() {
     return new FunctionalCommand(
             () -> intakePiston.set(DoubleSolenoid.Value.kForward),
             () -> intakeMotor.set(Speeds.intakeInDutyCycle),
