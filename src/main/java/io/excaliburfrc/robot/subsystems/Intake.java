@@ -34,7 +34,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
       new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
-  private final ConditionalCommand automaticCommand;
 
   public Intake() {
     ValidateREVCAN(
@@ -52,46 +51,55 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD));
 
-    automaticCommand =
-        new ConditionalCommand(
-            // increment ball count; input until upper sensor detects a ball
-            new FunctionalCommand(
-                // init
-                ballCount::incrementAndGet,
-                // exe
-                () -> {
-                  intakeMotor.set(Speeds.intakeInDutyCycle);
-                  upperMotor.set(Speeds.upperInDutyCycle);
-                },
-                // end
-                _interrupted -> {
-                  intakeMotor.set(0);
-                  upperMotor.set(0);
-                },
-                // isFinished
-                upperBallTrigger,
-                this),
-
-            // output sets motor until ball entry sensor no longer sees a ball
-            new FunctionalCommand(
-                // init
-                () -> {},
-                // exe
-                () -> intakeMotor.set(Speeds.ejectDutyCycle),
-                // end
-                _interrupted -> intakeMotor.set(0),
-                // isFinished
-                intakeBallTrigger.negate()),
-            // decides by ball color
-            this::isOurColor);
-    // schedule the command whenever the entry sensor newly activates ...
-    intakeBallTrigger.whenActive(automaticCommand);
-
     // update the counter whenever we shoot a ball
     upperBallTrigger.whenInactive(ballCount::decrementAndGet, this);
     // and report if we pass the limit
     new Trigger(() -> ballCount.get() > MAX_BALLS)
         .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
+  }
+
+  public Command intakeBallCommand() {
+    return new FunctionalCommand(
+            () -> intakePiston.set(DoubleSolenoid.Value.kForward),
+            () -> intakeMotor.set(Speeds.intakeInDutyCycle),
+            __ -> intakeMotor.set(0),
+            intakeBallTrigger)
+        .andThen(
+            new ConditionalCommand(
+                // increment ball count; input until upper sensor detects a ball
+                new FunctionalCommand(
+                    // init
+                    ballCount::incrementAndGet,
+                    // exe
+                    () -> {
+                      intakeMotor.set(Speeds.intakeInDutyCycle);
+                      upperMotor.set(Speeds.upperInDutyCycle);
+                    },
+                    // end
+                    __ -> {
+                      intakeMotor.set(0);
+                      upperMotor.set(0);
+                      intakePiston.set(DoubleSolenoid.Value.kReverse);
+                    },
+                    // isFinished
+                    upperBallTrigger,
+                    this),
+
+                // output sets motor until ball entry sensor no longer sees a ball
+                new FunctionalCommand(
+                    // init
+                    () -> {},
+                    // exe
+                    () -> intakeMotor.set(Speeds.ejectDutyCycle),
+                    // end
+                    __ -> {
+                      intakeMotor.set(0);
+                      intakePiston.set(DoubleSolenoid.Value.kReverse);
+                    },
+                    // isFinished
+                    intakeBallTrigger.negate()),
+                // decides by ball color
+                this::isOurColor));
   }
 
   public Command manualCommand(
@@ -160,8 +168,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Intake Cargo", intakeBallTrigger, null);
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
-
-    builder.addBooleanProperty("Automatic Active", automaticCommand::isScheduled, null);
   }
 
   public boolean isEmpty() {
