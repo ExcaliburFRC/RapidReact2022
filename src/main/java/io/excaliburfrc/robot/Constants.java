@@ -1,6 +1,5 @@
 package io.excaliburfrc.robot;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 /**
@@ -69,10 +68,16 @@ public final class Constants {
     public static final int LEFT_FOLLOWER_ID = 12;
     public static final int RIGHT_FOLLOWER_ID = 13;
 
-    public static final double GEARING = 1.0 / 10.71;
+    public static final double kS = 0.11636;
+    public static final double kV = 2.9229;
+    public static final double kA = 0.14969;
+    public static final double kP = 0.0013735;
+    public static final double TRACKWIDTH_METERS = 0.69;
+    public static final double GEARING = 1 / 10.71;
+    public static final double METERS_PER_SHAFT_ROTATION = 0.4788;
 
-    public static final double MOTOR_ROTATION_TO_METERS =
-        GEARING * 2 * Math.PI * Units.inchesToMeters(6);
+    public static final double MAX_SPEED_METERS_PER_SECOND = 3;
+    public static final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
   }
 
   public static class LedsConstants {

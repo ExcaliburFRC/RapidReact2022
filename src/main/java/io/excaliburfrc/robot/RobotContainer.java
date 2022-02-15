@@ -1,11 +1,18 @@
 package io.excaliburfrc.robot;
 
+import static edu.wpi.first.math.geometry.Rotation2d.fromDegrees;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -14,7 +21,20 @@ import io.excaliburfrc.robot.commands.BlindShootBallsCommand;
 import io.excaliburfrc.robot.commands.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.ShootBallsCommand;
+import io.excaliburfrc.robot.commands.auto.out.OutFromBottom;
+import io.excaliburfrc.robot.commands.auto.out.OutFromTop;
+import io.excaliburfrc.robot.commands.auto.shoot1.*;
+import io.excaliburfrc.robot.commands.auto.shoot2.Cargo4BottomShoot2;
+import io.excaliburfrc.robot.commands.auto.shoot2.Cargo5BottomShoot2;
+import io.excaliburfrc.robot.commands.auto.shoot2.Cargo6TopShoot2;
+import io.excaliburfrc.robot.commands.auto.shoot2.PushTheirBallAuto;
+import io.excaliburfrc.robot.commands.auto.shoot3.BottomShoot1Cargoes4And5BottomShoot2;
+import io.excaliburfrc.robot.commands.auto.shoot3.BottomShoot1Cargoes5AndTerminalBottomShoot2;
+import io.excaliburfrc.robot.commands.auto.shoot4.FourBallsAuto;
 import io.excaliburfrc.robot.subsystems.*;
+import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -40,6 +60,7 @@ public class RobotContainer {
     chooser.addOption("Top", new NoRamseteTopFender(drive, intake, shooter, leds));
     chooser.addOption("Bottom", new NoRamseteBottomFender(drive, intake, shooter, leds));
     SmartDashboard.putData("Autos", chooser);
+    setupAutos();
   }
 
   void configureButtonBindings() {
@@ -49,6 +70,9 @@ public class RobotContainer {
     drive.setDefaultCommand(
         drive.arcadeDriveCommand(
             () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
+//  drive.setDefaultCommand(
+//      drive.tankDriveCommand(
+//            ()-> driveJoystick.getLeftY(), ()-> driveJoystick.getRightY()));
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
@@ -138,6 +162,50 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return chooser.getSelected();
+    // An ExampleCommand will run in autonomous
+    return new SequentialCommandGroup(
+        drive.resetOdometryCommand(new Pose2d(0, 0, fromDegrees(0))),
+        drive.followTrajectoryCommand(
+            TrajectoryGenerator.generateTrajectory(
+                List.of(new Pose2d(0, 0, fromDegrees(0)), new Pose2d(2, 1, fromDegrees(90))),
+                new TrajectoryConfig(3, 3))),
+        drive.arcadeDriveCommand(() -> 0, () -> 0));
+    //    return chooser.getSelected();
+  }
+
+  void setupAutos() {
+    Class<? extends Command>[] classes =
+        new Class[] {
+          BottomShoot1AndOut.class,
+          BottomShoot1Cargoes4And5BottomShoot2.class,
+          BottomShoot1CollectCargo4.class,
+          BottomShoot1CollectCargo4and5.class,
+          BottomShoot1CollectCargo5.class,
+          Cargo4BottomShoot2.class,
+          Cargo5BottomShoot2.class,
+          Cargo6TopShoot2.class,
+          FourBallsAuto.class,
+          OutFromBottom.class,
+          OutFromTop.class,
+          PushTheirBallAuto.class,
+          BottomShoot1Cargoes5AndTerminalBottomShoot2.class,
+          TopShoot1AndOut.class,
+          TopShoot1CollectCargo6.class
+        };
+    for (Class<? extends Command> klass : classes) {
+      try {
+        chooser.addOption(
+            klass.getSimpleName(),
+            klass
+                .getConstructor(Drive.class, Shooter.class, Intake.class, LEDs.class)
+                .newInstance(drive, shooter, intake, leds));
+      } catch (NoSuchMethodException
+          | InstantiationException
+          | IllegalAccessException
+          | InvocationTargetException e) {
+        DriverStation.reportError(e.getMessage(), e.getStackTrace());
+      }
+    }
+    SmartDashboard.putData(chooser);
   }
 }

@@ -9,17 +9,19 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -44,9 +46,16 @@ public class Drive extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
 
+  private final DifferentialDriveKinematics driveKinematics =
+      new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
+
   private final DifferentialDriveOdometry odometry;
   private final Field2d field = new Field2d();
   private final AHRS gyro = new AHRS();
+  private final SparkMaxPIDController leftController = leftLeader.getPIDController();
+  private final SparkMaxPIDController rightController = rightLeader.getPIDController();
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
+  private final RamseteController ramseteController = new RamseteController();
 
   public Drive() {
     ValidateREVCAN(
@@ -55,7 +64,6 @@ public class Drive extends SubsystemBase {
         leftFollower.restoreFactoryDefaults(),
         rightLeader.restoreFactoryDefaults(),
         rightFollower.restoreFactoryDefaults(),
-
         // set the motors to coast mode -- we don't want to break them!
         leftLeader.setIdleMode(IdleMode.kBrake),
         leftFollower.setIdleMode(IdleMode.kBrake),
@@ -69,9 +77,10 @@ public class Drive extends SubsystemBase {
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
-        leftEncoder.setPositionConversionFactor(MOTOR_ROTATION_TO_METERS),
-        rightEncoder.setPositionConversionFactor(MOTOR_ROTATION_TO_METERS),
-
+        leftEncoder.setPositionConversionFactor(METERS_PER_SHAFT_ROTATION * GEARING),
+        rightEncoder.setPositionConversionFactor(METERS_PER_SHAFT_ROTATION * GEARING),
+        leftEncoder.setVelocityConversionFactor(METERS_PER_SHAFT_ROTATION * GEARING * 60),
+        rightEncoder.setVelocityConversionFactor(METERS_PER_SHAFT_ROTATION * GEARING * 60),
         // other status frames can be reduced to almost never
         leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
         leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
@@ -87,11 +96,33 @@ public class Drive extends SubsystemBase {
     rightLeader.setInverted(true);
 
     ValidateREVCAN(
+        leftEncoder.setPositionConversionFactor(GEARING * METERS_PER_SHAFT_ROTATION),
+        rightEncoder.setPositionConversionFactor(GEARING * METERS_PER_SHAFT_ROTATION),
+        leftEncoder.setVelocityConversionFactor(GEARING * METERS_PER_SHAFT_ROTATION * 60),
+        rightEncoder.setVelocityConversionFactor(GEARING * METERS_PER_SHAFT_ROTATION * 60));
+    leftLeader.setInverted(false);
+    rightLeader.setInverted(true);
+    ValidateREVCAN(
         // setup following
         leftFollower.follow(leftLeader, false), rightFollower.follow(rightLeader, false));
 
     odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
     drive.setSafetyEnabled(false);
+  }
+
+  public void achieveVelocity(double left, double right) {
+    leftController.setReference(
+        left,
+        CANSparkMax.ControlType.kVelocity,
+        0,
+        feedforward.calculate(left),
+        SparkMaxPIDController.ArbFFUnits.kVoltage);
+    rightController.setReference(
+        right,
+        CANSparkMax.ControlType.kVelocity,
+        0,
+        feedforward.calculate(right),
+        SparkMaxPIDController.ArbFFUnits.kVoltage);
   }
 
   public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
@@ -103,15 +134,33 @@ public class Drive extends SubsystemBase {
     return new RunCommand(
         () ->
             drive.arcadeDrive(
-                xSpeed.getAsDouble() * (slowMode.getAsBoolean() ? 0.5 : 1),
-                zRotation.getAsDouble()),
+                xSpeed.getAsDouble() * (slowMode.getAsBoolean() ? 0.5 : 1.0),
+                zRotation.getAsDouble() * (slowMode.getAsBoolean() ? 0.5 : 1.0)),
         this);
+  }
+
+  public Command tankDriveCommand(DoubleSupplier left, DoubleSupplier right){
+    return new RunCommand(
+          ()-> drive.tankDrive(
+                left.getAsDouble(),
+                right.getAsDouble())
+    );
+  }
+
+  public Command followTrajectoryCommand(Trajectory trajectory) {
+    return new RamseteCommand(
+        trajectory,
+        odometry::getPoseMeters,
+        ramseteController,
+        driveKinematics,
+        this::achieveVelocity,
+        this).beforeStarting(()->field.getObject("traj").setTrajectory(trajectory));
   }
 
   public Command resetOdometryCommand(Pose2d pose) {
     return new InstantCommand(
         () -> {
-          odometry.resetPosition(pose, gyro.getRotation2d());
+          odometry.resetPosition(pose, gyro.getRotation2d().unaryMinus());
           leftEncoder.setPosition(0);
           rightEncoder.setPosition(0);
         },
@@ -122,7 +171,7 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     field.setRobotPose(
         odometry.update(
-            gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition()));
+            gyro.getRotation2d().unaryMinus(), leftEncoder.getPosition(), rightEncoder.getPosition()));
   }
 
   @Override
