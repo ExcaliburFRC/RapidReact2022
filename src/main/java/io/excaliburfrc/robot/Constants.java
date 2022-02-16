@@ -14,8 +14,8 @@ public final class Constants {
   public static final int MAXIMAL_FRAME_PERIOD = 65535; // ms
 
   public static final class IntakeConstants {
-    public static final int INTAKE_MOTOR_ID = 22;
-    public static final int UPPER_MOTOR_ID = 21;
+    public static final int INTAKE_MOTOR_ID = 40;
+    public static final int UPPER_MOTOR_ID = 41;
     public static final int PING = 5;
     public static final int ECHO = 6;
     public static final int COLOR_LIMIT = 69;
@@ -30,8 +30,8 @@ public final class Constants {
   public static class ClimberConstants {
     public static final int FORWARD_CHANNEL = 0;
     public static final int REVERSE_CHANNEL = 1;
-    public static final int LEFT_MOTOR_ID = 51;
-    public static final int RIGHT_MOTOR_ID = 52;
+    public static final int LEFT_MOTOR_ID = 30;
+    public static final int RIGHT_MOTOR_ID = 31;
     public static final double kP = 0;
     public static final double kI = 0;
     public static final double kD = 0;
@@ -48,8 +48,8 @@ public final class Constants {
   }
 
   public static class ShooterConstants {
-    public static final int LEADER_ID = 0;
-    public static final int FOLLOWER_ID = 1;
+    public static final int LEADER_ID = 20;
+    public static final int FOLLOWER_ID = 21;
     public static final int ENCODER_A = 2;
     public static final int ENCODER_B = 3;
 
@@ -73,10 +73,10 @@ public final class Constants {
   }
 
   public static class DrivetrainConstants {
-    public static final int LEFT_LEADER_ID = 18;
-    public static final int LEFT_FOLLOWER_ID = 17;
-    public static final int RIGHT_LEADER_ID = 19;
-    public static final int RIGHT_FOLLOWER_ID = 15;
+    public static final int LEFT_LEADER_ID = 10;
+    public static final int RIGHT_LEADER_ID = 11;
+    public static final int LEFT_FOLLOWER_ID = 12;
+    public static final int RIGHT_FOLLOWER_ID = 13;
 
     public static final double kS = 1;
     public static final double kV = 2;
