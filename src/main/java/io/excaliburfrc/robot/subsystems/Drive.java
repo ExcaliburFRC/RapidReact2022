@@ -20,13 +20,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
 import java.util.function.DoubleSupplier;
 
@@ -45,14 +43,20 @@ public class Drive extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
 
-  private final DifferentialDriveKinematics driveKinematics =
-      new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
-
   private final DifferentialDriveOdometry odometry;
   private final AHRS gyro = new AHRS();
   private final SparkMaxPIDController leftController = leftLeader.getPIDController();
   private final SparkMaxPIDController rightController = rightLeader.getPIDController();
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
+
+  private final DifferentialDriveKinematics driveKinematics =
+      new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
+  private final DifferentialDriveVoltageConstraint voltageConstraint =
+      new DifferentialDriveVoltageConstraint(feedforward, driveKinematics, 10);
+  public final TrajectoryConfig trajectoryConfig =
+      new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
+          .setKinematics(driveKinematics)
+          .addConstraint(voltageConstraint);
 
   public Drive() {
     ValidateREVCAN(
