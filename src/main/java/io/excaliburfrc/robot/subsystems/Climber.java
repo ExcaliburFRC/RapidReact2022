@@ -113,7 +113,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   public enum MotorMode {
     OFF(0),
     UP(0.6),
-    DOWN(-0.4);
+    DOWN(-0.8);
 
     final double dutyCycle;
 
@@ -121,7 +121,6 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       dutyCycle = v;
     }
   }
-
 
   public void openAngler() {
     anglerPiston.set(DoubleSolenoid.Value.kForward);
