@@ -21,7 +21,7 @@ public class ShootBallsCommand extends ParallelDeadlineGroup {
             new SequentialCommandGroup(
                 new WaitUntilCommand(new Trigger(shooter::isAtTargetVelocity).and(trigger)),
                 intake.shootBallCommand())),
-        LEDs.getInstance().setColorCommand(LEDs.LedMode.BLUE));
+        leds.setColorCommand(LEDs.LedMode.BLUE));
   }
 
   public ShootBallsCommand(Intake intake, Shooter shooter, LEDs leds) {
