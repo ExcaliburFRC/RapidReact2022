@@ -18,16 +18,16 @@ public class AutomaticIntakeCommand extends CommandBase {
     this.drive = drive;
     this.intake = intake;
     this.vision = vision;
+
+    andThen(drive.followTrajectoryCommand(trajectory)).raceWith(intake.intakeBallCommand());
   }
 
   @Override
   public void initialize() {
-    alongWith(intake.intakeBallCommand());
     var currentPose = drive.getPose();
     trajectory =
         TrajectoryGenerator.generateTrajectory(
             Arrays.asList(currentPose, currentPose.plus(vision.getTransform())),
             drive.trajectoryConfig);
-    andThen(drive.followTrajectoryCommand(trajectory));
   }
 }
