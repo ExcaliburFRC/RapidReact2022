@@ -93,6 +93,24 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     }
   }
 
+  private class ClimberSide {
+    private final CANSparkMax motor;
+    private final RelativeEncoder encoder;
+
+    public ClimberSide(int motorId) {
+      motor = new CANSparkMax(motorId, MotorType.kBrushless);
+      encoder = motor.getEncoder();
+    }
+
+    private Command downCommand(CANSparkMax motor, RelativeEncoder encoder) {
+      return new FunctionalCommand(
+          () -> {},
+          () -> motor.set(-1),
+          __ -> motor.set(0),
+          () -> encoder.getPosition() <= SAFETY_DISTANCE);
+    }
+  }
+
   public void activateMotors(MotorMode m) {
     leftMotor.set(m.dutyCycle);
     rightMotor.set(m.dutyCycle);
@@ -107,8 +125,9 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   }
 
   private void achieveState(TrapezoidProfile.State setpoint) {
-    ElevatorFeedforward ff =
-        anglerPiston.get() == DoubleSolenoid.Value.kForward ? diagonalFF : upFF;
+    ElevatorFeedforward ff;
+    if (anglerPiston.get() == DoubleSolenoid.Value.kForward) ff = diagonalFF;
+    else ff = upFF;
     leftController.setReference(
         setpoint.velocity,
         ControlType.kVelocity,
