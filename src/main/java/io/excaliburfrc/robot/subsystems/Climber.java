@@ -43,43 +43,73 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           new TrapezoidProfile.State(HEIGHT, 0), // The goal state
           new TrapezoidProfile.State(0, 0)); // The init state
 
-  public Climber() {
-    ValidateREVCAN(
-        // reset factory settings
-        left.motor.restoreFactoryDefaults(),
-        right.motor.restoreFactoryDefaults(),
-        // set the motors to brake mode
-        left.motor.setIdleMode(IdleMode.kBrake),
-        right.motor.setIdleMode(IdleMode.kBrake),
-        left.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        left.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        left.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
-        right.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        right.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        right.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
-        // set up PID parameters
-        left.controller.setFeedbackDevice(left.encoder),
-        left.controller.setP(kP),
-        left.controller.setI(kI),
-        left.controller.setD(kD),
-        right.controller.setFeedbackDevice(right.encoder),
-        right.controller.setP(kP),
-        right.controller.setI(kI),
-        right.controller.setD(kD)
-    );
+  private class ClimberSide implements AutoCloseable {
+    private final CANSparkMax motor;
+    private final RelativeEncoder encoder;
+    private final SparkMaxPIDController controller;
+
+    public ClimberSide (int motorId) {
+      motor = new CANSparkMax(motorId, MotorType.kBrushless);
+      encoder = motor.getEncoder();
+      controller = motor.getPIDController();
+
+      ValidateREVCAN(
+              // reset factory settings
+              motor.restoreFactoryDefaults(),
+              motor.restoreFactoryDefaults(),
+              // set the motors to brake mode
+              motor.setIdleMode(IdleMode.kBrake),
+              motor.setIdleMode(IdleMode.kBrake),
+              motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+              motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+              motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+              motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
+              motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
+              motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+              // set up PID parameters
+              controller.setFeedbackDevice(encoder),
+              controller.setP(kP),
+              controller.setI(kI),
+              controller.setD(kD),
+              controller.setFeedbackDevice(encoder),
+              controller.setP(kP),
+              controller.setI(kI),
+              controller.setD(kD)
+      );
+    }
+
+    public Command downCommand() {
+      return new FunctionalCommand(
+              () -> {},
+              () -> motor.set(MotorMode.DOWN.dutyCycle),
+              __ -> motor.set(MotorMode.OFF.dutyCycle),
+              () -> encoder.getPosition() <= SAFETY_DISTANCE);
+    }
+
+    public void close() {
+      motor.close();
+    }
+
+    public void set(double dutyCycle) {
+      motor.set(dutyCycle);
+    }
+
+    public void setReference(double velocity, ControlType kVelocity, int i, double calculate, ArbFFUnits kVoltage) {
+      controller.setReference(velocity, kVelocity, i, calculate, kVoltage);
+    }
   }
 
   @Override
   public void close() {
-    left.motor.close();
-    right.motor.close();
+    left.close();
+    right.close();
     anglerPiston.close();
   }
 
   public enum MotorMode {
     OFF(0),
     UP(0.6),
-    DOWN(-0.4);
+    DOWN(-0.8);
 
     final double dutyCycle;
 
@@ -88,29 +118,9 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     }
   }
 
-  private class ClimberSide {
-    private final CANSparkMax motor;
-    private final RelativeEncoder encoder;
-    private final SparkMaxPIDController controller;
-
-    public ClimberSide(int motorId) {
-      motor = new CANSparkMax(motorId, MotorType.kBrushless);
-      encoder = motor.getEncoder();
-      controller = motor.getPIDController();
-    }
-
-    public Command downCommand() {
-      return new FunctionalCommand(
-          () -> {},
-          () -> motor.set(-1),
-          __ -> motor.set(0),
-          () -> encoder.getPosition() <= SAFETY_DISTANCE);
-    }
-  }
-
   public void activateMotors(MotorMode m) {
-    left.motor.set(m.dutyCycle);
-    right.motor.set(m.dutyCycle);
+    left.set(m.dutyCycle);
+    right.set(m.dutyCycle);
   }
 
   public void openAngler() {
@@ -125,13 +135,13 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     ElevatorFeedforward ff;
     if (anglerPiston.get() == DoubleSolenoid.Value.kForward) ff = diagonalFF;
     else ff = upFF;
-    left.controller.setReference(
+    left.setReference(
         setpoint.velocity,
         ControlType.kVelocity,
         0,
         ff.calculate(setpoint.velocity),
         ArbFFUnits.kVoltage);
-    right.controller.setReference(
+    right.setReference(
         setpoint.velocity,
         ControlType.kVelocity,
         0,
@@ -177,8 +187,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
     return new RunCommand(
         () -> {
-          left.motor.set(motorSpeed.getAsDouble());
-          right.motor.set(motorSpeed.getAsDouble());
+          left.set(motorSpeed.getAsDouble());
+          right.set(motorSpeed.getAsDouble());
           if (piston.getAsBoolean()) this.anglerPiston.toggle();
         },
         this);
