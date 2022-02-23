@@ -2,6 +2,7 @@ package io.excaliburfrc.robot.commands;
 
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import io.excaliburfrc.robot.subsystems.Drive;
 import io.excaliburfrc.robot.subsystems.Intake;
@@ -30,4 +31,7 @@ public class AutomaticIntakeCommand extends CommandBase {
             Arrays.asList(currentPose, currentPose.plus(vision.getTransform())),
             drive.trajectoryConfig);
   }
+
+  @Override
+  public boolean isFinished() { return vision.noTargets(); }
 }
