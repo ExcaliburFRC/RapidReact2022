@@ -105,10 +105,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   public Command manualCommand(
-        DoubleSupplier intake, DoubleSupplier upper, BooleanSupplier pistonState) {
+        BooleanSupplier intake, DoubleSupplier upper, BooleanSupplier pistonState) {
     return new RunCommand(
           () -> {
-            intakeMotor.set(intake.getAsDouble());
+            intakeMotor.set(intake.getAsBoolean()? 0.5: 0);
             transporterMotor.set(upper.getAsDouble());
             if (pistonState.getAsBoolean()) intakePiston.toggle();
           },

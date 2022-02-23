@@ -47,14 +47,14 @@ public class RobotContainer {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
-    final int intakeAxis = 3;
-    final int upperAxis = 5;
+    final int intakeButton = 2;
+    final int transporterAxis = 2;
     final int intakePiston = 2;
 
     intake
         .manualCommand(
-            () -> armJoystick.getRawAxis(intakeAxis),
-            () -> armJoystick.getRawAxis(upperAxis),
+            () -> armJoystick.getRawButton(intakeButton),
+            () -> armJoystick.getRawAxis(transporterAxis),
             () -> armJoystick.getRawButton(intakePiston))
         .schedule();
 
