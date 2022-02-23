@@ -24,6 +24,7 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
@@ -145,7 +146,11 @@ public class Drive extends SubsystemBase {
                     Arrays.asList(getPose(), getPose().plus(vision.getTransform())),
                     trajectoryConfig))
             .raceWith(intake.intakeBallCommand()),
-        new InstantCommand(() -> SmartDashboard.putBoolean("hasTargets", false)),
+        new InstantCommand(
+            () -> {
+              SmartDashboard.putBoolean("hasTargets", false);
+              DriverStation.reportWarning("The camera didn't detect any balls", false);
+            }),
         vision::hasTargets);
   }
 
