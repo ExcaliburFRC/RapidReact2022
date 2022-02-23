@@ -48,6 +48,7 @@ public class RobotContainer {
     CommandScheduler.getInstance().cancelAll();
 
     final int intakeButton = 2;
+    final int spitButton = 12;
     final int transporterAxis = 2;
     final int intakePiston = 2;
 
@@ -55,7 +56,8 @@ public class RobotContainer {
         .manualCommand(
             () -> armJoystick.getRawButton(intakeButton),
             () -> armJoystick.getRawAxis(transporterAxis),
-            () -> armJoystick.getRawButton(intakePiston))
+            () -> armJoystick.getRawButton(intakePiston),
+            () -> armJoystick.getRawButton(spitButton))
         .schedule();
 
     drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
