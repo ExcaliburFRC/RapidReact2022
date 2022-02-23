@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
@@ -39,7 +38,7 @@ public class Shooter extends SubsystemBase {
   public Shooter() {
     leader.setInverted(true);
 
-          ValidateREVCAN(
+    ValidateREVCAN(
         // reset factory settings
         leader.restoreFactoryDefaults(),
         follower.restoreFactoryDefaults(),
@@ -108,7 +107,7 @@ public class Shooter extends SubsystemBase {
     velocity = dx / dt;
   }
 
-  public void setMotor(DoubleSupplier speed){
+  public void setMotor(DoubleSupplier speed) {
     leader.set(speed.getAsDouble());
   }
 

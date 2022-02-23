@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import io.excaliburfrc.robot.commands.ShootBallsCommand;
 import io.excaliburfrc.robot.subsystems.*;
 
 /**
@@ -53,38 +52,37 @@ public class RobotContainer {
     final int intakePiston = 2;
 
     intake
-          .manualCommand(
-                () -> armJoystick.getRawAxis(intakeAxis),
-                () -> armJoystick.getRawAxis(upperAxis),
-                () -> armJoystick.getRawButton(intakePiston))
-          .schedule();
+        .manualCommand(
+            () -> armJoystick.getRawAxis(intakeAxis),
+            () -> armJoystick.getRawAxis(upperAxis),
+            () -> armJoystick.getRawButton(intakePiston))
+        .schedule();
 
     drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
     //    shooter.manualCommand(() -> armJoystick.getRawAxis(4));
-    new JoystickButton(armJoystick, 11).toggleWhenPressed(
-          shooter.manualCommand(()-> 0.5));
+    new JoystickButton(armJoystick, 11).toggleWhenPressed(shooter.manualCommand(() -> 0.5));
     climber
-          .climberManualCommand(
-                () -> {
-                  if (driveJoystick.getTriangleButton()) {
-                    return CLIMB_SPEED;
-                  } else if (driveJoystick.getCrossButton()) {
-                    return -CLIMB_SPEED;
-                  } else {
-                    return 0;
-                  }
-                },
-                () -> {
-                  if (driveJoystick.getRawButton(POV_UP)) {
-                    return CLIMB_SPEED;
-                  } else if (driveJoystick.getRawButton(POV_DOWN)) {
-                    return -CLIMB_SPEED;
-                  } else {
-                    return 0;
-                  }
-                },
-                driveJoystick::getCircleButton)
-          .schedule();
+        .climberManualCommand(
+            () -> {
+              if (driveJoystick.getTriangleButton()) {
+                return CLIMB_SPEED;
+              } else if (driveJoystick.getCrossButton()) {
+                return -CLIMB_SPEED;
+              } else {
+                return 0;
+              }
+            },
+            () -> {
+              if (driveJoystick.getRawButton(POV_UP)) {
+                return CLIMB_SPEED;
+              } else if (driveJoystick.getRawButton(POV_DOWN)) {
+                return -CLIMB_SPEED;
+              } else {
+                return 0;
+              }
+            },
+            driveJoystick::getCircleButton)
+        .schedule();
   }
 
   /**
