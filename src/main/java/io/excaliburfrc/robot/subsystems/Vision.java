@@ -16,8 +16,8 @@ public class Vision extends SubsystemBase {
     return result.hasTargets() ? result.getBestTarget().getCameraToTarget() : new Transform2d();
   }
 
-  public boolean noTargets() {
-    return !result.hasTargets();
+  public boolean hasTargets() {
+    return result.hasTargets();
   }
 
   @Override

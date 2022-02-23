@@ -21,11 +21,14 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
+import java.util.Arrays;
 import java.util.function.DoubleSupplier;
 
 public class Drive extends SubsystemBase {
@@ -57,6 +60,9 @@ public class Drive extends SubsystemBase {
       new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
           .setKinematics(driveKinematics)
           .addConstraint(voltageConstraint);
+
+  public final Vision vision = new Vision();
+  public final Intake intake = new Intake();
 
   public Drive() {
     ValidateREVCAN(
@@ -130,6 +136,17 @@ public class Drive extends SubsystemBase {
           rightEncoder.setPosition(0);
         },
         this);
+  }
+
+  public Command automaticIntakeCommand() {
+    return new ConditionalCommand(
+        followTrajectoryCommand(
+                TrajectoryGenerator.generateTrajectory(
+                    Arrays.asList(getPose(), getPose().plus(vision.getTransform())),
+                    trajectoryConfig))
+            .raceWith(intake.intakeBallCommand()),
+        new InstantCommand(() -> SmartDashboard.putBoolean("hasTargets", false)),
+        vision::hasTargets);
   }
 
   @Override
