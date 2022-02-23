@@ -148,9 +148,9 @@ public class Drive extends SubsystemBase {
             .raceWith(intake.intakeBallCommand()),
         new InstantCommand(
             () -> {
-              SmartDashboard.putBoolean("hasTargets", false);
-              DriverStation.reportWarning("The camera didn't detect any balls", false);
-            }),
+          SmartDashboard.putBoolean("hasTargets", false);
+          DriverStation.reportWarning("The camera didn't detect any balls", false);
+        }),
         vision::hasTargets);
   }
 
