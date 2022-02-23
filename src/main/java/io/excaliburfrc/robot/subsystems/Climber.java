@@ -166,11 +166,12 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new InstantCommand(this::closeAngler, this);
   }
 
-  public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
+  public Command climberManualCommand(
+      DoubleSupplier rightClimber, DoubleSupplier leftClimber, BooleanSupplier piston) {
     return new RunCommand(
         () -> {
-          leftMotor.set(motorSpeed.getAsDouble());
-          rightMotor.set(motorSpeed.getAsDouble());
+          leftMotor.set(leftClimber.getAsDouble());
+          leftMotor.set(leftClimber.getAsDouble());
           if (piston.getAsBoolean()) this.anglerPiston.toggle();
         },
         this);
