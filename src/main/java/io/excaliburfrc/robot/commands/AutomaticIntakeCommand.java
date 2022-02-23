@@ -10,13 +10,11 @@ import java.util.Arrays;
 
 public class AutomaticIntakeCommand extends CommandBase {
   private final Drive drive;
-  private final Intake intake;
   private final Vision vision;
   private Trajectory trajectory;
 
   public AutomaticIntakeCommand(Drive drive, Intake intake, Vision vision) {
     this.drive = drive;
-    this.intake = intake;
     this.vision = vision;
 
     andThen(drive.followTrajectoryCommand(trajectory)).raceWith(intake.intakeBallCommand());
@@ -24,15 +22,13 @@ public class AutomaticIntakeCommand extends CommandBase {
 
   @Override
   public void initialize() {
+    if (vision.noTargets()) {
+      this.cancel();
+    }
     var currentPose = drive.getPose();
     trajectory =
         TrajectoryGenerator.generateTrajectory(
             Arrays.asList(currentPose, currentPose.plus(vision.getTransform())),
             drive.trajectoryConfig);
-  }
-
-  @Override
-  public boolean isFinished() {
-    return vision.noTargets();
   }
 }
