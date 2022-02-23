@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
@@ -56,10 +58,10 @@ public class Shooter extends SubsystemBase {
         follower.follow(leader));
   }
 
-  public Command manualCommand(DoubleSupplier speed) {
+  public Command manualCommand(BooleanSupplier speed) {
     return new FunctionalCommand(
         () -> controlMode = Mode.MANUAL,
-        () -> leader.set(speed.getAsDouble()),
+        () -> leader.set(speed.getAsBoolean()? -0.5: 0),
         __ -> leader.set(0),
         () -> false,
         this);
