@@ -45,7 +45,7 @@ public final class Constants {
     public static final double HEIGHT = 50;
     public static final double HEIGHT_TO_OPEN_PISTON = 20;
     public static final double SAFETY_DISTANCE = 0.1;
-    public static final double CLIMB_SPEED = 0.7;
+    public static final double CLIMB_SPEED = 0.4;
   }
 
   public static class ShooterConstants {
