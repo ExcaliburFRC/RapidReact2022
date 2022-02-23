@@ -36,7 +36,6 @@ public class Shooter extends SubsystemBase {
   private double velocity = 0;
 
   public Shooter() {
-    leader.setInverted(true);
 
     ValidateREVCAN(
         // reset factory settings
@@ -56,6 +55,8 @@ public class Shooter extends SubsystemBase {
         follower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
         // setup following
         follower.follow(leader));
+
+    leader.setInverted(true);
   }
 
   public Command manualCommand(DoubleSupplier speed) {
