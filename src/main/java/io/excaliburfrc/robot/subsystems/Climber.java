@@ -27,7 +27,7 @@ import java.util.function.DoubleSupplier;
 public class Climber extends SubsystemBase implements AutoCloseable {
   private final DoubleSolenoid anglerPiston =
       new DoubleSolenoid(
-          PneumaticsModuleType.CTREPCM,
+          PneumaticsModuleType.REVPH,
           ClimberConstants.FORWARD_CHANNEL,
           ClimberConstants.REVERSE_CHANNEL);
   private final CANSparkMax leftMotor =

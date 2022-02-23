@@ -33,7 +33,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final Trigger upperBallTrigger =
       new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
   private final DoubleSolenoid intakePiston =
-      new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
+      new DoubleSolenoid(PneumaticsModuleType.REVPH, FWD_CHANNEL, REV_CHANNEL);
 
   public Intake() {
     ValidateREVCAN(
