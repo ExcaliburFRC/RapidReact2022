@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
   private final CANSparkMax leader =
@@ -36,7 +37,9 @@ public class Shooter extends SubsystemBase {
   private double velocity = 0;
 
   public Shooter() {
-    ValidateREVCAN(
+    leader.setInverted(true);
+
+          ValidateREVCAN(
         // reset factory settings
         leader.restoreFactoryDefaults(),
         follower.restoreFactoryDefaults(),
@@ -56,10 +59,10 @@ public class Shooter extends SubsystemBase {
         follower.follow(leader));
   }
 
-  public Command manualCommand(BooleanSupplier speed) {
+  public Command manualCommand(DoubleSupplier speed) {
     return new FunctionalCommand(
         () -> controlMode = Mode.MANUAL,
-        () -> leader.set(speed.getAsBoolean() ? -0.5 : 0),
+        () -> leader.set(speed.getAsDouble()),
         __ -> leader.set(0),
         () -> false,
         this);
@@ -103,6 +106,10 @@ public class Shooter extends SubsystemBase {
     double dt = t - prevT;
 
     velocity = dx / dt;
+  }
+
+  public void setMotor(DoubleSupplier speed){
+    leader.set(speed.getAsDouble());
   }
 
   @Override
