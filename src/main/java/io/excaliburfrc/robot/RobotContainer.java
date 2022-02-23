@@ -60,7 +60,11 @@ public class RobotContainer {
             () -> armJoystick.getRawButton(intakeButton))
         .schedule();
 
-    drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
+    drive
+        .arcadeDriveCommend(
+            () -> Math.min(driveJoystick.getLeftY() * (armJoystick.getRawAxis(4) + 1.1) / 2, 1),
+            driveJoystick::getRightX)
+        .schedule();
     shooter.manualCommand(() -> 0.5 * armJoystick.getY()).schedule();
     climber
         .climberManualCommand(armJoystick::getY, () -> armJoystick.getRawButton(anglePiston))
