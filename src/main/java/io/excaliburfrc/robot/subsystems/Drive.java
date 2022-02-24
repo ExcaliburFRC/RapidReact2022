@@ -17,6 +17,7 @@ import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
 import java.util.Arrays;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Drive extends SubsystemBase {
@@ -61,9 +63,6 @@ public class Drive extends SubsystemBase {
       new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
           .setKinematics(driveKinematics)
           .addConstraint(voltageConstraint);
-
-  public final Vision vision = new Vision();
-  public final Intake intake = new Intake();
 
   public Drive() {
     ValidateREVCAN(
@@ -139,19 +138,19 @@ public class Drive extends SubsystemBase {
         this);
   }
 
-  public Command automaticIntakeCommand() {
+  public Command automaticIntakeCommand(
+      Transform2d transformToBall, Command intakeBallCommand, BooleanSupplier hasTargets) {
     return new ConditionalCommand(
         followTrajectoryCommand(
                 TrajectoryGenerator.generateTrajectory(
-                    Arrays.asList(getPose(), getPose().plus(vision.getTransform())),
-                    trajectoryConfig))
-            .raceWith(intake.intakeBallCommand()),
+                    Arrays.asList(getPose(), getPose().plus(transformToBall)), trajectoryConfig))
+            .raceWith(intakeBallCommand),
         new InstantCommand(
             () -> {
-          SmartDashboard.putBoolean("hasTargets", false);
-          DriverStation.reportWarning("The camera didn't detect any balls", false);
-        }),
-        vision::hasTargets);
+              SmartDashboard.putBoolean("hasTargets", false);
+              DriverStation.reportWarning("The camera didn't detect any balls", false);
+            }),
+        hasTargets);
   }
 
   @Override

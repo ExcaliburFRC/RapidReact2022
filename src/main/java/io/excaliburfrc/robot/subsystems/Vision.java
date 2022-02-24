@@ -1,7 +1,5 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static io.excaliburfrc.robot.Constants.VisionConstants.*;
-
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;

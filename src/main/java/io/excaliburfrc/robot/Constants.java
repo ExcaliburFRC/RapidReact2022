@@ -25,15 +25,6 @@ public final class Constants {
     public static final int MAX_BALLS = 2;
     public static final int FWD_CHANNEL = 6;
     public static final int REV_CHANNEL = 7;
-    public static final double CAMERA_HEIGHT = 0.5;
-    public static final double TARGET_HEIGHT = 0;
-    public static final double CAMERA_PITCH = 1;
-  }
-
-  public static class VisionConstants {
-    public static final double CAMERA_HEIGHT = 0.5;
-    public static final double TARGET_HEIGHT = 0;
-    public static final double CAMERA_PITCH = 1;
   }
 
   public static class ClimberConstants {
