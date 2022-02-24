@@ -51,7 +51,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD));
-
     // update the counter whenever we shoot a ball
     upperBallTrigger.whenInactive(ballCount::decrementAndGet, this);
     // and report if we pass the limit
@@ -105,14 +104,16 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   public Command manualCommand(
       BooleanSupplier intake,
-      DoubleSupplier upper,
+      BooleanSupplier upper,
       BooleanSupplier pistonState,
-      BooleanSupplier spit) {
+      BooleanSupplier spit,
+      BooleanSupplier backTransporter) {
     return new RunCommand(
         () -> {
           intakeMotor.set(intake.getAsBoolean() ? 0.5 : 0);
-          if (!intake.getAsBoolean()) intakeMotor.set(spit.getAsBoolean() ? -0.5 : 0);
-          transporterMotor.set(upper.getAsDouble());
+          intakeMotor.set(spit.getAsBoolean() ? -0.5 : 0);
+          transporterMotor.set(upper.getAsBoolean()? -0.5: 0);
+          transporterMotor.set(backTransporter.getAsBoolean()? -0.5: 0);
           if (pistonState.getAsBoolean()) intakePiston.toggle();
         },
         this);
@@ -179,10 +180,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     return ballCount.get() < 1;
   }
 
-  @Override
-  public void periodic() {
-    if (intakePiston.get() != DoubleSolenoid.Value.kForward) {
-      intakeMotor.set(0);
-    }
-  }
+//  @Override
+//  public void periodic() {
+//    if (intakePiston.get() != DoubleSolenoid.Value.kForward) {
+//      intakeMotor.set(0);
+//    }
+//  }
 }

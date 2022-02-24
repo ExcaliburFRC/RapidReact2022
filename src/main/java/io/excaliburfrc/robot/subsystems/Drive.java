@@ -88,6 +88,8 @@ public class Drive extends SubsystemBase {
     odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
   }
 
+
+
   public Pose2d getPose() {
     return odometry.getPoseMeters();
   }
@@ -102,6 +104,10 @@ public class Drive extends SubsystemBase {
   public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return new RunCommand(
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
+  }
+  public Command tankDriveCommand(DoubleSupplier left, DoubleSupplier right) {
+    return new RunCommand(
+        () -> drive.tankDrive(left.getAsDouble(), right.getAsDouble()), this);
   }
 
   public Command followTrajectoryCommand(Trajectory trajectory) {

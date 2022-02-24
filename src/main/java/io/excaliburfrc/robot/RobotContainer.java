@@ -47,22 +47,25 @@ public class RobotContainer {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
-    final int intakeButton = 2;
-    final int spitButton = 12;
-    final int transporterAxis = 2;
-    final int intakePiston = 2;
+    final int intakeButton = 6;
+    final int spitButton = 3;
+    final int transporterButton = 2;
+    final int splitTransporterButton = 4;
+    final int intakePiston = 10;
 
     intake
         .manualCommand(
             () -> armJoystick.getRawButton(intakeButton),
-            () -> armJoystick.getRawAxis(transporterAxis),
+            () -> armJoystick.getRawButton(transporterButton),
             () -> armJoystick.getRawButton(intakePiston),
-            () -> armJoystick.getRawButton(spitButton))
+            () -> armJoystick.getRawButton(spitButton),
+            () -> armJoystick.getRawButton(splitTransporterButton))
         .schedule();
 
-    drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
-    //    shooter.manualCommand(() -> armJoystick.getRawAxis(4));
-    new JoystickButton(armJoystick, 11).toggleWhenPressed(shooter.manualCommand(() -> 0.5));
+//    drive.tankDriveCommand(driveJoystick::getLeftY, driveJoystick::getRightY).schedule();
+//    drive.arcadeDriveCommend(armJoystick::getY, armJoystick::getX).schedule();
+        shooter.manualCommand(() -> armJoystick.getRawAxis(4)).schedule();
+//    new JoystickButton(armJoystick, 11).toggleWhenPressed(shooter.manualCommand(() -> 0.5));
     climber
         .climberManualCommand(
             () -> {
@@ -75,15 +78,15 @@ public class RobotContainer {
               }
             },
             () -> {
-              if (driveJoystick.getRawButton(POV_UP)) {
+              if (driveJoystick.getCircleButton()) {
                 return CLIMB_SPEED;
-              } else if (driveJoystick.getRawButton(POV_DOWN)) {
+              } else if (driveJoystick.getSquareButton()) {
                 return -CLIMB_SPEED;
               } else {
                 return 0;
               }
             },
-            driveJoystick::getCircleButton)
+            driveJoystick::getL1Button)
         .schedule();
   }
 
