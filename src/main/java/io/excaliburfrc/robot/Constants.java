@@ -12,16 +12,17 @@ public final class Constants {
   // theoretically this goes down to 1ms, but we don't want to clog anything
   public static final int minimal_FRAME_PERIOD = 5; // ms
   public static final int MAXIMAL_FRAME_PERIOD = 65535; // ms
+  public static final int PH = 1;
 
   public static final class IntakeConstants {
     public static final int INTAKE_MOTOR_ID = 2;
     public static final int UPPER_MOTOR_ID = 6;
-    public static final int PING = 5;
-    public static final int ECHO = 6;
+    public static final int PING = 4;
+    public static final int ECHO = 3;
     public static final int COLOR_LIMIT = 69;
     public static final int SONIC_LIMIT = 69;
-    public static final int RED_THRESHOLD = 100;
-    public static final int BLUE_THRESHOLD = 100;
+    public static final int RED_THRESHOLD = 14;
+    public static final int BLUE_THRESHOLD = 14;
     public static final int MAX_BALLS = 2;
     public static final int FWD_CHANNEL = 6;
     public static final int REV_CHANNEL = 7;
@@ -52,7 +53,7 @@ public final class Constants {
     public static final int LEADER_ID = 10;
     public static final int FOLLOWER_ID = 8;
     public static final int ENCODER_A = 2;
-    public static final int ENCODER_B = 3;
+    public static final int ENCODER_B = 5;
 
     @SuppressWarnings("HungarianNotationConstants")
     public static final double kS = 0;

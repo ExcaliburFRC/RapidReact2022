@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax transporterMotor =
       new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
-  private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kMXP);
+  private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kOnboard);
   private final Trigger intakeBallTrigger =
       new Trigger(() -> intakeSensor.getProximity() < COLOR_LIMIT);
   private final Ultrasonic upperSensor = new Ultrasonic(PING, ECHO);
@@ -56,6 +56,8 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     // and report if we pass the limit
     new Trigger(() -> ballCount.get() > MAX_BALLS)
         .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
+
+    upperSensor.setEnabled(true);
   }
 
   public Command intakeBallCommand() {
@@ -108,14 +110,15 @@ public class Intake extends SubsystemBase implements AutoCloseable {
       BooleanSupplier transporter,
       BooleanSupplier spitTransporter,
       BooleanSupplier pistonState) {
+    final double speed = 0.4;
     return new RunCommand(
         () -> {
-          if (intake.getAsBoolean()) intakeMotor.set(-0.5);
-          else if (spit.getAsBoolean()) intakeMotor.set(0.5);
+          if (intake.getAsBoolean()) intakeMotor.set(-speed);
+          else if (spit.getAsBoolean()) intakeMotor.set(speed);
           else intakeMotor.set(0);
 
-          if (transporter.getAsBoolean()) transporterMotor.set(-0.5);
-          else if (spitTransporter.getAsBoolean()) transporterMotor.set(0.5);
+          if (transporter.getAsBoolean()) transporterMotor.set(-speed);
+          else if (spitTransporter.getAsBoolean()) transporterMotor.set(speed);
           else transporterMotor.set(0);
 
           if (pistonState.getAsBoolean()) intakePiston.toggle();
@@ -144,14 +147,21 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   private boolean isOurColor() {
+    var colorVal = 0;
+    boolean isOurColor = false;
+
     switch (DriverStation.getAlliance()) {
       case Red:
-        return intakeSensor.getRed() > RED_THRESHOLD;
+        colorVal = intakeSensor.getRed();
+        isOurColor = colorVal < RED_THRESHOLD;
+        break;
       case Blue:
-        return intakeSensor.getBlue() > BLUE_THRESHOLD;
+        colorVal = intakeSensor.getBlue();
+        isOurColor = colorVal < BLUE_THRESHOLD;
+        break;
     }
-    DriverStation.reportError("DS Alliance color is invalid!", false);
-    return false;
+    SmartDashboard.putNumber("color val: ", colorVal);
+    return isOurColor;
   }
 
   @Override
@@ -163,13 +173,13 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   private enum Speeds {
     ;
-    static final double ejectDutyCycle = -0.6;
+    static final double ejectDutyCycle = 0.3;
 
-    static final double intakeInDutyCycle = 0.3;
-    static final double upperInDutyCycle = 0.3;
+    static final double intakeInDutyCycle = 0.4;
+    static final double upperInDutyCycle = 0.4;
 
-    static final double intakeShootDutyCycle = 0.4;
-    static final double upperShootDutyCycle = 0.6;
+    static final double intakeShootDutyCycle = 0.2;
+    static final double upperShootDutyCycle = 0.2;
   }
 
   @Override
@@ -189,9 +199,8 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     if (intakePiston.get() != DoubleSolenoid.Value.kForward) {
       intakeMotor.set(0);
     }
-    if (upperBallTrigger.getAsBoolean()) {
-      SmartDashboard.putBoolean("isBall", true);
-      SmartDashboard.putBoolean("IsColor", intakeBallTrigger.getAsBoolean());
-    }
+    SmartDashboard.putBoolean("IsColor", isOurColor());
+    SmartDashboard.putBoolean("isBall", upperBallTrigger.getAsBoolean());
+    SmartDashboard.putNumber("sonic distance: ", upperSensor.getRangeMM());
   }
 }
