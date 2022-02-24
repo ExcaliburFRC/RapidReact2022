@@ -2,6 +2,7 @@ package io.excaliburfrc.robot;
 
 import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,47 +48,56 @@ public class RobotContainer {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
-    final int intakeButton = 6;
-    final int spitButton = 3;
-    final int transporterButton = 2;
-    final int splitTransporterButton = 4;
+    boolean speed = false;
+
+    final int intakeButton = 2;
+    final int spitButton = 4;
+    final int transporterButton = 5;
+    final int spitTransporterButton = 6;
+
+    final int shooterButton = 3;
+    final double shooterSpeed = 0.5;
+
     final int intakePiston = 10;
 
     intake
-        .manualCommand(
-            () -> armJoystick.getRawButton(intakeButton),
-            () -> armJoystick.getRawButton(transporterButton),
-            () -> armJoystick.getRawButton(intakePiston),
-            () -> armJoystick.getRawButton(spitButton),
-            () -> armJoystick.getRawButton(splitTransporterButton))
-        .schedule();
+          .manualCommand(
+                () -> armJoystick.getRawButton(intakeButton),
+                () -> armJoystick.getRawButton(spitButton),
+                () -> armJoystick.getRawButton(transporterButton),
+                () -> armJoystick.getRawButton(spitTransporterButton),
+                () -> armJoystick.getRawButton(intakePiston))
+          .schedule();
+
+    drive.arcadeDriveCommend(driveJoystick::getRightX, driveJoystick::getLeftY).schedule();
+
+    new JoystickButton(armJoystick, shooterButton).toggleWhenPressed(shooter.manualCommand(() -> shooterSpeed));
+
 
 //    drive.tankDriveCommand(driveJoystick::getLeftY, driveJoystick::getRightY).schedule();
-//    drive.arcadeDriveCommend(armJoystick::getY, armJoystick::getX).schedule();
-        shooter.manualCommand(() -> armJoystick.getRawAxis(4)).schedule();
-//    new JoystickButton(armJoystick, 11).toggleWhenPressed(shooter.manualCommand(() -> 0.5));
-    climber
-        .climberManualCommand(
-            () -> {
-              if (driveJoystick.getTriangleButton()) {
-                return CLIMB_SPEED;
-              } else if (driveJoystick.getCrossButton()) {
-                return -CLIMB_SPEED;
-              } else {
-                return 0;
-              }
-            },
-            () -> {
-              if (driveJoystick.getCircleButton()) {
-                return CLIMB_SPEED;
-              } else if (driveJoystick.getSquareButton()) {
-                return -CLIMB_SPEED;
-              } else {
-                return 0;
-              }
-            },
-            driveJoystick::getL1Button)
-        .schedule();
+//        shooter.manualCommand(() -> armJoystick.getRawAxis(2)).schedule();
+//    climber
+//          .climberManualCommand(
+//                () -> {
+//                  if (driveJoystick.getPOV() == POV_UP) {
+//                    return CLIMB_SPEED;
+//                  } else if (driveJoystick.getPOV() == POV_DOWN) {
+//                    return -CLIMB_SPEED;
+//                  } else {
+//                    return 0;
+//                  }
+//                },
+//                () -> {
+//                  if (driveJoystick.getCrossButton()) {
+//                    return CLIMB_SPEED;
+//                  } else if (driveJoystick.getTriangleButton()) {
+//                    return -CLIMB_SPEED;
+//                  } else {
+//                    return 0;
+//                  }
+//                },
+//                driveJoystick::getL1Button)
+//          .schedule();
   }
 
   /**

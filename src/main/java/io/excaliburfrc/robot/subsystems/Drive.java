@@ -28,6 +28,8 @@ import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Drive extends SubsystemBase {
@@ -103,7 +105,7 @@ public class Drive extends SubsystemBase {
 
   public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return new RunCommand(
-        () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
+        () -> drive.arcadeDrive(xSpeed.getAsDouble(),-0.5 * zRotation.getAsDouble()), this);
   }
   public Command tankDriveCommand(DoubleSupplier left, DoubleSupplier right) {
     return new RunCommand(
