@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax transporterMotor =
       new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
-  private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kOnboard);
+  private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kMXP);
   private final Trigger intakeBallTrigger =
       new Trigger(() -> intakeSensor.getProximity() < COLOR_LIMIT);
   private final Ultrasonic upperSensor = new Ultrasonic(PING, ECHO);
