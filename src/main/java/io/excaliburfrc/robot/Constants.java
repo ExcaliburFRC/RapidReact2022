@@ -20,8 +20,6 @@ public final class Constants {
     public static final int ECHO = 6;
     public static final int COLOR_LIMIT = 69;
     public static final int SONIC_LIMIT = 69;
-    public static final int RED_THRESHOLD = 100;
-    public static final int BLUE_THRESHOLD = 100;
     public static final int MAX_BALLS = 2;
     public static final int FWD_CHANNEL = 6;
     public static final int REV_CHANNEL = 7;

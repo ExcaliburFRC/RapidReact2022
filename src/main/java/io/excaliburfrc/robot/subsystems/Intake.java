@@ -136,9 +136,9 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private boolean isOurColor() {
     switch (DriverStation.getAlliance()) {
       case Red:
-        return intakeSensor.getRed() > RED_THRESHOLD;
+        return intakeSensor.getRed() > intakeSensor.getBlue();
       case Blue:
-        return intakeSensor.getBlue() > BLUE_THRESHOLD;
+        return intakeSensor.getBlue() > intakeSensor.getRed();
     }
     DriverStation.reportError("DS Alliance color is invalid!", false);
     return false;
