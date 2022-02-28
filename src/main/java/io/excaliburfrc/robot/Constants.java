@@ -13,6 +13,12 @@ public final class Constants {
   public static final int minimal_FRAME_PERIOD = 5; // ms
   public static final int MAXIMAL_FRAME_PERIOD = 65535; // ms
 
+  public static final class VisionConstants {
+    public static final double CAMERA_HEIGHT = 0;
+    public static final double TARGET_HEIGHT = 0;
+    public static final double CAMERA_PITCH = 0;
+  }
+
   public static final class IntakeConstants {
     public static final int INTAKE_MOTOR_ID = 40;
     public static final int UPPER_MOTOR_ID = 41;
@@ -85,6 +91,12 @@ public final class Constants {
     public static final double TRACKWIDTH_METERS = 0.69;
     public static final double MAX_SPEED_METERS_PER_SECOND = 3;
     public static final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
+    public static final double ROTATION_P = 0;
+    public static final double ROTATION_I = 0;
+    public static final double ROTATION_D = 0;
+    public static final double DISTANCE_P = 0;
+    public static final double DISTANCE_I = 0;
+    public static final double DISTANCE_D = 0;
   }
 
   public static class LedsConstants {

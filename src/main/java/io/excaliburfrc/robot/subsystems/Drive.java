@@ -14,23 +14,19 @@ import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
-import java.util.Arrays;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -57,12 +53,9 @@ public class Drive extends SubsystemBase {
 
   private final DifferentialDriveKinematics driveKinematics =
       new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
-  private final DifferentialDriveVoltageConstraint voltageConstraint =
-      new DifferentialDriveVoltageConstraint(feedforward, driveKinematics, 10);
-  public final TrajectoryConfig trajectoryConfig =
-      new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
-          .setKinematics(driveKinematics)
-          .addConstraint(voltageConstraint);
+
+  private final PIDController rotationPID = new PIDController(ROTATION_P, ROTATION_I, ROTATION_D);
+  private final PIDController distancePID = new PIDController(DISTANCE_P, DISTANCE_I, DISTANCE_D);
 
   public Drive() {
     ValidateREVCAN(
@@ -139,11 +132,26 @@ public class Drive extends SubsystemBase {
   }
 
   public Command automaticIntakeCommand(
-      Transform2d transformToBall, Command intakeBallCommand, BooleanSupplier hasTargets) {
+      DoubleSupplier getRotation,
+      DoubleSupplier getDistance,
+      Command intakeBallCommand,
+      BooleanSupplier hasTargets) {
     return new ConditionalCommand(
-        followTrajectoryCommand(
-                TrajectoryGenerator.generateTrajectory(
-                    Arrays.asList(getPose(), getPose().plus(transformToBall)), trajectoryConfig))
+        new ConditionalCommand(
+                new InstantCommand(
+                    () ->
+                        drive.arcadeDrive(
+                            distancePID.calculate(0, getDistance.getAsDouble()),
+                            rotationPID.calculate(0, getRotation.getAsDouble()))),
+                new FunctionalCommand(
+                    () -> {},
+                    () ->
+                        drive.arcadeDrive(
+                            distancePID.calculate(0, getDistance.getAsDouble()),
+                            rotationPID.calculate(0, getRotation.getAsDouble())),
+                    __ -> drive.tankDrive(0, 0),
+                    () -> distancePID.atSetpoint() && rotationPID.atSetpoint()),
+                hasTargets)
             .raceWith(intakeBallCommand),
         new InstantCommand(
             () -> {
