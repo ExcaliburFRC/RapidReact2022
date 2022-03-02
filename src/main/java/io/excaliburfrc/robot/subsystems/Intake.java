@@ -174,10 +174,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     static final double ejectDutyCycle = -0.6;
 
     static final double intakeInDutyCycle = 0.3;
-    static final double upperInDutyCycle = 0.3;
+    static final double upperInDutyCycle = 0.1;
 
     static final double intakeShootDutyCycle = 0.4;
-    static final double upperShootDutyCycle = 0.6;
+    static final double upperShootDutyCycle = 0.7;
   }
 
   @Override
