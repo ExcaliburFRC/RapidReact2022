@@ -2,6 +2,8 @@ package io.excaliburfrc.robot.subsystems;
 
 import static io.excaliburfrc.robot.Constants.LedsConstants.LEDS_PORT;
 
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -43,5 +45,10 @@ public class LEDs extends SubsystemBase {
 
   public Command ledsOffCommand() {
     return new RunCommand(() -> leds.setSpeed(LedMode.OFF.dutyCycle), this);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    SendableRegistry.remove(leds);
   }
 }

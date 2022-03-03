@@ -163,7 +163,11 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    super.initSendable(builder);
+    builder.setSmartDashboardType("Subsystem");
+    builder.addStringProperty(
+        ".command",
+        () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "none",
+        null);
     builder.addBooleanProperty("Intake Cargo", intakeBallTrigger, null);
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);

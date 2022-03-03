@@ -165,7 +165,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    super.initSendable(builder);
+    builder.setSmartDashboardType("Subsystem");
+    builder.addStringProperty(
+        ".command",
+        () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "none",
+        null);
     builder.addDoubleProperty("leftHeight", left::getHeight, null);
     builder.addDoubleProperty("rightHeight", right::getHeight, null);
   }

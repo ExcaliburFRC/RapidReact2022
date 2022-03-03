@@ -11,6 +11,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
 import java.util.function.DoubleSupplier;
@@ -134,9 +135,18 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    super.initSendable(builder);
+    LiveWindow.disableTelemetry(encoder);
+    LiveWindow.disableTelemetry(pid);
+
+    builder.setSmartDashboardType("Subsystem");
+    builder.addStringProperty(
+        ".command",
+        () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "none",
+        null);
     builder.addDoubleProperty("velocity", this::getVelocity, null);
     builder.addDoubleProperty("targetVelocity", pid::getSetpoint, null);
+    builder.addDoubleProperty("control effort", leader::getAppliedOutput, null);
+    builder.addDoubleProperty("control current", leader::getOutputCurrent, null);
     builder.addBooleanProperty("isAtReference", this::isAtTargetVelocity, null);
   }
 }
