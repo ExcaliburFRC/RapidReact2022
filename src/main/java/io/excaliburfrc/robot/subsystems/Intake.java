@@ -11,6 +11,7 @@ import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Ultrasonic;
@@ -18,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 public class Intake extends SubsystemBase implements AutoCloseable {
   private final AtomicInteger ballCount = new AtomicInteger(0);
@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final CANSparkMax upperMotor = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
   private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kMXP);
   private final Trigger intakeBallTrigger =
-      new Trigger(() -> intakeSensor.getProximity() < COLOR_LIMIT);
+      new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT);
   private final Ultrasonic upperSensor = new Ultrasonic(PING, ECHO);
   private final Trigger upperBallTrigger =
       new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
@@ -55,11 +55,15 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     // and report if we pass the limit
     new Trigger(() -> ballCount.get() > MAX_BALLS)
         .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
+
+    intakeMotor.setInverted(true);
+    upperMotor.setInverted(true);
+    Ultrasonic.setAutomaticMode(true);
   }
 
   public Command intakeBallCommand() {
     return new FunctionalCommand(
-            () -> intakePiston.set(DoubleSolenoid.Value.kForward),
+            () -> intakePiston.set(Value.kForward),
             () -> intakeMotor.set(Speeds.intakeInDutyCycle),
             __ -> intakeMotor.set(0),
             intakeBallTrigger)
@@ -78,7 +82,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
                     __ -> {
                       intakeMotor.set(0);
                       upperMotor.set(0);
-                      intakePiston.set(DoubleSolenoid.Value.kReverse);
+                      intakePiston.set(Value.kReverse);
                     },
                     // isFinished
                     upperBallTrigger,
@@ -86,28 +90,43 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
                 // output sets motor until ball entry sensor no longer sees a ball
                 new FunctionalCommand(
-                    // init
-                    () -> {},
-                    // exe
-                    () -> intakeMotor.set(Speeds.ejectDutyCycle),
-                    // end
-                    __ -> {
-                      intakeMotor.set(0);
-                      intakePiston.set(DoubleSolenoid.Value.kReverse);
-                    },
-                    // isFinished
-                    intakeBallTrigger.negate()),
+                        // init
+                        () -> {},
+                        // exe
+                        () -> intakeMotor.set(Speeds.ejectDutyCycle),
+                        // end
+                        __ -> {
+                          intakeMotor.set(0);
+                          intakePiston.set(Value.kReverse);
+                        },
+                        // isFinished
+                        intakeBallTrigger.negate())
+                    .andThen(
+                        new StartEndCommand(
+                                () -> intakeMotor.set(Speeds.ejectDutyCycle),
+                                () -> intakeMotor.set(0))
+                            .withTimeout(0.5)),
                 // decides by ball color
                 this::isOurColor));
   }
 
   public Command manualCommand(
-      DoubleSupplier intake, DoubleSupplier upper, BooleanSupplier pistonState) {
+      BooleanSupplier intakeIn,
+      BooleanSupplier intakeOut,
+      BooleanSupplier upperIn,
+      BooleanSupplier upperOut,
+      BooleanSupplier pistonState) {
     return new RunCommand(
         () -> {
-          intakeMotor.set(intake.getAsDouble());
-          upperMotor.set(upper.getAsDouble());
-          if (pistonState.getAsBoolean()) intakePiston.toggle();
+          if (intakeIn.getAsBoolean()) intakeMotor.set(Speeds.intakeInDutyCycle);
+          else if (intakeOut.getAsBoolean()) intakeMotor.set(-Speeds.intakeInDutyCycle);
+          else intakeMotor.set(0);
+          if (upperIn.getAsBoolean()) upperMotor.set(Speeds.upperShootDutyCycle);
+          else if (upperOut.getAsBoolean()) upperMotor.set(-Speeds.upperInDutyCycle);
+          else upperMotor.set(0);
+          if (pistonState.getAsBoolean())
+            intakePiston.set(
+                intakePiston.get() == Value.kForward ? Value.kReverse : Value.kForward);
         },
         this);
   }

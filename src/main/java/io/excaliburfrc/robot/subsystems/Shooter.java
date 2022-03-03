@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
-import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
   private final CANSparkMax leader =
@@ -28,8 +27,7 @@ public class Shooter extends SubsystemBase {
       new Encoder(ShooterConstants.ENCODER_A, ShooterConstants.ENCODER_B);
   private final SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV);
-  private final PIDController pid =
-      new PIDController(ShooterConstants.kP, ShooterConstants.kI, ShooterConstants.kD);
+  private final PIDController pid = new PIDController(ShooterConstants.kP, 0, 0);
 
   private Mode controlMode = Mode.OFF;
   private double velocity = 0;
@@ -54,12 +52,15 @@ public class Shooter extends SubsystemBase {
         leader.setSmartCurrentLimit(80),
         // setup following
         follower.follow(leader));
+    leader.setInverted(true);
+
+    encoder.setDistancePerPulse(ShooterConstants.ROTATIONS_PER_PULSE);
   }
 
-  public Command manualCommand(DoubleSupplier speed) {
+  public Command manualCommand() {
     return new FunctionalCommand(
         () -> controlMode = Mode.MANUAL,
-        () -> leader.set(speed.getAsDouble()),
+        () -> leader.set(0.6738),
         __ -> leader.set(0),
         () -> false,
         this);
@@ -122,7 +123,7 @@ public class Shooter extends SubsystemBase {
       case CLOSED_LOOP:
         double ffOutput = feedforward.calculate(pid.getSetpoint());
         double pidOutput = pid.calculate(velocity);
-        leader.set(pidOutput + ffOutput);
+        leader.setVoltage(pidOutput + ffOutput);
         break;
     }
   }

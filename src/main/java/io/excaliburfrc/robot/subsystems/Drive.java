@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Drive extends SubsystemBase {
@@ -59,6 +60,7 @@ public class Drive extends SubsystemBase {
         leftFollower.restoreFactoryDefaults(),
         rightLeader.restoreFactoryDefaults(),
         rightFollower.restoreFactoryDefaults(),
+
         // set the motors to coast mode -- we don't want to break them!
         leftLeader.setIdleMode(IdleMode.kBrake),
         leftFollower.setIdleMode(IdleMode.kBrake),
@@ -108,6 +110,15 @@ public class Drive extends SubsystemBase {
   public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return new RunCommand(
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
+  }
+
+  public Command curvatureDriveCommand(
+      DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier quickTurn) {
+    return new RunCommand(
+        () ->
+            drive.curvatureDrive(
+                xSpeed.getAsDouble(), zRotation.getAsDouble(), quickTurn.getAsBoolean()),
+        this);
   }
 
   public Command followTrajectoryCommand(Trajectory trajectory) {

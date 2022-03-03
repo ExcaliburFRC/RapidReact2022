@@ -6,6 +6,7 @@ import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
@@ -28,8 +29,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           PneumaticsModuleType.REVPH,
           ClimberConstants.FORWARD_CHANNEL,
           ClimberConstants.REVERSE_CHANNEL);
-  private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID);
-  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID);
+  private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false);
+  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true);
 
   private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, MG, kV, kA);
   private final ElevatorFeedforward diagonalFF =
@@ -46,7 +47,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     private final RelativeEncoder encoder;
     private final SparkMaxPIDController controller;
 
-    public ClimberSide(int motorId) {
+    public ClimberSide(int motorId, boolean isMotorReversed) {
       motor = new CANSparkMax(motorId, MotorType.kBrushless);
       encoder = motor.getEncoder();
       controller = motor.getPIDController();
@@ -59,11 +60,18 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
+          motor.setSoftLimit(SoftLimitDirection.kReverse, 0),
+          motor.enableSoftLimit(SoftLimitDirection.kReverse, true),
+          motor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.FORWARD_SOFT_LIMIT),
+          motor.enableSoftLimit(SoftLimitDirection.kForward, true),
           // set up PID parameters
           controller.setFeedbackDevice(encoder),
           controller.setP(kP),
           controller.setI(kI),
           controller.setD(kD));
+      motor.setInverted(isMotorReversed);
+
+      resetPosition();
     }
 
     public Command downCommand() {
@@ -72,6 +80,10 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> motor.set(-1),
           __ -> motor.set(0),
           () -> encoder.getPosition() <= SAFETY_DISTANCE);
+    }
+
+    public void resetPosition() {
+      encoder.setPosition(0);
     }
 
     public void close() {
@@ -153,12 +165,17 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new InstantCommand(this::closeAngler, this);
   }
 
-  public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
+  public Command climberManualCommand(
+      DoubleSupplier leftSpeed,
+      DoubleSupplier rightSpeed,
+      BooleanSupplier piston,
+      BooleanSupplier solenoid_1) {
     return new RunCommand(
         () -> {
-          left.set(motorSpeed.getAsDouble());
-          right.set(motorSpeed.getAsDouble());
-          if (piston.getAsBoolean()) this.anglerPiston.toggle();
+          left.set(leftSpeed.getAsDouble());
+          right.set(rightSpeed.getAsDouble());
+          if (piston.getAsBoolean()) this.anglerPiston.set(DoubleSolenoid.Value.kForward);
+          else if (solenoid_1.getAsBoolean()) this.anglerPiston.set(DoubleSolenoid.Value.kReverse);
         },
         this);
   }

@@ -10,17 +10,15 @@ package io.excaliburfrc.robot;
  */
 public final class Constants {
   public static final class IntakeConstants {
-    public static final int INTAKE_MOTOR_ID = 40;
-    public static final int UPPER_MOTOR_ID = 41;
-    public static final int PING = 5;
-    public static final int ECHO = 6;
-    public static final int COLOR_LIMIT = 69;
+    public static final int INTAKE_MOTOR_ID = 40; // PDP 4
+    public static final int UPPER_MOTOR_ID = 41; // PDP 11
+    public static final int PING = 9;
+    public static final int ECHO = 8;
+    public static final int COLOR_LIMIT = 60;
     public static final int SONIC_LIMIT = 69;
-    public static final int RED_THRESHOLD = 100;
-    public static final int BLUE_THRESHOLD = 100;
     public static final int MAX_BALLS = 2;
-    public static final int FWD_CHANNEL = 6;
-    public static final int REV_CHANNEL = 7;
+    public static final int FWD_CHANNEL = 3;
+    public static final int REV_CHANNEL = 2;
   }
 
   public static class ClimberConstants {
@@ -41,31 +39,28 @@ public final class Constants {
     public static final double HEIGHT = 50;
     public static final double HEIGHT_TO_OPEN_PISTON = 20;
     public static final double SAFETY_DISTANCE = 0.1;
+    public static final float FORWARD_SOFT_LIMIT = 56.262463f;
   }
 
   public static class ShooterConstants {
     public static final int LEADER_ID = 20;
     public static final int FOLLOWER_ID = 21;
-    public static final int ENCODER_A = 2;
-    public static final int ENCODER_B = 3;
+    public static final int ENCODER_A = 0;
+    public static final int ENCODER_B = 1;
 
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kS = 0;
+    public static final double kS = 0.10898;
+    public static final double kV = 0.065;
+    //    public static final double kA = 0.031584; // we want 0 acceleration
+    public static final double kP = 0.3;
 
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kV = 0;
+    public static final double RATIO = 42.0 / 18.0;
+    public static final double CPR = 1024;
+    public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kP = 0;
-
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kI = 0;
-
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kD = 0;
-
-    public static final double FENDER_SHOT_RPM = 2500;
-    public static final double TOLERANCE = 10;
+    //    public static final double FENDER_SHOT_RPM = 121.45182291666667;
+    //    public static final double FENDER_SHOT_RPM = 90;
+    public static final double FENDER_SHOT_RPM = 180;
+    public static final double TOLERANCE = 5;
   }
 
   public static class DrivetrainConstants {
@@ -84,6 +79,6 @@ public final class Constants {
   }
 
   public static class LedsConstants {
-    public static final int LEDS_PORT = 3;
+    public static final int LEDS_PORT = 0;
   }
 }
