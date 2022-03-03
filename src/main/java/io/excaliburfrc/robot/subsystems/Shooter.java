@@ -1,8 +1,6 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
-import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
-import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
+import static io.excaliburfrc.lib.CAN.*;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -45,13 +43,14 @@ public class Shooter extends SubsystemBase {
         follower.setIdleMode(IdleMode.kCoast),
         // have the leader send its applied output as frequently as possible,
         // to speed up follower response
-        leader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, minimal_FRAME_PERIOD),
+        leader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
         // other status frames can be reduced to almost never
-        leader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        leader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
-        follower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        follower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        follower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
+        leader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        leader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
+        follower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+        follower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        follower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
+        leader.setSmartCurrentLimit(80),
         // setup following
         follower.follow(leader));
   }

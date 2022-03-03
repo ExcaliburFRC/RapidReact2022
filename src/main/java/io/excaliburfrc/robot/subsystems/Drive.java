@@ -1,9 +1,7 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.robot.Constants.DrivetrainConstants.*;
-import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
-import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
@@ -68,22 +66,30 @@ public class Drive extends SubsystemBase {
         rightFollower.setIdleMode(IdleMode.kBrake),
         // have the leader send its applied output as frequently as possible,
         // to speed up follower response
-        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, minimal_FRAME_PERIOD),
-        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, minimal_FRAME_PERIOD),
-        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
-        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, minimal_FRAME_PERIOD),
-        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, minimal_FRAME_PERIOD),
-        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.HIGH_PRIORITY),
+        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
+        rightLeader.setPeriodicFramePeriod(
+            PeriodicFrame.kStatus0, StatusFramePeriods.HIGH_PRIORITY),
+        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
         // other status frames can be reduced to almost never
-        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
-        rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        rightFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
+        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        leftFollower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
+        rightFollower.setPeriodicFramePeriod(
+            PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+        rightFollower.setPeriodicFramePeriod(
+            PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        rightFollower.setPeriodicFramePeriod(
+            PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND));
+
+    leftLeader.setInverted(false);
+    rightLeader.setInverted(true);
+
+    ValidateREVCAN(
         // setup following
-        leftFollower.follow(leftLeader),
-        rightFollower.follow(rightLeader));
+        leftFollower.follow(leftLeader, false), rightFollower.follow(rightLeader, false));
 
     odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
   }

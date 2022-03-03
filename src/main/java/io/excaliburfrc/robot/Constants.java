@@ -9,10 +9,6 @@ package io.excaliburfrc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  // theoretically this goes down to 1ms, but we don't want to clog anything
-  public static final int minimal_FRAME_PERIOD = 5; // ms
-  public static final int MAXIMAL_FRAME_PERIOD = 65535; // ms
-
   public static final class IntakeConstants {
     public static final int INTAKE_MOTOR_ID = 40;
     public static final int UPPER_MOTOR_ID = 41;

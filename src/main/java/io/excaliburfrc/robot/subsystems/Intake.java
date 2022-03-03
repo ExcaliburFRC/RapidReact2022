@@ -1,8 +1,7 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.robot.Constants.IntakeConstants.*;
-import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -44,12 +43,12 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         upperMotor.setIdleMode(IdleMode.kBrake),
         intakeMotor.setIdleMode(IdleMode.kBrake),
         // decrease status frames -- nothing is of interest here
-        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD),
-        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, MAXIMAL_FRAME_PERIOD));
+        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
+        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND));
 
     // update the counter whenever we shoot a ball
     upperBallTrigger.whenInactive(ballCount::decrementAndGet, this);

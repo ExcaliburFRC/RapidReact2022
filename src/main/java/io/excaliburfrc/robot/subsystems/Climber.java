@@ -1,9 +1,7 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
-import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
-import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
@@ -58,9 +56,9 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           motor.restoreFactoryDefaults(),
           // set the motors to brake mode
           motor.setIdleMode(IdleMode.kBrake),
-          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
+          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
           // set up PID parameters
           controller.setFeedbackDevice(encoder),
           controller.setP(kP),
