@@ -42,13 +42,14 @@ public class Shooter extends SubsystemBase {
         follower.setIdleMode(IdleMode.kCoast),
         // have the leader send its applied output as frequently as possible,
         // to speed up follower response
-        leader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.HIGH_PRIORITY),
+        leader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
         // other status frames can be reduced to almost never
         leader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         leader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
         follower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
         follower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         follower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
+        leader.setSmartCurrentLimit(80),
         // setup following
         follower.follow(leader));
     leader.setInverted(true);

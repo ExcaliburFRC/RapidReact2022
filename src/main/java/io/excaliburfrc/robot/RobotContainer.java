@@ -74,6 +74,9 @@ public class RobotContainer {
     drive.arcadeDriveCommend(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX).schedule();
     new JoystickButton(armJoystick, 1).whenHeld(shooter.accelerateFenderCommand());
     new JoystickButton(armJoystick, 9).whenHeld(shooter.manualCommand());
+
+    new JoystickButton(armJoystick, 12).whenHeld(new ShootBallsCommand(intake, shooter, leds));
+
     var CLIMB_SPEED = 0.4;
     climber
         .climberManualCommand(
