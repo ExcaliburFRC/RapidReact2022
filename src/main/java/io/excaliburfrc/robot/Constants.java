@@ -29,11 +29,11 @@ public final class Constants {
     public static final double kP = 0;
     public static final double kI = 0;
     public static final double kD = 0;
-    public static final double MG = 1000;
     public static final double ANGLE = 45;
-    public static final double kS = 0;
-    public static final double kV = 0;
-    public static final double kA = 0;
+    public static final double kG = -0.069981;
+    public static final double kS = 0.17846;
+    public static final double kV = 11.301;
+    public static final double kA = 0.49015;
     public static final double MAX_VELOCITY = 0.5;
     public static final double MAX_ACCELERATION = 1;
     public static final double HEIGHT = 50;

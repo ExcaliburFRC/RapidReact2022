@@ -17,6 +17,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
@@ -32,9 +33,9 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false);
   private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true);
 
-  private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, MG, kV, kA);
+  private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, kG, kV, kA);
   private final ElevatorFeedforward diagonalFF =
-      new ElevatorFeedforward(kS, MG * Math.cos(ANGLE), kV, kA);
+      new ElevatorFeedforward(kS, kG * Math.cos(ANGLE), kV, kA);
 
   private final TrapezoidProfile elevatorProfile =
       new TrapezoidProfile(
@@ -72,6 +73,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       motor.setInverted(isMotorReversed);
 
       resetPosition();
+      SmartDashboard.putData("right");
     }
 
     public Command downCommand() {
