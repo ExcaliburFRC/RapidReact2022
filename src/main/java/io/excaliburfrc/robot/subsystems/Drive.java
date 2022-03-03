@@ -14,6 +14,7 @@ import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,13 +22,12 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Drive extends SubsystemBase {
@@ -45,14 +45,17 @@ public class Drive extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
 
-  private final DifferentialDriveKinematics driveKinematics =
-      new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
-
   private final DifferentialDriveOdometry odometry;
   private final AHRS gyro = new AHRS();
   private final SparkMaxPIDController leftController = leftLeader.getPIDController();
   private final SparkMaxPIDController rightController = rightLeader.getPIDController();
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
+
+  private final DifferentialDriveKinematics driveKinematics =
+      new DifferentialDriveKinematics(DrivetrainConstants.TRACKWIDTH_METERS);
+
+  private final PIDController rotationPID = new PIDController(ROTATION_P, ROTATION_I, ROTATION_D);
+  private final PIDController distancePID = new PIDController(DISTANCE_P, DISTANCE_I, DISTANCE_D);
 
   public Drive() {
     ValidateREVCAN(
@@ -126,6 +129,36 @@ public class Drive extends SubsystemBase {
           rightEncoder.setPosition(0);
         },
         this);
+  }
+
+  public Command automaticIntakeCommand(
+      DoubleSupplier getRotation,
+      DoubleSupplier getDistance,
+      Command intakeBallCommand,
+      BooleanSupplier hasTargets) {
+    return new ConditionalCommand(
+        new ConditionalCommand(
+                new InstantCommand(
+                    () ->
+                        drive.arcadeDrive(
+                            distancePID.calculate(0, getDistance.getAsDouble()),
+                            rotationPID.calculate(0, getRotation.getAsDouble()))),
+                new FunctionalCommand(
+                    () -> {},
+                    () ->
+                        drive.arcadeDrive(
+                            distancePID.calculate(0, getDistance.getAsDouble()),
+                            rotationPID.calculate(0, getRotation.getAsDouble())),
+                    __ -> drive.tankDrive(0, 0),
+                    () -> distancePID.atSetpoint() && rotationPID.atSetpoint()),
+                hasTargets)
+            .raceWith(intakeBallCommand),
+        new InstantCommand(
+            () -> {
+              SmartDashboard.putBoolean("hasTargets", false);
+              DriverStation.reportWarning("The camera didn't detect any balls", false);
+            }),
+        hasTargets);
   }
 
   @Override
