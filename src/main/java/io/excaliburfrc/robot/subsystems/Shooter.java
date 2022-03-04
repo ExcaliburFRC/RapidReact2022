@@ -76,8 +76,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isAtTargetVelocity() {
-    return controlMode == Mode.CLOSED_LOOP
-        && Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
+    return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
   }
 
   private void accelerate(double setpoint) {
@@ -140,10 +139,6 @@ public class Shooter extends SubsystemBase {
     LiveWindow.disableTelemetry(pid);
 
     builder.setSmartDashboardType("Subsystem");
-    builder.addStringProperty(
-        ".command",
-        () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "none",
-        null);
     builder.addDoubleProperty("velocity", this::getVelocity, null);
     builder.addDoubleProperty("targetVelocity", pid::getSetpoint, null);
     builder.addDoubleProperty("control effort", leader::getAppliedOutput, null);

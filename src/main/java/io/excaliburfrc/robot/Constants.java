@@ -1,5 +1,7 @@
 package io.excaliburfrc.robot;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -22,24 +24,30 @@ public final class Constants {
   }
 
   public static class ClimberConstants {
-    public static final int FORWARD_CHANNEL = 0;
-    public static final int REVERSE_CHANNEL = 1;
+    public static final int FORWARD_CHANNEL = 1;
+    public static final int REVERSE_CHANNEL = 0;
     public static final int LEFT_MOTOR_ID = 30;
     public static final int RIGHT_MOTOR_ID = 31;
+
     public static final double kP = 0;
     public static final double kI = 0;
     public static final double kD = 0;
-    public static final double ANGLE = 45;
     public static final double kG = -0.069981;
     public static final double kS = 0.17846;
     public static final double kV = 11.301;
     public static final double kA = 0.49015;
+
+    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.8;
+
+    public static final double ANGLE = 45;
     public static final double MAX_VELOCITY = 0.5;
     public static final double MAX_ACCELERATION = 1;
-    public static final double HEIGHT = 50;
+    public static final double HEIGHT = 20;
     public static final double HEIGHT_TO_OPEN_PISTON = 20;
     public static final double SAFETY_DISTANCE = 0.1;
+
     public static final float FORWARD_SOFT_LIMIT = 56.262463f;
+    public static final Value ANGLED = Value.kForward;
   }
 
   public static class ShooterConstants {
@@ -58,8 +66,8 @@ public final class Constants {
     public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
     //    public static final double FENDER_SHOT_RPM = 121.45182291666667;
-    //    public static final double FENDER_SHOT_RPM = 90;
-    public static final double FENDER_SHOT_RPM = 180;
+    public static final double FENDER_SHOT_RPM = 90;
+//    public static final double FENDER_SHOT_RPM = 180;
     public static final double TOLERANCE = 5;
   }
 

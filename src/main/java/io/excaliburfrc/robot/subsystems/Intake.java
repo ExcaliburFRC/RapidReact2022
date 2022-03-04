@@ -17,11 +17,14 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
 public class Intake extends SubsystemBase implements AutoCloseable {
   private final AtomicInteger ballCount = new AtomicInteger(0);
+  private final AtomicBoolean allow = new AtomicBoolean(true);
 
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax upperMotor = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
@@ -32,7 +35,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final Trigger upperBallTrigger =
       new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
   private final DoubleSolenoid intakePiston =
-      new DoubleSolenoid(PneumaticsModuleType.REVPH, FWD_CHANNEL, REV_CHANNEL);
+      new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
   public Intake() {
     ValidateREVCAN(
@@ -50,9 +53,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND));
 
-    // update the counter whenever we shoot a ball
-    upperBallTrigger.whenInactive(ballCount::decrementAndGet, this);
-    // and report if we pass the limit
+    // report if we pass the limit
     new Trigger(() -> ballCount.get() > MAX_BALLS)
         .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
 
@@ -93,10 +94,14 @@ public class Intake extends SubsystemBase implements AutoCloseable {
                         // init
                         () -> {},
                         // exe
-                        () -> intakeMotor.set(Speeds.ejectDutyCycle),
+                        () -> {
+                          intakeMotor.set(Speeds.ejectDutyCycle);
+                          upperMotor.set(Speeds.ejectDutyCycle);
+                        },
                         // end
                         __ -> {
                           intakeMotor.set(0);
+                          upperMotor.set(0);
                           intakePiston.set(Value.kReverse);
                         },
                         // isFinished
@@ -134,32 +139,42 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   /** Shoot *one* ball; will end after a ball is shot. */
   public Command shootBallCommand() {
     return new FunctionalCommand(
-        // init
-        () -> {},
-        // exe
-        () -> {
-          upperMotor.set(Speeds.upperShootDutyCycle);
-          intakeMotor.set(Speeds.intakeShootDutyCycle);
-        },
-        // end
-        _interrupted -> {
-          upperMotor.set(0);
-          intakeMotor.set(0);
-        },
-        // isFinished
-        // stop after we've shot a ball
-        upperBallTrigger.negate());
+            // init
+            () -> {
+            },
+            // exe
+            () -> {
+              upperMotor.set(Speeds.upperShootDutyCycle);
+              intakeMotor.set(Speeds.intakeShootDutyCycle);
+            },
+            // end
+            _interrupted -> {
+              if (!_interrupted) ballCount.decrementAndGet();
+              upperMotor.set(0);
+              intakeMotor.set(0);
+            },
+            // isFinished
+            // stop after we've shot a ball
+            upperBallTrigger.negate());
   }
 
   private boolean isOurColor() {
+    var red = intakeSensor.getRed();
+    var blue = intakeSensor.getBlue();
+    boolean result = false;
     switch (DriverStation.getAlliance()) {
       case Red:
-        return intakeSensor.getRed() > intakeSensor.getBlue();
+        DriverStation.reportWarning("RED: "  + red + ", "  + blue, false);
+        result = red > blue;
+        break;
       case Blue:
-        return intakeSensor.getBlue() > intakeSensor.getRed();
+        DriverStation.reportWarning("BLUE: " + red + ", "  + blue, false);
+        result = red < blue;
+        break;
+      default:
+        DriverStation.reportError("DS Alliance color is invalid!", false);
     }
-    DriverStation.reportError("DS Alliance color is invalid!", false);
-    return false;
+    return result || allow.get();
   }
 
   @Override
@@ -167,6 +182,16 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     this.intakeMotor.close();
     this.upperMotor.close();
     this.upperSensor.close();
+  }
+
+  public Command ejectCommand() {
+    return new StartEndCommand(() -> {
+      this.intakeMotor.set(Speeds.ejectDutyCycle);
+      this.upperMotor.set(Speeds.ejectDutyCycle);
+    }, () -> {
+      this.intakeMotor.set(0);
+      this.upperMotor.set(0);
+    }, this);
   }
 
   private enum Speeds {
@@ -183,10 +208,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Subsystem");
-    builder.addStringProperty(
-        ".command",
-        () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "none",
-        null);
+    builder.addBooleanProperty("Allow", allow::get, allow::set);
     builder.addBooleanProperty("Intake Cargo", intakeBallTrigger, null);
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);

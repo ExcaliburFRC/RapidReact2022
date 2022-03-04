@@ -1,6 +1,7 @@
 package io.excaliburfrc.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -10,8 +11,10 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import io.excaliburfrc.robot.commands.BlindShootBallsCommand;
 import io.excaliburfrc.robot.commands.ShootBallsCommand;
 import io.excaliburfrc.robot.subsystems.*;
+import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,7 +33,7 @@ public class RobotContainer {
   private final Drive drive = new Drive();
   private final LEDs leds = new LEDs();
 
-  private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
+  private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
   public RobotContainer() {
     // Configure the button bindings
@@ -43,9 +46,54 @@ public class RobotContainer {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
-    var fenderShotCommand = shooter.accelerateFenderCommand();
-    new POVButton(armJoystick, POV_UP).whenPressed(fenderShotCommand);
-    new POVButton(armJoystick, POV_DOWN).whenPressed(fenderShotCommand);
+    drive.setDefaultCommand(
+        drive.arcadeDriveCommand(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX));
+
+    leds.setDefaultCommand(leds.setColorCommand(LedMode.GOLD));
+
+    var cancelButton = new POVButton(armJoystick, POV_UP);
+
+    var shootBalls = new BlindShootBallsCommand(intake, shooter, leds);
+    new JoystickButton(armJoystick, 1).whileActiveOnce(shootBalls);
+//    cancelButton.cancelWhenPressed(shootBalls);
+
+    var intakeAuto = intake.intakeBallCommand();
+    new JoystickButton(armJoystick, 2).whenPressed(intakeAuto);
+    cancelButton.cancelWhenPressed(intakeAuto);
+
+    new JoystickButton(armJoystick, 3).whileHeld(intake.ejectCommand());
+
+    new JoystickButton(armJoystick, 11).whenPressed(climber.climbSeries(new JoystickButton(armJoystick, 12)));
+
+    var CLIMB_SPEED = 0.4;
+    climber.disableSoftLimits().schedule();
+    climber
+            .climberManualCommand(
+                    () -> {
+                      if (driveJoystick.getPOV() == POV_UP) {
+                        return CLIMB_SPEED;
+                      } else if (driveJoystick.getPOV() == POV_DOWN) {
+                        return -CLIMB_SPEED;
+                      } else {
+                        return 0;
+                      }
+                    },
+                    () -> {
+                      if (driveJoystick.getCrossButton()) {
+                        return -CLIMB_SPEED;
+                      } else if (driveJoystick.getTriangleButton()) {
+                        return CLIMB_SPEED;
+                      } else {
+                        return 0;
+                      }
+                    },
+                    driveJoystick::getL2Button,
+                    driveJoystick::getR2Button).schedule();
+
+    new Button(driveJoystick::getShareButton)
+            .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+
+    DriverStation.reportWarning("Buttons!", false);
   }
 
   void manualButton() {
@@ -59,19 +107,11 @@ public class RobotContainer {
             () -> armJoystick.getRawButton(5),
             () -> armJoystick.getRawButton(6),
             () -> armJoystick.getRawButtonPressed(8)));
-    leds.setDefaultCommand(leds.setColorCommand(LEDs.LedMode.GOLD));
 
     new JoystickButton(armJoystick, 11).whenPressed(intake.intakeBallCommand());
 
-    //    drive.arcadeDriveCommend(()-> -driveJoystick.getLeftY(),
-    // driveJoystick::getRightX).schedule();
-    drive.arcadeDriveCommend(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX).schedule();
-    new JoystickButton(armJoystick, 1).whenHeld(shooter.accelerateFenderCommand());
-    new JoystickButton(armJoystick, 9).whenHeld(shooter.manualCommand());
-
-    //    drive.arcadeDriveCommend(()-> -driveJoystick.getLeftY(),
-    // driveJoystick::getRightX).schedule();
-    drive.arcadeDriveCommend(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX).schedule();
+    drive.setDefaultCommand(
+        drive.arcadeDriveCommand(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX));
     new JoystickButton(armJoystick, 1).whenHeld(shooter.accelerateFenderCommand());
     new JoystickButton(armJoystick, 9).whenHeld(shooter.manualCommand());
 
@@ -104,6 +144,10 @@ public class RobotContainer {
 
     new Button(driveJoystick::getTouchpad)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+
+    new Button(driveJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
+
+    new Button(driveJoystick::getCircleButton).whileActiveOnce(climber.openFullyCommand());
   }
 
   /**
@@ -113,6 +157,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return null;
+    return new BlindShootBallsCommand(intake, shooter, leds).withTimeout(7);
   }
 }

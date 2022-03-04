@@ -16,18 +16,21 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
+  private final AtomicInteger climbStage = new AtomicInteger(0);
+
   private final DoubleSolenoid anglerPiston =
       new DoubleSolenoid(
-          PneumaticsModuleType.REVPH,
+          PneumaticsModuleType.CTREPCM,
           ClimberConstants.FORWARD_CHANNEL,
           ClimberConstants.REVERSE_CHANNEL);
   private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false);
@@ -58,7 +61,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           motor.restoreFactoryDefaults(),
           // set the motors to brake mode
           motor.setIdleMode(IdleMode.kBrake),
-          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
           motor.setSoftLimit(SoftLimitDirection.kReverse, 0),
@@ -73,13 +76,12 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       motor.setInverted(isMotorReversed);
 
       resetPosition();
-      SmartDashboard.putData("right");
     }
 
-    public Command downCommand() {
+    public Command pullUpCommand() {
       return new FunctionalCommand(
           () -> {},
-          () -> motor.set(-1),
+          () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
           __ -> motor.set(0),
           () -> encoder.getPosition() <= SAFETY_DISTANCE);
     }
@@ -92,7 +94,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       motor.close();
     }
 
-    public void set(double dutyCycle) {
+    public void setDutyCycle(double dutyCycle) {
       motor.set(dutyCycle);
     }
 
@@ -103,6 +105,20 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     public double getHeight() {
       return encoder.getPosition();
     }
+
+    /** Disables soft limits for the duration of this command, and then resets the encoder. */
+    public Command disableAndResetSoftLimits() {
+      return new StartEndCommand(
+          () -> {
+            motor.enableSoftLimit(SoftLimitDirection.kForward, false);
+            motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
+          },
+          () -> {
+            encoder.setPosition(0);
+            motor.enableSoftLimit(SoftLimitDirection.kForward, true);
+            motor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+          });
+    }
   }
 
   @Override
@@ -112,31 +128,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     anglerPiston.close();
   }
 
-  public enum MotorMode {
-    OFF(0),
-    UP(0.6),
-    DOWN(-0.8);
-
-    final double dutyCycle;
-
-    MotorMode(double v) {
-      dutyCycle = v;
-    }
-  }
-
-  public void openAngler() {
-    anglerPiston.set(DoubleSolenoid.Value.kForward);
-  }
-
-  public void closeAngler() {
-    anglerPiston.set(DoubleSolenoid.Value.kReverse);
-  }
-
   private void achieveState(TrapezoidProfile.State setpoint) {
     ElevatorFeedforward ff;
     if (anglerPiston.get() == DoubleSolenoid.Value.kForward) ff = diagonalFF;
     else ff = upFF;
-    left.setReference(setpoint.velocity, ff.calculate(setpoint.velocity));
+    //    left.setReference(setpoint.velocity, ff.calculate(setpoint.velocity));
     right.setReference(setpoint.velocity, ff.calculate(setpoint.velocity));
   }
 
@@ -144,39 +140,44 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
   }
 
-  public Command openToFirstCommand() {
+  public Command openFullyCommand() {
     return reachBarCommand(this::achieveState);
   }
 
-  public Command openToSecondCommand() {
-    return reachBarCommand(
-        setpoint -> {
-          achieveState(setpoint);
-          if (setpoint.position >= HEIGHT_TO_OPEN_PISTON
-              && anglerPiston.get() != DoubleSolenoid.Value.kForward) {
-            anglerPiston.set(DoubleSolenoid.Value.kForward);
-          }
-        });
-  }
-
-  public Command raiseRobotCommand() {
-    return left.downCommand().alongWith(right.downCommand());
+  public Command pullUpRobotCommand() {
+    return left.pullUpCommand().alongWith(right.pullUpCommand());
   }
 
   public Command offCommand() {
     return new InstantCommand(
         () -> {
-          left.set(0);
-          right.set(0);
+          left.setDutyCycle(0);
+          right.setDutyCycle(0);
         });
   }
 
   public Command openAnglerCommand() {
-    return new InstantCommand(this::openAngler, this);
+    return new InstantCommand(
+        () -> {
+          anglerPiston.set(Value.kForward);
+        },
+        this);
   }
 
   public Command closeAnglerCommand() {
-    return new InstantCommand(this::closeAngler, this);
+    return new InstantCommand(
+        () -> {
+          anglerPiston.set(Value.kForward);
+        },
+        this);
+  }
+
+  public Command climbSeries(BooleanSupplier closeFirst) {
+    return new SequentialCommandGroup(
+            openFullyCommand(),
+            new WaitUntilCommand(closeFirst),
+            pullUpRobotCommand()
+    );
   }
 
   public Command climberManualCommand(
@@ -186,22 +187,26 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       BooleanSupplier solenoid_1) {
     return new RunCommand(
         () -> {
-          left.set(leftSpeed.getAsDouble());
-          right.set(rightSpeed.getAsDouble());
-          if (piston.getAsBoolean()) this.anglerPiston.set(DoubleSolenoid.Value.kForward);
+          left.setDutyCycle(leftSpeed.getAsDouble());
+          right.setDutyCycle(rightSpeed.getAsDouble());
+          if (piston.getAsBoolean()) this.anglerPiston.set(ANGLED);
           else if (solenoid_1.getAsBoolean()) this.anglerPiston.set(DoubleSolenoid.Value.kReverse);
         },
-        this);
+        this).alongWith(left.disableAndResetSoftLimits(), right.disableAndResetSoftLimits());
+  }
+
+  public Command disableSoftLimits() {
+    return left.disableAndResetSoftLimits().alongWith(right.disableAndResetSoftLimits());
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Subsystem");
-    builder.addStringProperty(
-        ".command",
-        () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "none",
-        null);
+
+    builder.addDoubleProperty("climb stage", climbStage::get, v -> climbStage.set((int) v));
     builder.addDoubleProperty("leftHeight", left::getHeight, null);
     builder.addDoubleProperty("rightHeight", right::getHeight, null);
+
+    builder.addDoubleProperty("d/rightControl", right.motor::get, null);
   }
 }

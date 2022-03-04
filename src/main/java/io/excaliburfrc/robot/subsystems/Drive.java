@@ -68,11 +68,10 @@ public class Drive extends SubsystemBase {
         rightFollower.setIdleMode(IdleMode.kBrake),
         // have the leader send its applied output as frequently as possible,
         // to speed up follower response
-        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.HIGH_PRIORITY),
+        leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
         leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
-        rightLeader.setPeriodicFramePeriod(
-            PeriodicFrame.kStatus0, StatusFramePeriods.HIGH_PRIORITY),
+        rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
         // other status frames can be reduced to almost never
@@ -94,6 +93,7 @@ public class Drive extends SubsystemBase {
         leftFollower.follow(leftLeader, false), rightFollower.follow(rightLeader, false));
 
     odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
+    drive.setSafetyEnabled(false);
   }
 
   public Pose2d getPose() {
@@ -107,7 +107,7 @@ public class Drive extends SubsystemBase {
         right, ControlType.kVelocity, 0, feedforward.calculate(right), ArbFFUnits.kVoltage);
   }
 
-  public Command arcadeDriveCommend(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
+  public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return new RunCommand(
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()), this);
   }
