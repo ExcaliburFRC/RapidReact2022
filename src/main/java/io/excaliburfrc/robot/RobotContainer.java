@@ -1,10 +1,7 @@
 package io.excaliburfrc.robot;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.PS4Controller;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -53,7 +50,7 @@ public class RobotContainer {
 
     var cancelButton = new POVButton(armJoystick, POV_UP);
 
-    var shootBalls = new BlindShootBallsCommand(intake, shooter, leds);
+    var shootBalls = new BlindShootBallsCommand(intake, shooter, leds).beforeStarting(intake.setPistonCommand(Value.kReverse));
     new JoystickButton(armJoystick, 1).whileActiveOnce(shootBalls);
 //    cancelButton.cancelWhenPressed(shootBalls);
 

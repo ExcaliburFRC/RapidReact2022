@@ -205,6 +205,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     static final double upperShootDutyCycle = 0.7;
   }
 
+  public Command setPistonCommand(Value val) {
+    return new InstantCommand(() -> intakePiston.set(val));
+  }
+
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Subsystem");
