@@ -47,7 +47,7 @@ public class RobotContainer {
     CommandScheduler.getInstance().cancelAll();
 
     drive.setDefaultCommand(
-        drive.arcadeDriveCommand(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX));
+        drive.arcadeDriveCommand(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
 
     leds.setDefaultCommand(leds.setColorCommand(LedMode.GOLD));
 
@@ -111,7 +111,7 @@ public class RobotContainer {
     new JoystickButton(armJoystick, 11).whenPressed(intake.intakeBallCommand());
 
     drive.setDefaultCommand(
-        drive.arcadeDriveCommand(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX));
+        drive.arcadeDriveCommand(() -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
     new JoystickButton(armJoystick, 1).whenHeld(shooter.accelerateFenderCommand());
     new JoystickButton(armJoystick, 9).whenHeld(shooter.manualCommand());
 
