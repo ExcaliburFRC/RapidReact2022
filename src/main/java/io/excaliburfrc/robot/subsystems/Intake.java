@@ -17,14 +17,13 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
 public class Intake extends SubsystemBase implements AutoCloseable {
   private final AtomicInteger ballCount = new AtomicInteger(0);
-  private final AtomicBoolean allow = new AtomicBoolean(true);
+  private final AtomicBoolean allow = new AtomicBoolean(false);
 
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax upperMotor = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
@@ -139,23 +138,22 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   /** Shoot *one* ball; will end after a ball is shot. */
   public Command shootBallCommand() {
     return new FunctionalCommand(
-            // init
-            () -> {
-            },
-            // exe
-            () -> {
-              upperMotor.set(Speeds.upperShootDutyCycle);
-              intakeMotor.set(Speeds.intakeShootDutyCycle);
-            },
-            // end
-            _interrupted -> {
-              if (!_interrupted) ballCount.decrementAndGet();
-              upperMotor.set(0);
-              intakeMotor.set(0);
-            },
-            // isFinished
-            // stop after we've shot a ball
-            upperBallTrigger.negate());
+        // init
+        () -> {},
+        // exe
+        () -> {
+          upperMotor.set(Speeds.upperShootDutyCycle);
+          intakeMotor.set(Speeds.intakeShootDutyCycle);
+        },
+        // end
+        _interrupted -> {
+          if (!_interrupted) ballCount.decrementAndGet();
+          upperMotor.set(0);
+          intakeMotor.set(0);
+        },
+        // isFinished
+        // stop after we've shot a ball
+        upperBallTrigger.negate());
   }
 
   private boolean isOurColor() {
@@ -164,11 +162,11 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     boolean result = false;
     switch (DriverStation.getAlliance()) {
       case Red:
-        DriverStation.reportWarning("RED: "  + red + ", "  + blue, false);
+        DriverStation.reportWarning("RED: " + red + ", " + blue, false);
         result = red > blue;
         break;
       case Blue:
-        DriverStation.reportWarning("BLUE: " + red + ", "  + blue, false);
+        DriverStation.reportWarning("BLUE: " + red + ", " + blue, false);
         result = red < blue;
         break;
       default:
@@ -185,13 +183,20 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   public Command ejectCommand() {
-    return new StartEndCommand(() -> {
-      this.intakeMotor.set(Speeds.ejectDutyCycle);
-      this.upperMotor.set(Speeds.ejectDutyCycle);
-    }, () -> {
-      this.intakeMotor.set(0);
-      this.upperMotor.set(0);
-    }, this);
+    return new StartEndCommand(
+        () -> {
+          this.intakeMotor.set(Speeds.ejectDutyCycle);
+          this.upperMotor.set(Speeds.ejectDutyCycle);
+        },
+        () -> {
+          this.intakeMotor.set(0);
+          this.upperMotor.set(0);
+        },
+        this);
+  }
+
+  public Command allowCommand() {
+    return new StartEndCommand(() -> allow.set(true), () -> allow.set(false));
   }
 
   private enum Speeds {
