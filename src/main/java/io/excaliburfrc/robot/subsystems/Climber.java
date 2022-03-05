@@ -4,14 +4,12 @@ import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -22,8 +20,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
   private final AtomicInteger climbStage = new AtomicInteger(0);
@@ -43,7 +39,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final TrapezoidProfile elevatorProfile =
       new TrapezoidProfile(
           new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
-          new TrapezoidProfile.State(HEIGHT, 0), // The goal state
+          new TrapezoidProfile.State(OPEN_HEIGHT, 0), // The goal state
           new TrapezoidProfile.State(0, 0)); // The init state
 
   private static class ClimberSide implements AutoCloseable {
@@ -83,7 +79,15 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
           __ -> motor.set(0),
-          () -> encoder.getPosition() <= SAFETY_DISTANCE);
+          () -> encoder.getPosition() >= CLOSED_HEIGHT);
+    }
+
+    public Command openFullyCommand() {
+      return new FunctionalCommand(
+          () -> {},
+          () -> motor.set(OPEN_LOOP_CLIMB_DUTY_CYCLE),
+          __ -> motor.set(0),
+          () -> encoder.getPosition() <= OPEN_HEIGHT);
     }
 
     public void resetPosition() {
@@ -98,9 +102,21 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       motor.set(dutyCycle);
     }
 
-    public void setReference(double velocity, double ff) {
-      controller.setReference(velocity, ControlType.kVelocity, 0, ff, ArbFFUnits.kVoltage);
+    public Command manualCommand(BooleanSupplier up, BooleanSupplier down) {
+      return new FunctionalCommand(
+          () -> {},
+          () -> {
+            if (up.getAsBoolean()) motor.set(0.4);
+            else if (down.getAsBoolean()) motor.set(-0.4);
+            else motor.set(0);
+          },
+          __ -> motor.set(0),
+          () -> false);
     }
+
+    //    public void setReference(double velocity, double ff) {
+    //      controller.setReference(velocity, ControlType.kVelocity, 0, ff, ArbFFUnits.kVoltage);
+    //    }
 
     public double getHeight() {
       return encoder.getPosition();
@@ -128,20 +144,21 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     anglerPiston.close();
   }
 
-  private void achieveState(TrapezoidProfile.State setpoint) {
-    ElevatorFeedforward ff;
-    if (anglerPiston.get() == DoubleSolenoid.Value.kForward) ff = diagonalFF;
-    else ff = upFF;
-    //    left.setReference(setpoint.velocity, ff.calculate(setpoint.velocity));
-    right.setReference(setpoint.velocity, ff.calculate(setpoint.velocity));
-  }
-
-  private Command reachBarCommand(Consumer<TrapezoidProfile.State> toRun) {
-    return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
-  }
+  //  @Deprecated
+  //  private void achieveState(TrapezoidProfile.State setpoint) {
+  //    ElevatorFeedforward ff;
+  //    if (anglerPiston.get() == DoubleSolenoid.Value.kForward) ff = diagonalFF;
+  //    else ff = upFF;
+  //    //    left.setReference(setpoint.velocity, ff.calculate(setpoint.velocity));
+  //    right.setReference(setpoint.velocity, ff.calculate(setpoint.velocity));
+  //  }
+  //
+  //  private Command reachBarCommand(Consumer<TrapezoidProfile.State> toRun) {
+  //    return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
+  //  }
 
   public Command openFullyCommand() {
-    return reachBarCommand(this::achieveState);
+    return new ParallelCommandGroup(left.openFullyCommand(), right.openFullyCommand());
   }
 
   public Command pullUpRobotCommand() {
@@ -172,27 +189,46 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         this);
   }
 
-  public Command climbSeries(BooleanSupplier closeFirst) {
+  public Command climbSeries(
+      BooleanSupplier openFirst,
+      BooleanSupplier closeFirst,
+      BooleanSupplier openSecond,
+      BooleanSupplier angleSecond,
+      BooleanSupplier closeSecond,
+      BooleanSupplier closeAngle) {
     return new SequentialCommandGroup(
-            openFullyCommand(),
-            new WaitUntilCommand(closeFirst),
-            pullUpRobotCommand()
-    );
+        new WaitUntilCommand(openFirst),
+        openFullyCommand(),
+        new WaitUntilCommand(closeFirst),
+        pullUpRobotCommand(),
+        new WaitUntilCommand(openSecond),
+        openFullyCommand(),
+        new WaitUntilCommand(angleSecond),
+        openAnglerCommand(),
+        new WaitUntilCommand(closeSecond),
+        pullUpRobotCommand(),
+        new WaitUntilCommand(closeAngle),
+        closeAnglerCommand());
   }
 
   public Command climberManualCommand(
-      DoubleSupplier leftSpeed,
-      DoubleSupplier rightSpeed,
-      BooleanSupplier piston,
-      BooleanSupplier solenoid_1) {
-    return new RunCommand(
-        () -> {
-          left.setDutyCycle(leftSpeed.getAsDouble());
-          right.setDutyCycle(rightSpeed.getAsDouble());
-          if (piston.getAsBoolean()) this.anglerPiston.set(ANGLED);
-          else if (solenoid_1.getAsBoolean()) this.anglerPiston.set(DoubleSolenoid.Value.kReverse);
-        },
-        this).alongWith(left.disableAndResetSoftLimits(), right.disableAndResetSoftLimits());
+      BooleanSupplier leftUp,
+      BooleanSupplier leftDown,
+      BooleanSupplier rightUp,
+      BooleanSupplier rightDown,
+      BooleanSupplier pistonAngled,
+      BooleanSupplier pistonStraight) {
+    return new ParallelCommandGroup(
+        left.manualCommand(leftUp, leftDown),
+        right.manualCommand(rightUp, rightDown),
+        new FunctionalCommand(
+            () -> {},
+            () -> {
+              if (pistonAngled.getAsBoolean()) anglerPiston.set(ANGLED);
+              if (pistonStraight.getAsBoolean()) anglerPiston.set(STRAIGHT);
+            },
+            __ -> {},
+            () -> false));
   }
 
   public Command disableSoftLimits() {

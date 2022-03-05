@@ -192,6 +192,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
           this.intakeMotor.set(0);
           this.upperMotor.set(0);
         },
+
         this);
   }
 

@@ -50,7 +50,7 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(LedMode.GOLD));
 
-    var cancelButton = new POVButton(armJoystick, POV_UP);
+    var cancelButton = new JoystickButton(armJoystick, 6);
 
     var shootBalls = new BlindShootBallsCommand(intake, shooter, leds).beforeStarting(intake.setPistonCommand(Value.kReverse));
     new JoystickButton(armJoystick, 1).whileActiveOnce(shootBalls);
@@ -60,36 +60,13 @@ public class RobotContainer {
     new JoystickButton(armJoystick, 2).whenPressed(intakeAuto);
     cancelButton.cancelWhenPressed(intakeAuto);
 
-    new JoystickButton(armJoystick, 3).whileHeld(intake.ejectCommand());
+    new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
 
-    new JoystickButton(armJoystick, 11)
-        .whenPressed(climber.climbSeries(new JoystickButton(armJoystick, 12)));
-
-    var CLIMB_SPEED = 0.4;
-    climber.disableSoftLimits().schedule();
-    climber
-        .climberManualCommand(
-            () -> {
-              if (driveJoystick.getPOV() == POV_UP) {
-                return CLIMB_SPEED;
-              } else if (driveJoystick.getPOV() == POV_DOWN) {
-                return -CLIMB_SPEED;
-              } else {
-                return 0;
-              }
-            },
-            () -> {
-              if (driveJoystick.getCrossButton()) {
-                return -CLIMB_SPEED;
-              } else if (driveJoystick.getTriangleButton()) {
-                return CLIMB_SPEED;
-              } else {
-                return 0;
-              }
-            },
-            driveJoystick::getL2Button,
-            driveJoystick::getR2Button)
-        .schedule();
+    var stepButton = new JoystickButton(armJoystick, 3);
+    new POVButton(driveJoystick, POV_UP)
+        .whenPressed(
+            climber.climbSeries(
+                stepButton, stepButton, stepButton, stepButton, stepButton, stepButton));
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
@@ -121,37 +98,24 @@ public class RobotContainer {
 
     new JoystickButton(armJoystick, 12).whenHeld(new ShootBallsCommand(intake, shooter, leds));
 
-    var CLIMB_SPEED = 0.4;
     climber
         .climberManualCommand(
-            () -> {
-              if (driveJoystick.getPOV() == POV_UP) {
-                return CLIMB_SPEED;
-              } else if (driveJoystick.getPOV() == POV_DOWN) {
-                return -CLIMB_SPEED;
-              } else {
-                return 0;
-              }
-            },
-            () -> {
-              if (driveJoystick.getCrossButton()) {
-                return -CLIMB_SPEED;
-              } else if (driveJoystick.getTriangleButton()) {
-                return CLIMB_SPEED;
-              } else {
-                return 0;
-              }
-            },
-            driveJoystick::getOptionsButtonPressed,
-            driveJoystick::getShareButtonPressed)
+            new POVButton(driveJoystick, 0),
+            new POVButton(driveJoystick, 180),
+            driveJoystick::getTriangleButton,
+            driveJoystick::getCrossButton,
+            driveJoystick::getCircleButton,
+            driveJoystick::getSquareButton)
         .schedule();
 
-    new Button(driveJoystick::getTouchpad)
+    new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
     new Button(driveJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getCircleButton).whileActiveOnce(climber.openFullyCommand());
+
+    DriverStation.reportWarning("Manual!", false);
   }
 
   /**
