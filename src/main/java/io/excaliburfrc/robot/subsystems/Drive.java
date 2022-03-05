@@ -113,10 +113,12 @@ public class Drive extends SubsystemBase {
 
   public Command arcadeDriveCommand(
       DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier slowMode) {
-    return new RunCommand(() -> drive.arcadeDrive(xSpeed.getAsDouble() * (slowMode.getAsBoolean()
-                    ? 0.5 : 1),
-            zRotation.getAsDouble())
-            , this);
+    return new RunCommand(
+        () ->
+            drive.arcadeDrive(
+                xSpeed.getAsDouble() * (slowMode.getAsBoolean() ? 0.5 : 1),
+                zRotation.getAsDouble()),
+        this);
   }
 
   public Command curvatureDriveCommand(

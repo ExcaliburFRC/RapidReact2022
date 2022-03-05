@@ -14,7 +14,6 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
@@ -84,10 +83,10 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
     public Command pullUpHalfCommand() {
       return new FunctionalCommand(
-              () -> {},
-              () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
-              __ -> motor.set(0),
-              () -> encoder.getPosition() <= CLOSED_HEIGHT);
+          () -> {},
+          () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
+          __ -> motor.set(0),
+          () -> encoder.getPosition() <= CLOSED_HEIGHT);
     }
 
     public Command openFullyCommand() {
@@ -210,25 +209,26 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       BooleanSupplier closeAngle) {
     return new SequentialCommandGroup(
             new PrintCommand("Started Climb Series"),
-        new WaitUntilCommand(openFirst),
+            new WaitUntilCommand(openFirst),
             new PrintCommand("Started Climb Series 2"),
-        openFullyCommand(),
-        new WaitUntilCommand(closeFirst),
+            openFullyCommand(),
+            new WaitUntilCommand(closeFirst),
             new PrintCommand("Started Climb Series 3"),
-        pullUpRobotCommand(),
-        new WaitUntilCommand(openSecond),
+            pullUpRobotCommand(),
+            new WaitUntilCommand(openSecond),
             new PrintCommand("Started Climb Series 4"),
-        openFullyCommand(),
-        new WaitUntilCommand(angleSecond),
+            openFullyCommand(),
+            new WaitUntilCommand(angleSecond),
             new PrintCommand("Started Climb Series"),
-        openAnglerCommand(),
-        new WaitUntilCommand(()->!angleSecond.getAsBoolean()),
-        new WaitUntilCommand(closeSecond),
+            openAnglerCommand(),
+            new WaitUntilCommand(() -> !angleSecond.getAsBoolean()),
+            new WaitUntilCommand(closeSecond),
             new PrintCommand("Started Climb Series"),
-        pullUpHalfRobotCommand(),
-        new WaitUntilCommand(closeAngle),
+            pullUpHalfRobotCommand(),
+            new WaitUntilCommand(closeAngle),
             new PrintCommand("Started Climb Series"),
-        straightenAnglerCommand()).withName("climb series");
+            straightenAnglerCommand())
+        .withName("climb series");
   }
 
   public Command climberManualCommand(
