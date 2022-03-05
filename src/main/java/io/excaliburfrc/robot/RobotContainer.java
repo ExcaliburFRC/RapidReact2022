@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.commands.BlindShootBallsCommand;
+import io.excaliburfrc.robot.commands.NoRamsete;
 import io.excaliburfrc.robot.commands.ShootBallsCommand;
 import io.excaliburfrc.robot.subsystems.*;
 import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
@@ -154,6 +155,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return new BlindShootBallsCommand(intake, shooter, leds).withTimeout(7);
+    return new NoRamsete(drive, intake, shooter, leds);
   }
 }
