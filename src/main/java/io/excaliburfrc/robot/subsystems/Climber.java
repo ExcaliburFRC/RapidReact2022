@@ -79,7 +79,15 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
           __ -> motor.set(0),
-          () -> encoder.getPosition() >= CLOSED_HEIGHT);
+          () -> encoder.getPosition() <= CLOSED_HEIGHT);
+    }
+
+    public Command pullUpHalfCommand() {
+      return new FunctionalCommand(
+              () -> {},
+              () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
+              __ -> motor.set(0),
+              () -> encoder.getPosition() <= CLOSED_HEIGHT);
     }
 
     public Command openFullyCommand() {
@@ -87,7 +95,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () -> motor.set(OPEN_LOOP_CLIMB_DUTY_CYCLE),
           __ -> motor.set(0),
-          () -> encoder.getPosition() <= OPEN_HEIGHT);
+          () -> encoder.getPosition() >= OPEN_HEIGHT);
     }
 
     public void resetPosition() {
@@ -106,8 +114,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       return new FunctionalCommand(
           () -> {},
           () -> {
-            if (up.getAsBoolean()) motor.set(0.4);
-            else if (down.getAsBoolean()) motor.set(-0.4);
+            if (up.getAsBoolean()) motor.set(0.1);
+            else if (down.getAsBoolean()) motor.set(-0.1);
             else motor.set(0);
           },
           __ -> motor.set(0),
@@ -165,6 +173,10 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return left.pullUpCommand().alongWith(right.pullUpCommand());
   }
 
+  public Command pullUpHalfRobotCommand() {
+    return left.pullUpHalfCommand().alongWith(right.pullUpHalfCommand());
+  }
+
   public Command offCommand() {
     return new InstantCommand(
         () -> {
@@ -176,15 +188,15 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   public Command openAnglerCommand() {
     return new InstantCommand(
         () -> {
-          anglerPiston.set(Value.kForward);
+          anglerPiston.set(ANGLED);
         },
         this);
   }
 
-  public Command closeAnglerCommand() {
+  public Command straightenAnglerCommand() {
     return new InstantCommand(
         () -> {
-          anglerPiston.set(Value.kForward);
+          anglerPiston.set(STRAIGHT);
         },
         this);
   }
@@ -197,18 +209,26 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       BooleanSupplier closeSecond,
       BooleanSupplier closeAngle) {
     return new SequentialCommandGroup(
+            new PrintCommand("Started Climb Series"),
         new WaitUntilCommand(openFirst),
+            new PrintCommand("Started Climb Series 2"),
         openFullyCommand(),
         new WaitUntilCommand(closeFirst),
+            new PrintCommand("Started Climb Series 3"),
         pullUpRobotCommand(),
         new WaitUntilCommand(openSecond),
+            new PrintCommand("Started Climb Series 4"),
         openFullyCommand(),
         new WaitUntilCommand(angleSecond),
+            new PrintCommand("Started Climb Series"),
         openAnglerCommand(),
+        new WaitUntilCommand(()->!angleSecond.getAsBoolean()),
         new WaitUntilCommand(closeSecond),
-        pullUpRobotCommand(),
+            new PrintCommand("Started Climb Series"),
+        pullUpHalfRobotCommand(),
         new WaitUntilCommand(closeAngle),
-        closeAnglerCommand());
+            new PrintCommand("Started Climb Series"),
+        straightenAnglerCommand()).withName("climb series");
   }
 
   public Command climberManualCommand(

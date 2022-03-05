@@ -14,6 +14,8 @@ import io.excaliburfrc.robot.commands.ShootBallsCommand;
 import io.excaliburfrc.robot.subsystems.*;
 import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
 
+import java.util.function.BooleanSupplier;
+
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -52,17 +54,22 @@ public class RobotContainer {
 
     var cancelButton = new JoystickButton(armJoystick, 6);
 
-    var shootBalls = new BlindShootBallsCommand(intake, shooter, leds).beforeStarting(intake.setPistonCommand(Value.kReverse));
+    var shootBalls =
+        new BlindShootBallsCommand(intake, shooter, leds)
+            .beforeStarting(intake.setPistonCommand(Value.kReverse));
     new JoystickButton(armJoystick, 1).whileActiveOnce(shootBalls);
     //    cancelButton.cancelWhenPressed(shootBalls);
 
     var intakeAuto = intake.intakeBallCommand();
-    new JoystickButton(armJoystick, 2).whenPressed(intakeAuto);
-    cancelButton.cancelWhenPressed(intakeAuto);
+    new JoystickButton(armJoystick, 2)
+            .whenReleased(intake.setPistonCommand(Value.kReverse))
+            .whileActiveContinuous(intakeAuto);
+//    cancelButton.cancelWhenPressed(intakeAuto);
 
     new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
 
-    var stepButton = new JoystickButton(armJoystick, 3);
+    var stepButton = new Button(()->armJoystick.getRawButton(3));
+//    BooleanSupplier stepButton = ()->true;
     new POVButton(driveJoystick, POV_UP)
         .whenPressed(
             climber.climbSeries(
@@ -100,12 +107,12 @@ public class RobotContainer {
 
     climber
         .climberManualCommand(
-            new POVButton(driveJoystick, 0),
-            new POVButton(driveJoystick, 180),
+            ()->driveJoystick.getPOV()==0,
+                ()->driveJoystick.getPOV()==180,
             driveJoystick::getTriangleButton,
             driveJoystick::getCrossButton,
-            driveJoystick::getCircleButton,
-            driveJoystick::getSquareButton)
+            ()->driveJoystick.getPOV()==90,
+            ()->driveJoystick.getPOV()==270)
         .schedule();
 
     new Button(driveJoystick::getShareButton)

@@ -25,7 +25,7 @@ public final class Constants {
 
   public static class ClimberConstants {
     public static final int FORWARD_CHANNEL = 1;
-    public static final int REVERSE_CHANNEL = 0;
+    public static final int REVERSE_CHANNEL = 7;
     public static final int LEFT_MOTOR_ID = 30;
     public static final int RIGHT_MOTOR_ID = 31;
 
@@ -37,19 +37,19 @@ public final class Constants {
     public static final double kV = 11.301;
     public static final double kA = 0.49015;
 
-    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.8;
+    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.5;
 
     public static final double ANGLE = 45;
     public static final double MAX_VELOCITY = 0.5;
     public static final double MAX_ACCELERATION = 1;
 
     public static final double SAFETY_DISTANCE = 0.1;
-    public static final float FORWARD_SOFT_LIMIT = 56.262463f;
+    public static final float FORWARD_SOFT_LIMIT = 58.262463f;
     public static final float REVERSE_SOFT_LIMIT = 0f;
     public static final double OPEN_HEIGHT = FORWARD_SOFT_LIMIT - SAFETY_DISTANCE;
     public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT + SAFETY_DISTANCE;
 
-    public static final Value ANGLED = Value.kForward;
+    public static final Value ANGLED = Value.kReverse;
     public static final Value STRAIGHT = Value.kForward;
 
     public static final double HEIGHT_TO_OPEN_PISTON = 20;
@@ -71,9 +71,10 @@ public final class Constants {
     public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
     //    public static final double FENDER_SHOT_RPM = 121.45182291666667;
-    public static final double FENDER_SHOT_RPM = 90;
+//    public static final double FENDER_SHOT_RPM = 90;
+    public static final double FENDER_SHOT_RPM = 60;
     //    public static final double FENDER_SHOT_RPM = 180;
-    public static final double TOLERANCE = 5;
+    public static final double TOLERANCE = 2;
   }
 
   public static class DrivetrainConstants {

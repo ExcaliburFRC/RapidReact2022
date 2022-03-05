@@ -7,6 +7,7 @@ package io.excaliburfrc.robot;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -29,6 +30,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
+    Shuffleboard.disableActuatorWidgets();
     m_robotContainer = new RobotContainer();
   }
 
@@ -72,7 +74,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    m_robotContainer.manualButton();
+    m_robotContainer.configureButtonBindings();
     DataLogManager.start();
   }
 
@@ -83,6 +85,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     LiveWindow.setEnabled(false);
+    CommandScheduler.getInstance().enable();
     m_robotContainer.manualButton();
   }
 }

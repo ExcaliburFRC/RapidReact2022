@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.ColorSensorV3;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -82,7 +83,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
                     __ -> {
                       intakeMotor.set(0);
                       upperMotor.set(0);
-                      intakePiston.set(Value.kReverse);
+//                      intakePiston.set(Value.kReverse);
                     },
                     // isFinished
                     upperBallTrigger,
@@ -101,7 +102,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
                         __ -> {
                           intakeMotor.set(0);
                           upperMotor.set(0);
-                          intakePiston.set(Value.kReverse);
+//                          intakePiston.set(Value.kReverse);
                         },
                         // isFinished
                         intakeBallTrigger.negate())
@@ -155,6 +156,26 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         // stop after we've shot a ball
         upperBallTrigger.negate());
   }
+
+  public Command blindShootBallCommand() {
+    return new FunctionalCommand(
+            // init
+            () -> {},
+            // exe
+            () -> {
+              upperMotor.set(Speeds.upperShootDutyCycle);
+              intakeMotor.set(Speeds.intakeShootDutyCycle);
+            },
+            // end
+            _interrupted -> {
+              upperMotor.set(0);
+              intakeMotor.set(0);
+            },
+            // isFinished
+            // stop after we've shot a ball
+            ()->false).withTimeout(0.1);
+  }
+
 
   private boolean isOurColor() {
     var red = intakeSensor.getRed();

@@ -1,12 +1,14 @@
 package io.excaliburfrc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.lib.RepeatingCommand;
 import io.excaliburfrc.robot.subsystems.Intake;
 import io.excaliburfrc.robot.subsystems.LEDs;
+import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
 import io.excaliburfrc.robot.subsystems.Shooter;
 
 public class BlindShootBallsCommand extends ParallelCommandGroup {
@@ -20,8 +22,8 @@ public class BlindShootBallsCommand extends ParallelCommandGroup {
         new RepeatingCommand(
             new SequentialCommandGroup(
                 new WaitUntilCommand(new Trigger(shooter::isAtTargetVelocity).and(trigger)),
-                intake.shootBallCommand())),
-        leds.setColorCommand(LEDs.LedMode.BLUE));
+                intake.blindShootBallCommand())),
+        leds.setColorCommand(LedMode.PINK));
   }
 
   public BlindShootBallsCommand(Intake intake, Shooter shooter, LEDs leds) {

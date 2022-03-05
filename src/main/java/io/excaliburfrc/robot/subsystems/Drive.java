@@ -107,15 +107,16 @@ public class Drive extends SubsystemBase {
         right, ControlType.kVelocity, 0, feedforward.calculate(right), ArbFFUnits.kVoltage);
   }
 
-  public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier slowMode) {
-    double speed = xSpeed.getAsDouble();
+  public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
+    return arcadeDriveCommand(xSpeed, zRotation, () -> false);
+  }
 
-    if (slowMode.getAsBoolean()) speed = speed / 2;
-    else speed = xSpeed.getAsDouble();
-
-    double finalSpeed = speed;
-    return new RunCommand(
-        () -> drive.arcadeDrive(finalSpeed, zRotation.getAsDouble()), this);
+  public Command arcadeDriveCommand(
+      DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier slowMode) {
+    return new RunCommand(() -> drive.arcadeDrive(xSpeed.getAsDouble() * (slowMode.getAsBoolean()
+                    ? 0.5 : 1),
+            zRotation.getAsDouble())
+            , this);
   }
 
   public Command curvatureDriveCommand(
