@@ -221,6 +221,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Intake Cargo", intakeBallTrigger, null);
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
+    builder.addStringProperty("Intake Piston", intakePiston.get()::toString, null);
   }
 
   public boolean isEmpty() {
