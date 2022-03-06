@@ -13,16 +13,14 @@ import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
-  private final AtomicInteger climbStage = new AtomicInteger(0);
-
   private final DoubleSolenoid anglerPiston =
       new DoubleSolenoid(
           PneumaticsModuleType.CTREPCM,
@@ -259,10 +257,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Subsystem");
 
-    builder.addDoubleProperty("climb stage", climbStage::get, v -> climbStage.set((int) v));
+    SendableRegistry.remove(anglerPiston);
     builder.addDoubleProperty("leftHeight", left::getHeight, null);
     builder.addDoubleProperty("rightHeight", right::getHeight, null);
-
-    builder.addDoubleProperty("d/rightControl", right.motor::get, null);
   }
 }

@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -237,11 +238,15 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Subsystem");
+
+    SendableRegistry.remove(upperSensor);
+    SendableRegistry.remove(intakePiston);
+
     builder.addBooleanProperty("Allow", allow::get, allow::set);
     builder.addBooleanProperty("Intake Cargo", intakeBallTrigger, null);
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
-    builder.addDoubleProperty("Cargo Count", ballCount::get, null);
-    builder.addStringProperty("Intake Piston", intakePiston.get()::toString, null);
+    //    builder.addDoubleProperty("Cargo Count", ballCount::get, null);
+    builder.addBooleanProperty("Intake Piston", () -> intakePiston.get() == Value.kForward, null);
   }
 
   public boolean isEmpty() {

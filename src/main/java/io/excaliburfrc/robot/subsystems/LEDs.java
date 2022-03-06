@@ -12,7 +12,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class LEDs extends SubsystemBase {
   private final PWM leds = new PWM(LEDS_PORT);
 
-  public LEDs() {}
+  public LEDs() {
+    SendableRegistry.remove(leds);
+    SendableRegistry.remove(this);
+  }
 
   public enum LedMode {
     BLUE(0.87),

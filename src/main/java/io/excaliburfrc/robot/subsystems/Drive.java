@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -161,8 +162,13 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    super.initSendable(builder);
+    builder.setSmartDashboardType("Subsystem");
+    SendableRegistry.remove(gyro);
+    SendableRegistry.remove(drive);
+
     builder.addDoubleProperty(
         "heading", () -> odometry.getPoseMeters().getRotation().getDegrees(), null);
+    builder.addDoubleProperty("x", () -> odometry.getPoseMeters().getX(), null);
+    builder.addDoubleProperty("y", () -> odometry.getPoseMeters().getY(), null);
   }
 }

@@ -4,6 +4,7 @@
 
 package io.excaliburfrc.robot;
 
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -31,6 +32,7 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     Shuffleboard.disableActuatorWidgets();
+    SendableRegistry.remove(CommandScheduler.getInstance());
     m_robotContainer = new RobotContainer();
   }
 
@@ -66,6 +68,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+//    DataLogManager.start();
   }
 
   /** This function is called periodically during autonomous. */

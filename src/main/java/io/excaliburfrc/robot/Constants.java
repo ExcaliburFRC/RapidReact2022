@@ -72,7 +72,7 @@ public final class Constants {
 
     //    public static final double FENDER_SHOT_RPM = 121.45182291666667;
     //    public static final double FENDER_SHOT_RPM = 90;
-    public static final double FENDER_SHOT_RPM = 60;
+    public static final double FENDER_SHOT_RPM = 70;
     //    public static final double FENDER_SHOT_RPM = 180;
     public static final double TOLERANCE = 2;
   }
