@@ -14,6 +14,7 @@ import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
+import io.excaliburfrc.lib.RepeatingCommand;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
 
@@ -64,7 +65,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
           __ -> motor.set(0),
-          () -> encoder.getPosition() <= CLOSED_HEIGHT);
+          () -> encoder.getPosition() <= HALF_HEIGHT);
     }
 
     public Command openFullyCommand() {
@@ -84,8 +85,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       return new FunctionalCommand(
           () -> {},
           () -> {
-            if (up.getAsBoolean()) motor.set(0.1);
-            else if (down.getAsBoolean()) motor.set(-0.1);
+            if (up.getAsBoolean()) motor.set(0.4);
+            else if (down.getAsBoolean()) motor.set(-0.8);
             else motor.set(0);
           },
           __ -> motor.set(0),

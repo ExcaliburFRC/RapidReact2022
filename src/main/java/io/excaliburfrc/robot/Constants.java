@@ -30,13 +30,14 @@ public final class Constants {
     public static final int LEFT_MOTOR_ID = 30;
     public static final int RIGHT_MOTOR_ID = 31;
 
-    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.5;
+    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.7;
 
     public static final double SAFETY_DISTANCE = 0.1;
     public static final float FORWARD_SOFT_LIMIT = 58.262463f;
     public static final float REVERSE_SOFT_LIMIT = 0f;
     public static final double OPEN_HEIGHT = FORWARD_SOFT_LIMIT - SAFETY_DISTANCE;
-    public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT + SAFETY_DISTANCE;
+    public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT;
+    public static final double HALF_HEIGHT = OPEN_HEIGHT / 2.0;
 
     public static final Value ANGLED = Value.kReverse;
     public static final Value STRAIGHT = Value.kForward;
@@ -58,7 +59,7 @@ public final class Constants {
     public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
     // 121.45182291666667;
-    public static final double FENDER_SHOT_RPM = 70;
+    public static final double FENDER_SHOT_RPM = 75;
     public static final double TOLERANCE = 2;
   }
 

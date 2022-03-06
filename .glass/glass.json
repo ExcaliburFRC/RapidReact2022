@@ -14,7 +14,8 @@
       "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
-      "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro"
+      "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
+      "/SmartDashboard/Autos": "String Chooser"
     }
   },
   "NetworkTables Settings": {
@@ -45,7 +46,7 @@
               "max": 81.0
             }
           ],
-          "height": 759,
+          "height": 591,
           "series": [
             {
               "color": [
@@ -72,8 +73,7 @@
                 0.4078431725502014,
                 1.0
               ],
-              "id": "NT:/LiveWindow/Shooter/control effort",
-              "yAxis": 1
+              "id": "NT:/LiveWindow/Shooter/control effort"
             },
             {
               "color": [
@@ -83,8 +83,7 @@
                 1.0
               ],
               "id": "NT:/LiveWindow/Shooter/control current",
-              "marker": "Up",
-              "yAxis": 2
+              "marker": "Up"
             }
           ],
           "yaxis2": true,
