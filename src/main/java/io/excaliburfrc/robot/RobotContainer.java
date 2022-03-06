@@ -2,6 +2,7 @@ package io.excaliburfrc.robot;
 
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -9,7 +10,8 @@ import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.commands.BlindShootBallsCommand;
-import io.excaliburfrc.robot.commands.NoRamsete;
+import io.excaliburfrc.robot.commands.NoRamseteBottomFender;
+import io.excaliburfrc.robot.commands.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.ShootBallsCommand;
 import io.excaliburfrc.robot.subsystems.*;
 import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
@@ -25,7 +27,6 @@ public class RobotContainer {
   private final Joystick armJoystick = new Joystick(1);
   // The robot's subsystems and commands are defined here...
   private final Intake intake = new Intake();
-
   private final Climber climber = new Climber();
   private final Shooter shooter = new Shooter();
   private final Drive drive = new Drive();
@@ -33,8 +34,11 @@ public class RobotContainer {
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
+  private final SendableChooser<Command> chooser = new SendableChooser<>();
+
   public RobotContainer() {
-    // Configure the button bindings
+    chooser.addOption("Top", new NoRamseteTopFender(drive, intake, shooter, leds));
+    chooser.addOption("Bottom", new NoRamseteBottomFender(drive, intake, shooter, leds));
   }
 
   private static final int POV_UP = 0;
@@ -129,7 +133,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return new NoRamsete(drive, intake, shooter, leds);
+    return chooser.getSelected();
   }
 }
