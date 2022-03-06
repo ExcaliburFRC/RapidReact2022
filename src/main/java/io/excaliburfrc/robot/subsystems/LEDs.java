@@ -17,6 +17,7 @@ public class LEDs extends SubsystemBase {
     SendableRegistry.remove(this);
   }
 
+  @SuppressWarnings("unused")
   public enum LedMode {
     BLUE(0.87),
     RED(0.61),
@@ -38,10 +39,6 @@ public class LEDs extends SubsystemBase {
 
   public Command setColorCommand(LedMode color) {
     return new RunCommand(() -> leds.setSpeed(color.dutyCycle), this);
-  }
-
-  public Command ledsOffCommand() {
-    return new RunCommand(() -> leds.setSpeed(LedMode.OFF.dutyCycle), this);
   }
 
   @Override

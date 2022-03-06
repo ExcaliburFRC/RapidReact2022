@@ -3,6 +3,7 @@ package io.excaliburfrc.robot;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -39,10 +40,10 @@ public class RobotContainer {
   public RobotContainer() {
     chooser.addOption("Top", new NoRamseteTopFender(drive, intake, shooter, leds));
     chooser.addOption("Bottom", new NoRamseteBottomFender(drive, intake, shooter, leds));
+    SmartDashboard.putData("Autos", chooser);
   }
 
   private static final int POV_UP = 0;
-  private static final int POV_DOWN = 180;
 
   void configureButtonBindings() {
     CommandScheduler.getInstance().clearButtons();
@@ -54,24 +55,18 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(LedMode.GOLD));
 
-    var cancelButton = new JoystickButton(armJoystick, 6);
+    new JoystickButton(armJoystick, 1)
+        .whileActiveOnce(
+            new BlindShootBallsCommand(intake, shooter, leds)
+                .beforeStarting(intake.setPistonCommand(Value.kReverse)));
 
-    var shootBalls =
-        new BlindShootBallsCommand(intake, shooter, leds)
-            .beforeStarting(intake.setPistonCommand(Value.kReverse));
-    new JoystickButton(armJoystick, 1).whileActiveOnce(shootBalls);
-    //    cancelButton.cancelWhenPressed(shootBalls);
-
-    var intakeAuto = intake.intakeBallCommand();
     new JoystickButton(armJoystick, 2)
         .whenReleased(intake.setPistonCommand(Value.kReverse))
-        .whileActiveContinuous(intakeAuto);
-    //    cancelButton.cancelWhenPressed(intakeAuto);
+        .whileActiveContinuous(intake.intakeBallCommand());
 
     new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
 
     var stepButton = new Button(() -> armJoystick.getRawButton(3));
-    //    BooleanSupplier stepButton = ()->true;
     new POVButton(driveJoystick, POV_UP)
         .whenPressed(
             climber.climbSeries(
@@ -80,9 +75,9 @@ public class RobotContainer {
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
-    DriverStation.reportWarning("Buttons!", false);
-
     new Button(driveJoystick::getOptionsButton).toggleWhenPressed(intake.allowCommand());
+
+    DriverStation.reportWarning("Buttons!", false);
   }
 
   void manualButton() {

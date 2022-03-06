@@ -79,7 +79,7 @@ public class Shooter extends SubsystemBase {
     return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
   }
 
-  private void accelerate(double setpoint) {
+  private void accelerate(@SuppressWarnings("SameParameterValue") double setpoint) {
     pid.setSetpoint(setpoint);
     controlMode = Mode.CLOSED_LOOP;
   }

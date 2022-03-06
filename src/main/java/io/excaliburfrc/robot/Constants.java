@@ -1,5 +1,6 @@
 package io.excaliburfrc.robot;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 /**
@@ -29,19 +30,7 @@ public final class Constants {
     public static final int LEFT_MOTOR_ID = 30;
     public static final int RIGHT_MOTOR_ID = 31;
 
-    public static final double kP = 0;
-    public static final double kI = 0;
-    public static final double kD = 0;
-    public static final double kG = -0.069981;
-    public static final double kS = 0.17846;
-    public static final double kV = 11.301;
-    public static final double kA = 0.49015;
-
     public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.5;
-
-    public static final double ANGLE = 45;
-    public static final double MAX_VELOCITY = 0.5;
-    public static final double MAX_ACCELERATION = 1;
 
     public static final double SAFETY_DISTANCE = 0.1;
     public static final float FORWARD_SOFT_LIMIT = 58.262463f;
@@ -51,8 +40,6 @@ public final class Constants {
 
     public static final Value ANGLED = Value.kReverse;
     public static final Value STRAIGHT = Value.kForward;
-
-    public static final double HEIGHT_TO_OPEN_PISTON = 20;
   }
 
   public static class ShooterConstants {
@@ -70,10 +57,8 @@ public final class Constants {
     public static final double CPR = 1024;
     public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
-    //    public static final double FENDER_SHOT_RPM = 121.45182291666667;
-    //    public static final double FENDER_SHOT_RPM = 90;
+    // 121.45182291666667;
     public static final double FENDER_SHOT_RPM = 70;
-    //    public static final double FENDER_SHOT_RPM = 180;
     public static final double TOLERANCE = 2;
   }
 
@@ -83,16 +68,18 @@ public final class Constants {
     public static final int LEFT_FOLLOWER_ID = 12;
     public static final int RIGHT_FOLLOWER_ID = 13;
 
-    public static final double kS = 1;
-    public static final double kV = 2;
-    public static final double kA = 1;
-    public static final double kP = 0;
-    public static final double TRACKWIDTH_METERS = 0.69;
-    public static final double MAX_SPEED_METERS_PER_SECOND = 3;
-    public static final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
+    @SuppressWarnings("PointlessArithmeticExpression")
+    public static final double GEARING = 10.71 / 1.0;
+
+    public static final double MOTOR_ROTATION_TO_METERS =
+        GEARING * 2 * Math.PI * Units.inchesToMeters(4);
   }
 
   public static class LedsConstants {
     public static final int LEDS_PORT = 0;
+  }
+
+  private Constants() {
+    throw new UnsupportedOperationException("util class");
   }
 }

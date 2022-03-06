@@ -13,7 +13,7 @@ public final class CAN {
   }
   // theoretically this goes down to 1ms, but we don't want to clog anything
 
-  public static boolean ValidateREVCAN(REVLibError... statuses) {
+  public static void ValidateREVCAN(REVLibError... statuses) {
     StringBuilder builder = new StringBuilder();
     int errors = 0;
     for (int i = 0; i < statuses.length; i++) {
@@ -22,10 +22,9 @@ public final class CAN {
       errors++;
       builder.append(String.format("\t[%d] %s", i, err));
     }
-    if (errors == 0) return false;
+    if (errors == 0) return;
     builder.insert(0, String.format("REV CAN Errors found: %d\n", errors));
     reportError(builder.toString(), true);
-    return true;
   }
 
   private CAN() {
