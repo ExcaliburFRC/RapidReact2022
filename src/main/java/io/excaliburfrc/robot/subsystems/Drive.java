@@ -11,10 +11,12 @@ import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.networktables.NTSendableBuilder;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -129,6 +131,8 @@ public class Drive extends SubsystemBase {
     SendableRegistry.remove(this);
     SendableRegistry.remove(gyro);
     SendableRegistry.remove(drive);
-    field.initSendable(builder);
+    var subBuilder = new SendableBuilderImpl();
+    subBuilder.setTable(((NTSendableBuilder)builder).getTable().getSubTable("Field"));
+    field.initSendable(subBuilder);
   }
 }
