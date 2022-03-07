@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.commands.BlindShootBallsCommand;
 import io.excaliburfrc.robot.commands.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.NoRamseteTopFender;
@@ -41,8 +42,6 @@ public class RobotContainer {
     chooser.addOption("Bottom", new NoRamseteBottomFender(drive, intake, shooter, leds));
     SmartDashboard.putData("Autos", chooser);
   }
-
-  private static final int POV_UP = 0;
 
   void configureButtonBindings() {
     CommandScheduler.getInstance().clearButtons();
@@ -83,6 +82,9 @@ public class RobotContainer {
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+
+    new POVButton(armJoystick, 0).whenPressed(shooter.incrementTarget(2));
+    new POVButton(armJoystick, 180).whenPressed(shooter.incrementTarget(-2));
 
     new Button(driveJoystick::getOptionsButton).toggleWhenPressed(intake.allowCommand());
 
