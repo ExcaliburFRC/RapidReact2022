@@ -158,10 +158,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
             // init
             () -> {},
             // exe
-            () -> {
-              upperMotor.set(Speeds.upperShootDutyCycle);
-              intakeMotor.set(Speeds.intakeShootDutyCycle);
-            },
+            () -> upperMotor.set(Speeds.upperShootDutyCycle),
             // end
             _interrupted -> {
               upperMotor.set(0);
