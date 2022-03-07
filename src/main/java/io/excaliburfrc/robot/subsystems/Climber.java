@@ -14,7 +14,6 @@ import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
-import io.excaliburfrc.lib.RepeatingCommand;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
 
@@ -86,7 +85,19 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () -> {
             if (up.getAsBoolean()) motor.set(0.4);
-            else if (down.getAsBoolean()) motor.set(-0.8);
+            else if (down.getAsBoolean()) motor.set(-0.7);
+            else motor.set(0);
+          },
+          __ -> motor.set(0),
+          () -> false);
+    }
+
+    public Command tuneCommand(BooleanSupplier up, BooleanSupplier down) {
+      return new FunctionalCommand(
+          () -> {},
+          () -> {
+            if (up.getAsBoolean()) motor.set(0.1);
+            else if (down.getAsBoolean()) motor.set(-0.1);
             else motor.set(0);
           },
           __ -> motor.set(0),
@@ -181,6 +192,26 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new ParallelCommandGroup(
         left.manualCommand(leftUp, leftDown),
         right.manualCommand(rightUp, rightDown),
+        new FunctionalCommand(
+            () -> {},
+            () -> {
+              if (pistonAngled.getAsBoolean()) anglerPiston.set(ANGLED);
+              if (pistonStraight.getAsBoolean()) anglerPiston.set(STRAIGHT);
+            },
+            __ -> {},
+            () -> false));
+  }
+
+  public Command climberTuneCommand(
+      BooleanSupplier leftUp,
+      BooleanSupplier leftDown,
+      BooleanSupplier rightUp,
+      BooleanSupplier rightDown,
+      BooleanSupplier pistonAngled,
+      BooleanSupplier pistonStraight) {
+    return new ParallelCommandGroup(
+        left.tuneCommand(leftUp, leftDown),
+        right.tuneCommand(rightUp, rightDown),
         new FunctionalCommand(
             () -> {},
             () -> {

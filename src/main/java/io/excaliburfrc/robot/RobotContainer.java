@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.commands.BlindShootBallsCommand;
 import io.excaliburfrc.robot.commands.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.NoRamseteTopFender;
@@ -53,7 +52,7 @@ public class RobotContainer {
         drive.arcadeDriveCommand(
             () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
 
-    leds.setDefaultCommand(leds.setColorCommand(LedMode.GOLD));
+    leds.setDefaultCommand(leds.setColorCommand(LedMode.PINK));
 
     new JoystickButton(armJoystick, 1)
         .whileActiveOnce(
@@ -66,11 +65,21 @@ public class RobotContainer {
 
     new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
 
-    var stepButton = new Button(() -> armJoystick.getRawButton(3));
-    new POVButton(driveJoystick, POV_UP)
-        .whenPressed(
-            climber.climbSeries(
-                stepButton, stepButton, stepButton, stepButton, stepButton, stepButton));
+    //    var stepButton = new Button(() -> armJoystick.getRawButton(3));
+    //    new POVButton(driveJoystick, POV_UP)
+    //        .whenPressed(
+    //            climber.climbSeries(
+    //                stepButton, stepButton, stepButton, stepButton, stepButton, stepButton));
+
+    climber
+        .climberManualCommand(
+            () -> driveJoystick.getPOV() == 0,
+            () -> driveJoystick.getPOV() == 180,
+            driveJoystick::getTriangleButton,
+            driveJoystick::getCrossButton,
+            () -> driveJoystick.getPOV() == 90,
+            () -> driveJoystick.getPOV() == 270)
+        .schedule();
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
@@ -103,7 +112,7 @@ public class RobotContainer {
     new JoystickButton(armJoystick, 12).whenHeld(new ShootBallsCommand(intake, shooter, leds));
 
     climber
-        .climberManualCommand(
+        .climberTuneCommand(
             () -> driveJoystick.getPOV() == 0,
             () -> driveJoystick.getPOV() == 180,
             driveJoystick::getTriangleButton,
