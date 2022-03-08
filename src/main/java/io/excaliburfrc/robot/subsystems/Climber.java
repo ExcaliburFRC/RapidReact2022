@@ -45,7 +45,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           motor.setSoftLimit(SoftLimitDirection.kReverse, 0),
           motor.enableSoftLimit(SoftLimitDirection.kReverse, true),
           motor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.FORWARD_SOFT_LIMIT),
-          motor.enableSoftLimit(SoftLimitDirection.kForward, true));
+          motor.enableSoftLimit(SoftLimitDirection.kForward, false));
       motor.setInverted(isMotorReversed);
 
       encoder.setPosition(0);
@@ -116,7 +116,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
             motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
           },
           () -> {
-            encoder.setPosition(0);
+//            encoder.setPosition(0);
             motor.enableSoftLimit(SoftLimitDirection.kForward, true);
             motor.enableSoftLimit(SoftLimitDirection.kReverse, true);
           });

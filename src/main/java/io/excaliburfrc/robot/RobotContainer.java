@@ -80,6 +80,8 @@ public class RobotContainer {
             () -> driveJoystick.getPOV() == 270)
         .schedule();
 
+    new Button(driveJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
+
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
