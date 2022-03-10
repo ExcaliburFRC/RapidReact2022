@@ -160,7 +160,7 @@ public class Drive extends SubsystemBase {
   public Command resetOdometryCommand(Pose2d pose) {
     return new InstantCommand(
         () -> {
-          odometry.resetPosition(pose, gyro.getRotation2d().unaryMinus());
+          odometry.resetPosition(pose, gyro.getRotation2d());
           leftEncoder.setPosition(0);
           rightEncoder.setPosition(0);
         },
@@ -171,7 +171,8 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     field.setRobotPose(
         odometry.update(
-            gyro.getRotation2d().unaryMinus(), leftEncoder.getPosition(), rightEncoder.getPosition()));
+            gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition()));
+    SmartDashboard.putNumber("angle", gyro.getYaw());
   }
 
   @Override

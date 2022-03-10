@@ -167,8 +167,10 @@ public class RobotContainer {
         drive.resetOdometryCommand(new Pose2d(0, 0, fromDegrees(0))),
         drive.followTrajectoryCommand(
             TrajectoryGenerator.generateTrajectory(
-                List.of(new Pose2d(0, 0, fromDegrees(0)), new Pose2d(2, 1, fromDegrees(90))),
-                new TrajectoryConfig(3, 3))),
+                List.of(new Pose2d(0, 0, fromDegrees(0)),
+                      new Pose2d(2, 0, fromDegrees(0))),
+                new TrajectoryConfig(3, 3)))
+              .alongWith(intake.intakeBallCommand()),
         drive.arcadeDriveCommand(() -> 0, () -> 0));
     //    return chooser.getSelected();
   }
