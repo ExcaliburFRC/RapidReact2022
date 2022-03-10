@@ -38,8 +38,8 @@ public class LEDs extends SubsystemBase {
     public final double dutyCycle;
   }
 
-  public LedMode getAlliance(){
-    switch (DriverStation.getAlliance()){
+  public LedMode getAlliance() {
+    switch (DriverStation.getAlliance()) {
       case Blue:
         return LedMode.BLUE;
       case Red:

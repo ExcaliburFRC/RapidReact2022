@@ -15,7 +15,6 @@ import io.excaliburfrc.robot.commands.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.ShootBallsCommand;
 import io.excaliburfrc.robot.subsystems.*;
-import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -51,12 +50,10 @@ public class RobotContainer {
         drive.arcadeDriveCommand(
             () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
 
-    leds.setDefaultCommand(leds.setColorCommand(LedMode.PINK));
+    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
     new JoystickButton(armJoystick, 1)
-        .whileActiveOnce(
-            new BlindShootBallsCommand(intake, shooter, leds)
-                .beforeStarting(intake.setPistonCommand(Value.kReverse)));
+        .whileActiveOnce(new BlindShootBallsCommand(intake, shooter, leds));
 
     new JoystickButton(armJoystick, 2)
         .whenReleased(intake.setPistonCommand(Value.kReverse))
@@ -85,8 +82,8 @@ public class RobotContainer {
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
-    new POVButton(armJoystick, 0).whenPressed(shooter.incrementTarget(2));
-    new POVButton(armJoystick, 180).whenPressed(shooter.incrementTarget(-2));
+    new POVButton(armJoystick, 0).whenPressed(shooter.incrementTarget(1));
+    new POVButton(armJoystick, 180).whenPressed(shooter.incrementTarget(-1));
 
     new Button(driveJoystick::getOptionsButton).toggleWhenPressed(intake.allowCommand());
 

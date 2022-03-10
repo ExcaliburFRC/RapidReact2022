@@ -84,9 +84,16 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       return new FunctionalCommand(
           () -> {},
           () -> {
-            if (up.getAsBoolean()) motor.set(0.4);
-            else if (down.getAsBoolean()) motor.set(-0.7);
-            else motor.set(0);
+            if (up.getAsBoolean()) {
+              motor.set(0.9);
+              System.out.println("up");
+            } else if (down.getAsBoolean()) {
+              System.out.println("down");
+              motor.set(-0.9);
+            } else {
+              System.out.println("nil");
+              motor.set(0);
+            }
           },
           __ -> motor.set(0),
           () -> false);
@@ -96,9 +103,13 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       return new FunctionalCommand(
           () -> {},
           () -> {
-            if (up.getAsBoolean()) motor.set(0.1);
-            else if (down.getAsBoolean()) motor.set(-0.1);
-            else motor.set(0);
+            if (up.getAsBoolean()) {
+              motor.set(0.3);
+            } else if (down.getAsBoolean()) {
+              motor.set(-0.3);
+            } else {
+              motor.set(0);
+            }
           },
           __ -> motor.set(0),
           () -> false);
@@ -116,7 +127,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
             motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
           },
           () -> {
-//            encoder.setPosition(0);
+            //            encoder.setPosition(0);
             motor.enableSoftLimit(SoftLimitDirection.kForward, true);
             motor.enableSoftLimit(SoftLimitDirection.kReverse, true);
           });
@@ -195,8 +206,12 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         new FunctionalCommand(
             () -> {},
             () -> {
-              if (pistonAngled.getAsBoolean()) anglerPiston.set(ANGLED);
-              if (pistonStraight.getAsBoolean()) anglerPiston.set(STRAIGHT);
+              if (pistonAngled.getAsBoolean()) {
+                anglerPiston.set(ANGLED);
+              }
+              if (pistonStraight.getAsBoolean()) {
+                anglerPiston.set(STRAIGHT);
+              }
             },
             __ -> {},
             () -> false));
@@ -215,8 +230,12 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         new FunctionalCommand(
             () -> {},
             () -> {
-              if (pistonAngled.getAsBoolean()) anglerPiston.set(ANGLED);
-              if (pistonStraight.getAsBoolean()) anglerPiston.set(STRAIGHT);
+              if (pistonAngled.getAsBoolean()) {
+                anglerPiston.set(ANGLED);
+              }
+              if (pistonStraight.getAsBoolean()) {
+                anglerPiston.set(STRAIGHT);
+              }
             },
             __ -> {},
             () -> false));
