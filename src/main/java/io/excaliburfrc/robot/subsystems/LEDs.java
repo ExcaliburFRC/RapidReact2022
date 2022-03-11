@@ -4,6 +4,7 @@ import static io.excaliburfrc.robot.Constants.LedsConstants.LEDS_PORT;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -35,6 +36,16 @@ public class LEDs extends SubsystemBase {
     }
 
     public final double dutyCycle;
+  }
+
+  public LedMode getAlliance() {
+    switch (DriverStation.getAlliance()) {
+      case Blue:
+        return LedMode.BLUE;
+      case Red:
+        return LedMode.RED;
+    }
+    return LedMode.GOLD;
   }
 
   public Command setColorCommand(LedMode color) {

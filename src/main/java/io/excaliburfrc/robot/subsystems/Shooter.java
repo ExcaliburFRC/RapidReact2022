@@ -14,8 +14,11 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Shooter extends SubsystemBase {
+  private final AtomicInteger currentTarget =
+      new AtomicInteger((int) ShooterConstants.FENDER_SHOT_RPM);
   private final CANSparkMax leader =
       new CANSparkMax(ShooterConstants.LEADER_ID, MotorType.kBrushless);
 
@@ -67,8 +70,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command accelerateFenderCommand() {
-    return new StartEndCommand(
-        () -> accelerate(ShooterConstants.FENDER_SHOT_RPM), this::release, this);
+    return new StartEndCommand(() -> accelerate(currentTarget.get()), this::release, this);
   }
 
   public double getVelocity() {
@@ -77,6 +79,10 @@ public class Shooter extends SubsystemBase {
 
   public boolean isAtTargetVelocity() {
     return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
+  }
+
+  public Command incrementTarget(int diff) {
+    return new InstantCommand(() -> currentTarget.addAndGet(diff));
   }
 
   private void accelerate(@SuppressWarnings("SameParameterValue") double setpoint) {
@@ -139,6 +145,7 @@ public class Shooter extends SubsystemBase {
     LiveWindow.disableTelemetry(pid);
 
     builder.setSmartDashboardType("Subsystem");
+    builder.addDoubleProperty("rps", currentTarget::get, null);
     builder.addDoubleProperty("velocity", this::getVelocity, null);
     builder.addDoubleProperty("targetVelocity", pid::getSetpoint, null);
     builder.addDoubleProperty("control effort", leader::getAppliedOutput, null);

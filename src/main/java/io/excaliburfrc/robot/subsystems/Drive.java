@@ -15,6 +15,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -129,6 +130,6 @@ public class Drive extends SubsystemBase {
     SendableRegistry.remove(this);
     SendableRegistry.remove(gyro);
     SendableRegistry.remove(drive);
-    field.initSendable(builder);
+    SmartDashboard.putData("Field", field);
   }
 }

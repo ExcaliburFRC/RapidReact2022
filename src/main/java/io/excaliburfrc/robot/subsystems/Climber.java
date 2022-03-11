@@ -45,7 +45,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           motor.setSoftLimit(SoftLimitDirection.kReverse, 0),
           motor.enableSoftLimit(SoftLimitDirection.kReverse, true),
           motor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.FORWARD_SOFT_LIMIT),
-          motor.enableSoftLimit(SoftLimitDirection.kForward, true));
+          motor.enableSoftLimit(SoftLimitDirection.kForward, false));
       motor.setInverted(isMotorReversed);
 
       encoder.setPosition(0);
@@ -64,7 +64,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
           __ -> motor.set(0),
-          () -> encoder.getPosition() <= CLOSED_HEIGHT);
+          () -> encoder.getPosition() <= HALF_HEIGHT);
     }
 
     public Command openFullyCommand() {
@@ -84,9 +84,32 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       return new FunctionalCommand(
           () -> {},
           () -> {
-            if (up.getAsBoolean()) motor.set(0.1);
-            else if (down.getAsBoolean()) motor.set(-0.1);
-            else motor.set(0);
+            if (up.getAsBoolean()) {
+              motor.set(0.9);
+              System.out.println("up");
+            } else if (down.getAsBoolean()) {
+              System.out.println("down");
+              motor.set(-0.9);
+            } else {
+              System.out.println("nil");
+              motor.set(0);
+            }
+          },
+          __ -> motor.set(0),
+          () -> false);
+    }
+
+    public Command tuneCommand(BooleanSupplier up, BooleanSupplier down) {
+      return new FunctionalCommand(
+          () -> {},
+          () -> {
+            if (up.getAsBoolean()) {
+              motor.set(0.3);
+            } else if (down.getAsBoolean()) {
+              motor.set(-0.3);
+            } else {
+              motor.set(0);
+            }
           },
           __ -> motor.set(0),
           () -> false);
@@ -104,7 +127,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
             motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
           },
           () -> {
-            encoder.setPosition(0);
+            //            encoder.setPosition(0);
             motor.enableSoftLimit(SoftLimitDirection.kForward, true);
             motor.enableSoftLimit(SoftLimitDirection.kReverse, true);
           });
@@ -183,8 +206,36 @@ public class Climber extends SubsystemBase implements AutoCloseable {
         new FunctionalCommand(
             () -> {},
             () -> {
-              if (pistonAngled.getAsBoolean()) anglerPiston.set(ANGLED);
-              if (pistonStraight.getAsBoolean()) anglerPiston.set(STRAIGHT);
+              if (pistonAngled.getAsBoolean()) {
+                anglerPiston.set(ANGLED);
+              }
+              if (pistonStraight.getAsBoolean()) {
+                anglerPiston.set(STRAIGHT);
+              }
+            },
+            __ -> {},
+            () -> false));
+  }
+
+  public Command climberTuneCommand(
+      BooleanSupplier leftUp,
+      BooleanSupplier leftDown,
+      BooleanSupplier rightUp,
+      BooleanSupplier rightDown,
+      BooleanSupplier pistonAngled,
+      BooleanSupplier pistonStraight) {
+    return new ParallelCommandGroup(
+        left.tuneCommand(leftUp, leftDown),
+        right.tuneCommand(rightUp, rightDown),
+        new FunctionalCommand(
+            () -> {},
+            () -> {
+              if (pistonAngled.getAsBoolean()) {
+                anglerPiston.set(ANGLED);
+              }
+              if (pistonStraight.getAsBoolean()) {
+                anglerPiston.set(STRAIGHT);
+              }
             },
             __ -> {},
             () -> false));

@@ -21,7 +21,7 @@ public final class Constants {
     public static final int SONIC_LIMIT = 69;
     public static final int MAX_BALLS = 2;
     public static final int FWD_CHANNEL = 3;
-    public static final int REV_CHANNEL = 2;
+    public static final int REV_CHANNEL = 4;
   }
 
   public static class ClimberConstants {
@@ -30,13 +30,14 @@ public final class Constants {
     public static final int LEFT_MOTOR_ID = 30;
     public static final int RIGHT_MOTOR_ID = 31;
 
-    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.5;
+    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.9;
 
     public static final double SAFETY_DISTANCE = 0.1;
-    public static final float FORWARD_SOFT_LIMIT = 58.262463f;
+    public static final float FORWARD_SOFT_LIMIT = 174.78738f;
     public static final float REVERSE_SOFT_LIMIT = 0f;
     public static final double OPEN_HEIGHT = FORWARD_SOFT_LIMIT - SAFETY_DISTANCE;
-    public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT + SAFETY_DISTANCE;
+    public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT;
+    public static final double HALF_HEIGHT = OPEN_HEIGHT / 2.0;
 
     public static final Value ANGLED = Value.kReverse;
     public static final Value STRAIGHT = Value.kForward;
@@ -58,7 +59,7 @@ public final class Constants {
     public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
     // 121.45182291666667;
-    public static final double FENDER_SHOT_RPM = 70;
+    public static final double FENDER_SHOT_RPM = 72;
     public static final double TOLERANCE = 2;
   }
 
@@ -68,11 +69,10 @@ public final class Constants {
     public static final int LEFT_FOLLOWER_ID = 12;
     public static final int RIGHT_FOLLOWER_ID = 13;
 
-    @SuppressWarnings("PointlessArithmeticExpression")
-    public static final double GEARING = 10.71 / 1.0;
+    public static final double GEARING = 1.0 / 10.71;
 
     public static final double MOTOR_ROTATION_TO_METERS =
-        GEARING * 2 * Math.PI * Units.inchesToMeters(4);
+        GEARING * 2 * Math.PI * Units.inchesToMeters(6);
   }
 
   public static class LedsConstants {
