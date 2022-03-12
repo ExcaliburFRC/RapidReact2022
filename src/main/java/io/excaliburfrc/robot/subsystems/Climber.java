@@ -56,9 +56,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () ->
               motor.set(
-                  encoder.getPosition() - otherEncoder.getPosition() <= NOT_BALANCED
-                      ? -OPEN_LOOP_CLIMB_DUTY_CYCLE
-                      : -OPEN_LOOP_CLIMB_DUTY_CYCLE / 3),
+                  -OPEN_LOOP_CLIMB_DUTY_CYCLE * otherEncoder.getPosition() / encoder.getPosition()),
           __ -> motor.set(0),
           () -> encoder.getPosition() <= CLOSED_HEIGHT);
     }
@@ -68,9 +66,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () ->
               motor.set(
-                  encoder.getPosition() - otherEncoder.getPosition() <= NOT_BALANCED
-                      ? -OPEN_LOOP_CLIMB_DUTY_CYCLE
-                      : -OPEN_LOOP_CLIMB_DUTY_CYCLE / 3),
+                  -OPEN_LOOP_CLIMB_DUTY_CYCLE * otherEncoder.getPosition() / encoder.getPosition()),
           __ -> motor.set(0),
           () -> encoder.getPosition() <= HALF_HEIGHT);
     }
