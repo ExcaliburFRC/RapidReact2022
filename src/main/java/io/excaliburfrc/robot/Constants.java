@@ -31,6 +31,7 @@ public final class Constants {
     public static final int RIGHT_MOTOR_ID = 31;
 
     public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.9;
+    public static final double NOT_BALANCED = 0.05;
 
     public static final double SAFETY_DISTANCE = 0.1;
     public static final float FORWARD_SOFT_LIMIT = 174.78738f;

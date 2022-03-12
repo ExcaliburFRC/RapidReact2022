@@ -51,18 +51,26 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       encoder.setPosition(0);
     }
 
-    public Command pullUpCommand() {
+    public Command pullUpCommand(RelativeEncoder otherEncoder) {
       return new FunctionalCommand(
           () -> {},
-          () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
+          () ->
+              motor.set(
+                  encoder.getPosition() - otherEncoder.getPosition() <= NOT_BALANCED
+                      ? -OPEN_LOOP_CLIMB_DUTY_CYCLE
+                      : -OPEN_LOOP_CLIMB_DUTY_CYCLE / 3),
           __ -> motor.set(0),
           () -> encoder.getPosition() <= CLOSED_HEIGHT);
     }
 
-    public Command pullUpHalfCommand() {
+    public Command pullUpHalfCommand(RelativeEncoder otherEncoder) {
       return new FunctionalCommand(
           () -> {},
-          () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
+          () ->
+              motor.set(
+                  encoder.getPosition() - otherEncoder.getPosition() <= NOT_BALANCED
+                      ? -OPEN_LOOP_CLIMB_DUTY_CYCLE
+                      : -OPEN_LOOP_CLIMB_DUTY_CYCLE / 3),
           __ -> motor.set(0),
           () -> encoder.getPosition() <= HALF_HEIGHT);
     }
@@ -147,11 +155,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   }
 
   public Command pullUpRobotCommand() {
-    return left.pullUpCommand().alongWith(right.pullUpCommand());
+    return left.pullUpCommand(right.encoder).alongWith(right.pullUpCommand(left.encoder));
   }
 
   public Command pullUpHalfRobotCommand() {
-    return left.pullUpHalfCommand().alongWith(right.pullUpHalfCommand());
+    return left.pullUpHalfCommand(right.encoder).alongWith(right.pullUpHalfCommand(left.encoder));
   }
 
   public Command openAnglerCommand() {
