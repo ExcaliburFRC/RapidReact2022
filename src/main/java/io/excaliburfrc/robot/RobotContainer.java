@@ -5,10 +5,7 @@ import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import io.excaliburfrc.robot.subsystems.Climber;
-import io.excaliburfrc.robot.subsystems.Drive;
-import io.excaliburfrc.robot.subsystems.Intake;
-import io.excaliburfrc.robot.subsystems.Shooter;
+import io.excaliburfrc.robot.subsystems.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,11 +17,11 @@ public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
   private final Joystick armJoystick = new Joystick(1);
   // The robot's subsystems and commands are defined here...
-  private final Intake intake = new Intake();
 
   private final Climber climber = new Climber();
-  private final Shooter shooter = new Shooter();
   private final Drive drive = new Drive();
+
+  private final Superstructure superstructure = new Superstructure();
 
   public RobotContainer() {
     // Configure the button bindings
@@ -38,33 +35,9 @@ public class RobotContainer {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
-    var fenderShotCommand = shooter.accelerateFenderCommand();
+    var fenderShotCommand = superstructure.shootBallsCommand(LEDs.getInstance());
     new POVButton(armJoystick, POV_UP).whenPressed(fenderShotCommand);
     new POVButton(armJoystick, POV_DOWN).whenPressed(fenderShotCommand);
-  }
-
-  void manualButton() {
-    final int anglePiston = 4;
-
-    CommandScheduler.getInstance().clearButtons();
-    CommandScheduler.getInstance().cancelAll();
-
-    final int intakeAxis = 1;
-    final int upperAxis = 2;
-    final int intakeButton = 3;
-
-    intake
-        .manualCommand(
-            () -> armJoystick.getRawAxis(intakeAxis),
-            () -> armJoystick.getRawAxis(upperAxis),
-            () -> armJoystick.getRawButton(intakeButton))
-        .schedule();
-
-    drive.arcadeDriveCommend(driveJoystick::getLeftY, driveJoystick::getRightX).schedule();
-    shooter.manualCommand(() -> 0.5 * armJoystick.getY()).schedule();
-    climber
-        .climberManualCommand(armJoystick::getY, () -> armJoystick.getRawButton(anglePiston))
-        .schedule();
   }
 
   /**
