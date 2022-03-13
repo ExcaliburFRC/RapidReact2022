@@ -61,6 +61,12 @@ public class Drive extends SubsystemBase {
         leftFollower.setIdleMode(IdleMode.kBrake),
         rightLeader.setIdleMode(IdleMode.kBrake),
         rightFollower.setIdleMode(IdleMode.kBrake),
+
+        leftLeader.setOpenLoopRampRate(RAMP_RATE),
+        leftFollower.setOpenLoopRampRate(RAMP_RATE),
+        rightLeader.setOpenLoopRampRate(RAMP_RATE),
+        rightFollower.setOpenLoopRampRate(RAMP_RATE),
+
         // have the leader send its applied output as frequently as possible,
         // to speed up follower response
         leftLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),

@@ -73,6 +73,7 @@ public final class Constants {
 
     public static final double MOTOR_ROTATION_TO_METERS =
         GEARING * 2 * Math.PI * Units.inchesToMeters(6);
+    public static final double RAMP_RATE = 0.5;
   }
 
   public static class LedsConstants {
