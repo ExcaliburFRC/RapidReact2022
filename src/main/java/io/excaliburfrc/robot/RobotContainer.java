@@ -1,9 +1,10 @@
 package io.excaliburfrc.robot;
 
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.PS4Controller;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.button.Button;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.subsystems.*;
 
@@ -17,36 +18,60 @@ public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
   private final Joystick armJoystick = new Joystick(1);
   // The robot's subsystems and commands are defined here...
-
   private final Climber climber = new Climber();
   private final Drive drive = new Drive();
+  private final LEDs leds = new LEDs();
 
   private final Superstructure superstructure = new Superstructure();
 
-  public RobotContainer() {
-    // Configure the button bindings
-    configureButtonBindings();
-  }
+  private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
-  private static final int POV_UP = 0;
-  private static final int POV_DOWN = 180;
+  public RobotContainer() {}
 
-  private void configureButtonBindings() {
+  void configureButtonBindings() {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
-    var fenderShotCommand = superstructure.shootBallsCommand(LEDs.getInstance());
-    new POVButton(armJoystick, POV_UP).whenPressed(fenderShotCommand);
-    new POVButton(armJoystick, POV_DOWN).whenPressed(fenderShotCommand);
-  }
+    drive.setDefaultCommand(
+        drive.arcadeDriveCommand(
+            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return null;
+    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
+
+    new JoystickButton(armJoystick, 1).whileActiveOnce(superstructure.shootBallsCommand(leds));
+
+    new JoystickButton(armJoystick, 2)
+        .whileActiveContinuous(superstructure.intakeBallCommand())
+        .whenInactive(superstructure.closePistonCommand());
+
+    new JoystickButton(armJoystick, 4).whileHeld(superstructure.ejectFromIntake());
+
+    //    var stepButton = new Button(() -> armJoystick.getRawButton(3));
+    //    new POVButton(driveJoystick, POV_UP)
+    //        .whenPressed(
+    //            climber.climbSeries(
+    //                stepButton, stepButton, stepButton, stepButton, stepButton, stepButton));
+
+    climber
+        .climberManualCommand(
+            () -> driveJoystick.getPOV() == 0,
+            () -> driveJoystick.getPOV() == 180,
+            driveJoystick::getTriangleButton,
+            driveJoystick::getCrossButton,
+            () -> driveJoystick.getPOV() == 90,
+            () -> driveJoystick.getPOV() == 270)
+        .schedule();
+
+    new Button(driveJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
+
+    new Button(driveJoystick::getShareButton)
+        .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+
+    new POVButton(armJoystick, 0).whenPressed(superstructure.incrementTarget(1));
+    new POVButton(armJoystick, 180).whenPressed(superstructure.incrementTarget(-1));
+
+    new Button(driveJoystick::getOptionsButton).toggleWhenPressed(superstructure.allowCommand());
+
+    DriverStation.reportWarning("Buttons!", false);
   }
 }

@@ -1,28 +1,21 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static io.excaliburfrc.lib.CheckCAN.ValidateREVCAN;
+import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
-import static io.excaliburfrc.robot.Constants.MAXIMAL_FRAME_PERIOD;
-import static io.excaliburfrc.robot.Constants.minimal_FRAME_PERIOD;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 
 public class Climber extends SubsystemBase implements AutoCloseable {
   private final DoubleSolenoid anglerPiston =
@@ -30,156 +23,234 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           PneumaticsModuleType.CTREPCM,
           ClimberConstants.FORWARD_CHANNEL,
           ClimberConstants.REVERSE_CHANNEL);
-  private final CANSparkMax leftMotor =
-      new CANSparkMax(ClimberConstants.LEFT_MOTOR_ID, MotorType.kBrushless);
-  private final CANSparkMax rightMotor =
-      new CANSparkMax(ClimberConstants.RIGHT_MOTOR_ID, MotorType.kBrushless);
-  private final RelativeEncoder leftEncoder = leftMotor.getEncoder();
-  private final RelativeEncoder rightEncoder = rightMotor.getEncoder();
-  private final SparkMaxPIDController leftController = leftMotor.getPIDController();
-  private final SparkMaxPIDController rightController = rightMotor.getPIDController();
+  private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false);
+  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true);
 
-  private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, MG, kV, kA);
-  private final ElevatorFeedforward diagonalFF =
-      new ElevatorFeedforward(kS, MG * Math.cos(ANGLE), kV, kA);
+  private static class ClimberSide implements AutoCloseable {
+    private final CANSparkMax motor;
+    private final RelativeEncoder encoder;
 
-  private final TrapezoidProfile elevatorProfile =
-      new TrapezoidProfile(
-          new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
-          new TrapezoidProfile.State(HEIGHT, 0), // The goal state
-          new TrapezoidProfile.State(0, 0)); // The init state
+    public ClimberSide(int motorId, boolean isMotorReversed) {
+      motor = new CANSparkMax(motorId, MotorType.kBrushless);
+      encoder = motor.getEncoder();
 
-  public Climber() {
-    ValidateREVCAN(
-        // reset factory settings
-        leftMotor.restoreFactoryDefaults(),
-        rightMotor.restoreFactoryDefaults(),
-        // set the motors to brake mode
-        leftMotor.setIdleMode(IdleMode.kBrake),
-        rightMotor.setIdleMode(IdleMode.kBrake),
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, MAXIMAL_FRAME_PERIOD),
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, MAXIMAL_FRAME_PERIOD),
-        rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, minimal_FRAME_PERIOD),
-        // set up PID parameters
-        leftController.setFeedbackDevice(leftEncoder),
-        leftController.setP(kP),
-        leftController.setI(kI),
-        leftController.setD(kD),
-        rightController.setFeedbackDevice(rightEncoder),
-        rightController.setP(kP),
-        rightController.setI(kI),
-        rightController.setD(kD));
-  }
+      ValidateREVCAN(
+          // reset factory settings
+          motor.restoreFactoryDefaults(),
+          // set the motors to brake mode
+          motor.setIdleMode(IdleMode.kBrake),
+          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
+          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+          motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
+          motor.setSoftLimit(SoftLimitDirection.kReverse, 0),
+          motor.enableSoftLimit(SoftLimitDirection.kReverse, true),
+          motor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.FORWARD_SOFT_LIMIT),
+          motor.enableSoftLimit(SoftLimitDirection.kForward, false));
+      motor.setInverted(isMotorReversed);
 
-  @Override
-  public void close() {
-    leftMotor.close();
-    rightMotor.close();
-    anglerPiston.close();
-  }
+      encoder.setPosition(0);
+    }
 
-  public enum MotorMode {
-    OFF(0),
-    UP(0.6),
-    DOWN(-0.4);
+    public Command pullUpCommand() {
+      return new FunctionalCommand(
+          () -> {},
+          () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
+          __ -> motor.set(0),
+          () -> encoder.getPosition() <= CLOSED_HEIGHT);
+    }
 
-    final double dutyCycle;
+    public Command pullUpHalfCommand() {
+      return new FunctionalCommand(
+          () -> {},
+          () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
+          __ -> motor.set(0),
+          () -> encoder.getPosition() <= HALF_HEIGHT);
+    }
 
-    MotorMode(double v) {
-      dutyCycle = v;
+    public Command openFullyCommand() {
+      return new FunctionalCommand(
+          () -> {},
+          () -> motor.set(OPEN_LOOP_CLIMB_DUTY_CYCLE),
+          __ -> motor.set(0),
+          () -> encoder.getPosition() >= OPEN_HEIGHT);
+    }
+
+    /** AutoCloseable */
+    public void close() {
+      motor.close();
+    }
+
+    public Command manualCommand(BooleanSupplier up, BooleanSupplier down) {
+      return new FunctionalCommand(
+          () -> {},
+          () -> {
+            if (up.getAsBoolean()) {
+              motor.set(0.9);
+              System.out.println("up");
+            } else if (down.getAsBoolean()) {
+              System.out.println("down");
+              motor.set(-0.9);
+            } else {
+              System.out.println("nil");
+              motor.set(0);
+            }
+          },
+          __ -> motor.set(0),
+          () -> false);
+    }
+
+    public Command tuneCommand(BooleanSupplier up, BooleanSupplier down) {
+      return new FunctionalCommand(
+          () -> {},
+          () -> {
+            if (up.getAsBoolean()) {
+              motor.set(0.3);
+            } else if (down.getAsBoolean()) {
+              motor.set(-0.3);
+            } else {
+              motor.set(0);
+            }
+          },
+          __ -> motor.set(0),
+          () -> false);
+    }
+
+    public double getHeight() {
+      return encoder.getPosition();
+    }
+
+    /** Disables soft limits for the duration of this command, and then resets the encoder. */
+    public Command disableAndResetSoftLimits() {
+      return new StartEndCommand(
+          () -> {
+            motor.enableSoftLimit(SoftLimitDirection.kForward, false);
+            motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
+          },
+          () -> {
+            //            encoder.setPosition(0);
+            motor.enableSoftLimit(SoftLimitDirection.kForward, true);
+            motor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+          });
     }
   }
 
-  public void activateMotors(MotorMode m) {
-    leftMotor.set(m.dutyCycle);
-    rightMotor.set(m.dutyCycle);
+  /** AutoCloseable */
+  @Override
+  public void close() {
+    left.close();
+    right.close();
+    anglerPiston.close();
   }
 
-  public void openAngler() {
-    anglerPiston.set(DoubleSolenoid.Value.kForward);
+  public Command openFullyCommand() {
+    return new ParallelCommandGroup(left.openFullyCommand(), right.openFullyCommand());
   }
 
-  public void closeAngler() {
-    anglerPiston.set(DoubleSolenoid.Value.kReverse);
+  public Command pullUpRobotCommand() {
+    return left.pullUpCommand().alongWith(right.pullUpCommand());
   }
 
-  private void achieveState(TrapezoidProfile.State setpoint) {
-    ElevatorFeedforward ff =
-        anglerPiston.get() == DoubleSolenoid.Value.kForward ? diagonalFF : upFF;
-    leftController.setReference(
-        setpoint.velocity,
-        ControlType.kVelocity,
-        0,
-        ff.calculate(setpoint.velocity),
-        ArbFFUnits.kVoltage);
-    rightController.setReference(
-        setpoint.velocity,
-        ControlType.kVelocity,
-        0,
-        ff.calculate(setpoint.velocity),
-        ArbFFUnits.kVoltage);
-  }
-
-  private Command reachBarCommand(Consumer<TrapezoidProfile.State> toRun) {
-    return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
-  }
-
-  public Command openToFirstCommand() {
-    return reachBarCommand(this::achieveState);
-  }
-
-  public Command openToSecondCommand() {
-    return reachBarCommand(
-        setpoint -> {
-          achieveState(setpoint);
-          if (setpoint.position >= HEIGHT_TO_OPEN_PISTON
-              && anglerPiston.get() != DoubleSolenoid.Value.kForward) {
-            anglerPiston.set(DoubleSolenoid.Value.kForward);
-          }
-        });
-  }
-
-  private Command downCommand(CANSparkMax motor, RelativeEncoder encoder) {
-    return new FunctionalCommand(
-        () -> {},
-        () -> motor.set(-1),
-        __ -> motor.set(0),
-        () -> encoder.getPosition() <= SAFETY_DISTANCE);
-  }
-
-  public Command raiseRobotCommand() {
-    return downCommand(leftMotor, leftEncoder).alongWith(downCommand(rightMotor, rightEncoder));
-  }
-
-  public Command offCommand() {
-    return new InstantCommand(() -> activateMotors(MotorMode.OFF));
+  public Command pullUpHalfRobotCommand() {
+    return left.pullUpHalfCommand().alongWith(right.pullUpHalfCommand());
   }
 
   public Command openAnglerCommand() {
-    return new InstantCommand(this::openAngler, this);
+    return new InstantCommand(() -> anglerPiston.set(ANGLED), this);
   }
 
-  public Command closeAnglerCommand() {
-    return new InstantCommand(this::closeAngler, this);
+  public Command straightenAnglerCommand() {
+    return new InstantCommand(() -> anglerPiston.set(STRAIGHT), this);
   }
 
-  public Command climberManualCommand(DoubleSupplier motorSpeed, BooleanSupplier piston) {
-    return new RunCommand(
-        () -> {
-          leftMotor.set(motorSpeed.getAsDouble());
-          rightMotor.set(motorSpeed.getAsDouble());
-          if (piston.getAsBoolean()) this.anglerPiston.toggle();
-        },
-        this);
+  public Command climbSeries(
+      BooleanSupplier openFirst,
+      BooleanSupplier closeFirst,
+      BooleanSupplier openSecond,
+      BooleanSupplier angleSecond,
+      BooleanSupplier closeSecond,
+      BooleanSupplier closeAngle) {
+    return new SequentialCommandGroup(
+            new PrintCommand("Started Climb Series"),
+            new WaitUntilCommand(openFirst),
+            new PrintCommand("Started Climb Series 2"),
+            openFullyCommand(),
+            new WaitUntilCommand(closeFirst),
+            new PrintCommand("Started Climb Series 3"),
+            pullUpRobotCommand(),
+            new WaitUntilCommand(openSecond),
+            new PrintCommand("Started Climb Series 4"),
+            openFullyCommand(),
+            new WaitUntilCommand(angleSecond),
+            new PrintCommand("Started Climb Series 5"),
+            openAnglerCommand(),
+            new WaitUntilCommand(() -> !angleSecond.getAsBoolean()),
+            new WaitUntilCommand(closeSecond),
+            new PrintCommand("Started Climb Series 6"),
+            pullUpHalfRobotCommand(),
+            new WaitUntilCommand(closeAngle),
+            new PrintCommand("Started Climb Series 7"),
+            straightenAnglerCommand())
+        .withName("climb series");
+  }
+
+  public Command climberManualCommand(
+      BooleanSupplier leftUp,
+      BooleanSupplier leftDown,
+      BooleanSupplier rightUp,
+      BooleanSupplier rightDown,
+      BooleanSupplier pistonAngled,
+      BooleanSupplier pistonStraight) {
+    return new ParallelCommandGroup(
+        left.manualCommand(leftUp, leftDown),
+        right.manualCommand(rightUp, rightDown),
+        new FunctionalCommand(
+            () -> {},
+            () -> {
+              if (pistonAngled.getAsBoolean()) {
+                anglerPiston.set(ANGLED);
+              }
+              if (pistonStraight.getAsBoolean()) {
+                anglerPiston.set(STRAIGHT);
+              }
+            },
+            __ -> {},
+            () -> false));
+  }
+
+  public Command climberTuneCommand(
+      BooleanSupplier leftUp,
+      BooleanSupplier leftDown,
+      BooleanSupplier rightUp,
+      BooleanSupplier rightDown,
+      BooleanSupplier pistonAngled,
+      BooleanSupplier pistonStraight) {
+    return new ParallelCommandGroup(
+        left.tuneCommand(leftUp, leftDown),
+        right.tuneCommand(rightUp, rightDown),
+        new FunctionalCommand(
+            () -> {},
+            () -> {
+              if (pistonAngled.getAsBoolean()) {
+                anglerPiston.set(ANGLED);
+              }
+              if (pistonStraight.getAsBoolean()) {
+                anglerPiston.set(STRAIGHT);
+              }
+            },
+            __ -> {},
+            () -> false));
+  }
+
+  public Command disableSoftLimits() {
+    return left.disableAndResetSoftLimits().alongWith(right.disableAndResetSoftLimits());
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    super.initSendable(builder);
-    builder.addDoubleProperty("leftHeight", leftEncoder::getPosition, null);
-    builder.addDoubleProperty("rightHeight", rightEncoder::getPosition, null);
+    builder.setSmartDashboardType("Subsystem");
+
+    SendableRegistry.remove(anglerPiston);
+    builder.addDoubleProperty("leftHeight", left::getHeight, null);
+    builder.addDoubleProperty("rightHeight", right::getHeight, null);
   }
 }

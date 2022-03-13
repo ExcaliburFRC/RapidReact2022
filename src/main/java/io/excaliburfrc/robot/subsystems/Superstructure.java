@@ -1,5 +1,6 @@
 package io.excaliburfrc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.lib.RepeatingCommand;
 
@@ -15,6 +16,22 @@ public class Superstructure extends SubsystemBase {
             new SequentialCommandGroup(
                 new WaitUntilCommand(shooter::isAtTargetVelocity), intake.pullIntoShooter())),
         leds.setColorCommand(LEDs.LedMode.PINK));
+  }
+
+  public Command incrementTarget(int diff) {
+    return shooter.incrementTarget(diff);
+  }
+
+  public Command setPistonCommand(DoubleSolenoid.Value val) {
+    return intake.setPistonCommand(val);
+  }
+
+  public Command closePistonCommand() {
+    return intake.setPistonCommand(DoubleSolenoid.Value.kReverse);
+  }
+
+  public Command ejectFromIntake() {
+    return intake.ejectFromIntake();
   }
 
   public Command intakeBallCommand() {
@@ -36,5 +53,9 @@ public class Superstructure extends SubsystemBase {
                     intake.upperBallTrigger),
                 // decides by ball color
                 intake::isOurColor));
+  }
+
+  public Command allowCommand() {
+    return intake.allowCommand();
   }
 }

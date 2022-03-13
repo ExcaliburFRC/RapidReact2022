@@ -1,5 +1,9 @@
 package io.excaliburfrc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -9,67 +13,55 @@ package io.excaliburfrc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  // theoretically this goes down to 1ms, but we don't want to clog anything
-  public static final int minimal_FRAME_PERIOD = 5; // ms
-  public static final int MAXIMAL_FRAME_PERIOD = 65535; // ms
-
   public static final class IntakeConstants {
-    public static final int INTAKE_MOTOR_ID = 40;
-    public static final int UPPER_MOTOR_ID = 41;
-    public static final int PING = 5;
-    public static final int ECHO = 6;
-    public static final int COLOR_LIMIT = 69;
+    public static final int INTAKE_MOTOR_ID = 40; // PDP 4
+    public static final int UPPER_MOTOR_ID = 41; // PDP 11
+    public static final int PING = 9;
+    public static final int ECHO = 8;
+    public static final int COLOR_LIMIT = 60;
     public static final int SONIC_LIMIT = 69;
-    public static final int RED_THRESHOLD = 100;
-    public static final int BLUE_THRESHOLD = 100;
     public static final int MAX_BALLS = 2;
-    public static final int FWD_CHANNEL = 6;
-    public static final int REV_CHANNEL = 7;
+    public static final int FWD_CHANNEL = 3;
+    public static final int REV_CHANNEL = 4;
   }
 
   public static class ClimberConstants {
-    public static final int FORWARD_CHANNEL = 0;
-    public static final int REVERSE_CHANNEL = 1;
+    public static final int FORWARD_CHANNEL = 1;
+    public static final int REVERSE_CHANNEL = 7;
     public static final int LEFT_MOTOR_ID = 30;
     public static final int RIGHT_MOTOR_ID = 31;
-    public static final double kP = 0;
-    public static final double kI = 0;
-    public static final double kD = 0;
-    public static final double MG = 1000;
-    public static final double ANGLE = 45;
-    public static final double kS = 0;
-    public static final double kV = 0;
-    public static final double kA = 0;
-    public static final double MAX_VELOCITY = 0.5;
-    public static final double MAX_ACCELERATION = 1;
-    public static final double HEIGHT = 50;
-    public static final double HEIGHT_TO_OPEN_PISTON = 20;
+
+    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.9;
+
     public static final double SAFETY_DISTANCE = 0.1;
+    public static final float FORWARD_SOFT_LIMIT = 174.78738f;
+    public static final float REVERSE_SOFT_LIMIT = 0f;
+    public static final double OPEN_HEIGHT = FORWARD_SOFT_LIMIT - SAFETY_DISTANCE;
+    public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT;
+    public static final double HALF_HEIGHT = OPEN_HEIGHT / 2.0;
+
+    public static final Value ANGLED = Value.kReverse;
+    public static final Value STRAIGHT = Value.kForward;
   }
 
   public static class ShooterConstants {
     public static final int LEADER_ID = 20;
     public static final int FOLLOWER_ID = 21;
-    public static final int ENCODER_A = 2;
-    public static final int ENCODER_B = 3;
+    public static final int ENCODER_A = 0;
+    public static final int ENCODER_B = 1;
 
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kS = 0;
+    public static final double kS = 0.10898;
+    public static final double kV = 0.065;
+    //    public static final double kA = 0.031584; // we want 0 acceleration
+    public static final double kP = 0.3;
 
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kV = 0;
+    public static final double RATIO = 42.0 / 18.0;
+    public static final double CPR = 1024;
+    public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kP = 0;
-
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kI = 0;
-
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final double kD = 0;
-
-    public static final double FENDER_SHOT_RPM = 2500;
-    public static final double TOLERANCE = 10;
+    // 121.45182291666667;
+    public static final double FENDER_SHOT_RPM = 72;
+    public static final double TOLERANCE = 2;
   }
 
   public static class DrivetrainConstants {
@@ -78,16 +70,19 @@ public final class Constants {
     public static final int LEFT_FOLLOWER_ID = 12;
     public static final int RIGHT_FOLLOWER_ID = 13;
 
-    public static final double kS = 1;
-    public static final double kV = 2;
-    public static final double kA = 1;
-    public static final double kP = 0;
-    public static final double TRACKWIDTH_METERS = 0.69;
-    public static final double MAX_SPEED_METERS_PER_SECOND = 3;
-    public static final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
+    public static final double GEARING = 1.0 / 10.71;
+
+    public static final double MOTOR_ROTATION_TO_METERS =
+        GEARING * 2 * Math.PI * Units.inchesToMeters(6);
+
+    public static final Translation2d HUB_POS = new Translation2d(8.247, 4.092);
   }
 
   public static class LedsConstants {
-    public static final int LEDS_PORT = 3;
+    public static final int LEDS_PORT = 0;
+  }
+
+  private Constants() {
+    throw new UnsupportedOperationException("util class");
   }
 }
