@@ -85,6 +85,8 @@ public class Shooter extends SubsystemBase {
     return velocity;
   }
 
+  final Trigger atTargetVelocity = new Trigger(this::isAtTargetVelocity).debounce(0.1);
+
   public boolean isAtTargetVelocity() {
     return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
   }
