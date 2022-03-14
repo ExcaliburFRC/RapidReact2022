@@ -45,4 +45,8 @@ public class Superstructure {
   public Command ejectBallCommand() {
     return sequence(intake.ejectFromIntake(), intake.ejectFromUpper());
   }
+
+  public void resetBallCounter() {
+    intake.resetBallCounter();
+  }
 }
