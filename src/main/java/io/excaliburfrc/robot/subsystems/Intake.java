@@ -25,8 +25,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax upperMotor = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
   private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kMXP);
-  private final Trigger intakeBallTrigger =
-      new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT);
+  final Trigger intakeBallTrigger = new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT);
   private final Ultrasonic upperSensor = new Ultrasonic(PING, ECHO);
   final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
   private final DoubleSolenoid intakePiston =
@@ -94,16 +93,25 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   public Command ejectFromIntake() {
-    return new StartEndCommand(
-            () -> intakeMotor.set(Speeds.ejectDutyCycle), () -> intakeMotor.set(0), this)
-        .until(intakeBallTrigger.negate())
-        .andThen(ballCount::decrementAndGet);
+    return new ConditionalCommand(
+        new InstantCommand(),
+        openPiston()
+            .andThen(
+                new StartEndCommand(
+                        () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
+                        () -> intakeMotor.set(0),
+                        this)
+                    .until(intakeBallTrigger.negate()),
+                closePiston())
+            .andThen(ballCount::decrementAndGet),
+        intakeBallTrigger.negate());
   }
 
   public Command ejectFromUpper() {
     return new StartEndCommand(
-            () -> upperMotor.set(Speeds.ejectDutyCycle), () -> upperMotor.set(0), this)
-        .until(intakeBallTrigger);
+            () -> upperMotor.set(Speeds.upperEjectDutyCycle), () -> upperMotor.set(0), this)
+        .until(intakeBallTrigger)
+        .until(this::isEmpty);
   }
 
   public Command manualCommand(
@@ -181,9 +189,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   private enum Speeds {
     ;
-    static final double ejectDutyCycle = -0.6;
+    static final double intakeEjectDutyCycle = -0.4;
+    static final double upperEjectDutyCycle = -0.2;
 
-    static final double intakeInDutyCycle = 0.3;
+    static final double intakeInDutyCycle = 0.2;
     static final double upperInDutyCycle = 0.1;
 
     static final double upperShootDutyCycle = 0.7;
@@ -193,13 +202,13 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Subsystem");
 
-    SendableRegistry.remove(upperSensor);
+    //    SendableRegistry.remove(upperSensor);
     SendableRegistry.remove(intakePiston);
 
     builder.addBooleanProperty("Allow", allow::get, allow::set);
     builder.addBooleanProperty("Intake Cargo", intakeBallTrigger, null);
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
-    //    builder.addDoubleProperty("Cargo Count", ballCount::get, null);
+    builder.addDoubleProperty("Cargo Count", ballCount::get, null);
     builder.addBooleanProperty("Intake Piston", () -> intakePiston.get() == Value.kForward, null);
   }
 

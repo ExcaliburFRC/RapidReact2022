@@ -55,9 +55,9 @@ public class RobotContainer {
 //
 //    new JoystickButton(armJoystick, 2)
 //        .whenReleased(superstructure.intake.closePiston())
-//        .whileActiveContinuous(superstructure.intakeBallCommand());
+//        .whenPressed(superstructure.intakeBallCommand());
 //
-//    new JoystickButton(armJoystick, 4).whileHeld(superstructure.ejectBallCommand());
+//    new JoystickButton(armJoystick, 4).whenPressed(superstructure.ejectBallCommand());
 
     //    var stepButton = new Button(() -> armJoystick.getRawButton(3));
     //    new POVButton(driveJoystick, POV_UP)

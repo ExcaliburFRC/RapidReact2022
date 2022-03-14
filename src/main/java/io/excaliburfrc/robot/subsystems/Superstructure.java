@@ -4,6 +4,7 @@ import static edu.wpi.first.wpilibj2.command.CommandGroupBase.sequence;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import io.excaliburfrc.lib.RepeatingCommand;
 import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
@@ -22,8 +23,8 @@ public class Superstructure {
   }
 
   public Command intakeBallCommand() {
-    return intake
-        .openPiston()
+    return new ConditionalCommand(intake.pullIntoUpper(), new InstantCommand(), intake.intakeBallTrigger)
+        .andThen(intake.openPiston())
         .andThen(intake.pullIntoIntake())
         .andThen(
             new ConditionalCommand(
@@ -33,11 +34,11 @@ public class Superstructure {
                 // output ball from intake / shooter
                 new ConditionalCommand(
                     // outputs the ball from the shooter
-                    intake.pullIntoShooter(),
+                    intake.pullIntoUpper().andThen(intake.pullIntoShooter()),
                     // outputs the ball from intake
                     intake.ejectFromIntake(),
                     // decides to output from intake or from shooter
-                    intake.upperBallTrigger),
+                    intake.upperBallTrigger.negate()),
                 // decides by ball color
                 intake::isOurColor));
   }
