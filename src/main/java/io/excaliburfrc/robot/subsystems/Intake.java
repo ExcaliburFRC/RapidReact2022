@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
 public class Intake extends SubsystemBase implements AutoCloseable {
-  private final AtomicInteger ballCount = new AtomicInteger(0);
+  private final AtomicInteger ballCount = new AtomicInteger(1);
   private final AtomicBoolean allow = new AtomicBoolean(false);
 
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
@@ -162,6 +162,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         DriverStation.reportError("DS Alliance color is invalid!", false);
     }
     return result || allow.get();
+  }
+
+  void resetBallCounter() {
+    ballCount.set(0);
   }
 
   @Override
