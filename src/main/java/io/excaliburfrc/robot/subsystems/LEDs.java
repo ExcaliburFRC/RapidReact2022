@@ -26,6 +26,7 @@ public class LEDs extends SubsystemBase {
     YELLOW(0.67),
     RAINBOW(-0.97),
     WHITE(0.93),
+    VIOLET(0.91),
     PINK(0.57),
     GOLD(0.67),
     BLACK(0.99),

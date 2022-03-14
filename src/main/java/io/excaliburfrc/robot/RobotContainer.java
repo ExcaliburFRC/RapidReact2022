@@ -1,7 +1,6 @@
 package io.excaliburfrc.robot;
 
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,10 +9,8 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import io.excaliburfrc.robot.commands.BlindShootBallsCommand;
 import io.excaliburfrc.robot.commands.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.NoRamseteTopFender;
-import io.excaliburfrc.robot.commands.ShootBallsCommand;
 import io.excaliburfrc.robot.subsystems.*;
 
 /**
@@ -26,9 +23,8 @@ public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
   private final Joystick armJoystick = new Joystick(1);
   // The robot's subsystems and commands are defined here...
-  private final Intake intake = new Intake();
+  private final Superstructure superstructure = new Superstructure();
   private final Climber climber = new Climber();
-  private final Shooter shooter = new Shooter();
   private final Drive drive = new Drive();
   private final LEDs leds = new LEDs();
 
@@ -37,8 +33,11 @@ public class RobotContainer {
   private final SendableChooser<Command> chooser = new SendableChooser<>();
 
   public RobotContainer() {
-    chooser.addOption("Top", new NoRamseteTopFender(drive, intake, shooter, leds));
-    chooser.addOption("Bottom", new NoRamseteBottomFender(drive, intake, shooter, leds));
+    chooser.addOption(
+        "Top", new NoRamseteTopFender(drive, superstructure.intake, superstructure.shooter, leds));
+    chooser.addOption(
+        "Bottom",
+        new NoRamseteBottomFender(drive, superstructure.intake, superstructure.shooter, leds));
     SmartDashboard.putData("Autos", chooser);
   }
 
@@ -52,14 +51,13 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new JoystickButton(armJoystick, 1)
-        .whileActiveOnce(new BlindShootBallsCommand(intake, shooter, leds));
+    new JoystickButton(armJoystick, 1).whileActiveOnce(superstructure.shootBallsCommand(leds));
 
     new JoystickButton(armJoystick, 2)
-        .whenReleased(intake.setPistonCommand(Value.kReverse))
-        .whileActiveContinuous(intake.intakeBallCommand());
+        .whenReleased(superstructure.intake.closePiston())
+        .whileActiveContinuous(superstructure.intakeBallCommand());
 
-    new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
+    new JoystickButton(armJoystick, 4).whileHeld(superstructure.ejectBallCommand());
 
     //    var stepButton = new Button(() -> armJoystick.getRawButton(3));
     //    new POVButton(driveJoystick, POV_UP)
@@ -82,10 +80,11 @@ public class RobotContainer {
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
-    new POVButton(armJoystick, 0).whenPressed(shooter.incrementTarget(1));
-    new POVButton(armJoystick, 180).whenPressed(shooter.incrementTarget(-1));
+    new POVButton(armJoystick, 0).whenPressed(superstructure.shooter.incrementTarget(1));
+    new POVButton(armJoystick, 180).whenPressed(superstructure.shooter.incrementTarget(-1));
 
-    new Button(driveJoystick::getOptionsButton).toggleWhenPressed(intake.allowCommand());
+    new Button(driveJoystick::getOptionsButton)
+        .toggleWhenPressed(superstructure.intake.allowCommand());
 
     DriverStation.reportWarning("Buttons!", false);
   }
@@ -94,23 +93,21 @@ public class RobotContainer {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
-    intake.setDefaultCommand(
-        intake.manualCommand(
+    superstructure.intake.setDefaultCommand(
+        superstructure.intake.manualCommand(
             () -> armJoystick.getRawButton(2),
             () -> armJoystick.getRawButton(4),
             () -> armJoystick.getRawButton(5),
             () -> armJoystick.getRawButton(6),
             () -> armJoystick.getRawButtonPressed(8)));
 
-    new JoystickButton(armJoystick, 11).whenPressed(intake.intakeBallCommand());
-
     drive.setDefaultCommand(
         drive.arcadeDriveCommand(
             () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
-    new JoystickButton(armJoystick, 1).whenHeld(shooter.accelerateFenderCommand());
-    new JoystickButton(armJoystick, 9).whenHeld(shooter.manualCommand());
+    new JoystickButton(armJoystick, 1).whenHeld(superstructure.shooter.accelerateFenderCommand());
+    new JoystickButton(armJoystick, 9).whenHeld(superstructure.shooter.manualCommand());
 
-    new JoystickButton(armJoystick, 12).whenHeld(new ShootBallsCommand(intake, shooter, leds));
+    new JoystickButton(armJoystick, 12).whenHeld(superstructure.shootBallsCommand(leds));
 
     climber
         .climberTuneCommand(

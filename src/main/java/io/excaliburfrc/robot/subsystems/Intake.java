@@ -28,8 +28,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final Trigger intakeBallTrigger =
       new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT);
   private final Ultrasonic upperSensor = new Ultrasonic(PING, ECHO);
-  private final Trigger upperBallTrigger =
-      new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
+  final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
@@ -58,57 +57,53 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     Ultrasonic.setAutomaticMode(true);
   }
 
-  public Command intakeBallCommand() {
-    return new FunctionalCommand(
-            () -> intakePiston.set(Value.kForward),
-            () -> intakeMotor.set(Speeds.intakeInDutyCycle),
-            __ -> intakeMotor.set(0),
-            intakeBallTrigger)
-        .andThen(
-            new ConditionalCommand(
-                // increment ball count; input until upper sensor detects a ball
-                new FunctionalCommand(
-                    // init
-                    ballCount::incrementAndGet,
-                    // exe
-                    () -> {
-                      intakeMotor.set(Speeds.intakeInDutyCycle);
-                      upperMotor.set(Speeds.upperInDutyCycle);
-                    },
-                    // end
-                    __ -> {
-                      intakeMotor.set(0);
-                      upperMotor.set(0);
-                      //                      intakePiston.set(Value.kReverse);
-                    },
-                    // isFinished
-                    upperBallTrigger,
-                    this),
+  public Command openPiston() {
+    return new InstantCommand(() -> intakePiston.set(Value.kForward), this);
+  }
 
-                // output sets motor until ball entry sensor no longer sees a ball
-                new FunctionalCommand(
-                        // init
-                        () -> {},
-                        // exe
-                        () -> {
-                          intakeMotor.set(Speeds.ejectDutyCycle);
-                          upperMotor.set(Speeds.ejectDutyCycle);
-                        },
-                        // end
-                        __ -> {
-                          intakeMotor.set(0);
-                          upperMotor.set(0);
-                          //                          intakePiston.set(Value.kReverse);
-                        },
-                        // isFinished
-                        intakeBallTrigger.negate())
-                    .andThen(
-                        new StartEndCommand(
-                                () -> intakeMotor.set(Speeds.ejectDutyCycle),
-                                () -> intakeMotor.set(0))
-                            .withTimeout(0.5)),
-                // decides by ball color
-                this::isOurColor));
+  public Command closePiston() {
+    return new InstantCommand(() -> intakePiston.set(Value.kReverse), this);
+  }
+
+  public Command pullIntoIntake() {
+    return new StartEndCommand(
+            () -> intakeMotor.set(Speeds.intakeInDutyCycle), () -> intakeMotor.set(0), this)
+        .until(intakeBallTrigger)
+        .andThen(ballCount::incrementAndGet);
+  }
+
+  public Command pullIntoUpper() {
+    return new StartEndCommand(
+            () -> {
+              intakeMotor.set(Speeds.intakeInDutyCycle);
+              upperMotor.set(Speeds.upperInDutyCycle);
+            },
+            () -> {
+              intakeMotor.set(0);
+              upperMotor.set(0);
+            },
+            this)
+        .until(upperBallTrigger);
+  }
+
+  public Command pullIntoShooter() {
+    return new StartEndCommand(
+            () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
+        .until(upperBallTrigger.negate())
+        .andThen(ballCount::decrementAndGet);
+  }
+
+  public Command ejectFromIntake() {
+    return new StartEndCommand(
+            () -> intakeMotor.set(Speeds.ejectDutyCycle), () -> intakeMotor.set(0), this)
+        .until(intakeBallTrigger.negate())
+        .andThen(ballCount::decrementAndGet);
+  }
+
+  public Command ejectFromUpper() {
+    return new StartEndCommand(
+            () -> upperMotor.set(Speeds.ejectDutyCycle), () -> upperMotor.set(0), this)
+        .until(intakeBallTrigger);
   }
 
   public Command manualCommand(
@@ -132,27 +127,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         this);
   }
 
-  /** Shoot *one* ball; will end after a ball is shot. */
-  public Command shootBallCommand() {
-    return new FunctionalCommand(
-        // init
-        () -> {},
-        // exe
-        () -> {
-          upperMotor.set(Speeds.upperShootDutyCycle);
-          intakeMotor.set(Speeds.intakeShootDutyCycle);
-        },
-        // end
-        _interrupted -> {
-          if (!_interrupted) ballCount.decrementAndGet();
-          upperMotor.set(0);
-          intakeMotor.set(0);
-        },
-        // isFinished
-        // stop after we've shot a ball
-        upperBallTrigger.negate());
-  }
-
+  @Deprecated
   public Command blindShootBallCommand() {
     return new FunctionalCommand(
             // init
@@ -170,7 +145,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .withTimeout(0.1);
   }
 
-  private boolean isOurColor() {
+  boolean isOurColor() {
     var red = intakeSensor.getRed();
     var blue = intakeSensor.getBlue();
     boolean result = false;
@@ -196,19 +171,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     this.upperSensor.close();
   }
 
-  public Command ejectCommand() {
-    return new StartEndCommand(
-        () -> {
-          this.intakeMotor.set(Speeds.ejectDutyCycle);
-          this.upperMotor.set(Speeds.ejectDutyCycle);
-        },
-        () -> {
-          this.intakeMotor.set(0);
-          this.upperMotor.set(0);
-        },
-        this);
-  }
-
   public Command allowCommand() {
     return new StartEndCommand(() -> allow.set(true), () -> allow.set(false));
   }
@@ -220,12 +182,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     static final double intakeInDutyCycle = 0.3;
     static final double upperInDutyCycle = 0.1;
 
-    static final double intakeShootDutyCycle = 0.4;
     static final double upperShootDutyCycle = 0.7;
-  }
-
-  public Command setPistonCommand(Value val) {
-    return new InstantCommand(() -> intakePiston.set(val));
   }
 
   @Override

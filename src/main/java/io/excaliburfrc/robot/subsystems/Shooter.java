@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -76,6 +77,8 @@ public class Shooter extends SubsystemBase {
   public double getVelocity() {
     return velocity;
   }
+
+  final Trigger atTargetVelocity = new Trigger(this::isAtTargetVelocity).debounce(0.1);
 
   public boolean isAtTargetVelocity() {
     return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
