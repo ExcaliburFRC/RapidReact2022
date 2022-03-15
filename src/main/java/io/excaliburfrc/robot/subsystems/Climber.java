@@ -29,8 +29,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           PneumaticsModuleType.CTREPCM,
           ClimberConstants.FORWARD_CHANNEL,
           ClimberConstants.REVERSE_CHANNEL);
-  private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false);
-  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true);
+  private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false, 0.95);
+  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true, 0.95);
 
   private final TrapezoidProfile elevatorProfile =
       new TrapezoidProfile(
@@ -47,10 +47,14 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     private final RelativeEncoder encoder;
     private final SparkMaxPIDController controller;
 
-    public ClimberSide(int motorId, boolean isMotorReversed) {
+    private final double Mspeed;
+
+    public ClimberSide(int motorId, boolean isMotorReversed, double Mspeed) {
       motor = new CANSparkMax(motorId, MotorType.kBrushless);
       encoder = motor.getEncoder();
       controller = motor.getPIDController();
+
+      this.Mspeed = Mspeed;
 
       ValidateREVCAN(
           // reset factory settings
@@ -111,11 +115,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () -> {
             if (up.getAsBoolean()) {
-              motor.set(0.9);
+              motor.set(Mspeed / 4);
               System.out.println("up");
             } else if (down.getAsBoolean()) {
               System.out.println("down");
-              motor.set(-0.9);
+              motor.set(-Mspeed);
             } else {
               System.out.println("nil");
               motor.set(0);
@@ -227,8 +231,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       BooleanSupplier pistonAngled,
       BooleanSupplier pistonStraight) {
     return new ParallelCommandGroup(
-        left.manualCommand(leftUp, leftDown),
-        right.manualCommand(rightUp, rightDown),
+         left.manualCommand(leftUp, leftDown),
+                   right.manualCommand(rightUp, rightDown),
         new FunctionalCommand(
             () -> {},
             () -> {
