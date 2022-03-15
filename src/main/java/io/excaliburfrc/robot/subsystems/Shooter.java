@@ -91,6 +91,19 @@ public class Shooter extends SubsystemBase {
     return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
   }
 
+  public Command ejectLow() {
+    return new StartEndCommand(
+        () -> {
+          controlMode = Mode.MANUAL;
+          leader.set(0.2);
+        },
+        () -> {
+          controlMode = Mode.OFF;
+          leader.set(0);
+        },
+        this);
+  }
+
   public Command incrementTarget(int diff) {
     return new InstantCommand(() -> currentTarget.addAndGet(diff));
   }
