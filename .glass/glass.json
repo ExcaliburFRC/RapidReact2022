@@ -1,9 +1,6 @@
 {
   "NetworkTables": {
     "LiveWindow": {
-      "Shooter": {
-        "open": true
-      },
       "open": true
     },
     "types": {
@@ -15,7 +12,8 @@
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
-      "/SmartDashboard/Autos": "String Chooser"
+      "/SmartDashboard/Autos": "String Chooser",
+      "/SmartDashboard/Field": "Field2d"
     }
   },
   "NetworkTables Settings": {
@@ -46,7 +44,7 @@
               "max": 81.0
             }
           ],
-          "height": 591,
+          "height": 759,
           "series": [
             {
               "color": [
@@ -89,7 +87,10 @@
           "yaxis2": true,
           "yaxis3": true
         }
-      ]
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }

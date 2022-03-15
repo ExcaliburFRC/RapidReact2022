@@ -16,7 +16,7 @@ public class Superstructure {
             shooter.accelerateFenderCommand(),
             new RepeatingCommand(
                 sequence(new WaitUntilCommand(shooter.atTargetVelocity), intake.pullIntoShooter())),
-            leds.setColorCommand(LedMode.PINK));
+            leds.setColorCommand(LedMode.GREEN));
   }
 
   public Command intakeBallCommand() {

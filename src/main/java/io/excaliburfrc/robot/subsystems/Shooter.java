@@ -88,7 +88,7 @@ public class Shooter extends SubsystemBase {
     return new StartEndCommand(
         () -> {
           controlMode = Mode.MANUAL;
-          leader.set(0.2);
+          leader.set(0.25);
         },
         () -> {
           controlMode = Mode.OFF;

@@ -85,11 +85,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           () -> {},
           () -> {
             if (up.getAsBoolean()) {
-              motor.set(0.9);
+              motor.set(0.4);
               System.out.println("up");
             } else if (down.getAsBoolean()) {
               System.out.println("down");
-              motor.set(-0.9);
+              motor.set(-0.3);
             } else {
               System.out.println("nil");
               motor.set(0);

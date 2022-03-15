@@ -21,7 +21,7 @@ import io.excaliburfrc.robot.subsystems.*;
  */
 public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
-  private final Joystick armJoystick = new Joystick(1);
+  private final PS4Controller armJoystick = new PS4Controller(1);
   // The robot's subsystems and commands are defined here...
   private final Superstructure superstructure = new Superstructure();
   private final Climber climber = new Climber();
@@ -51,13 +51,13 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new JoystickButton(armJoystick, 1).whileActiveOnce(superstructure.shootBallsCommand(leds));
+    new Button(armJoystick::getR2Button).whenPressed(superstructure.shootBallsCommand(leds));
 
-    new JoystickButton(armJoystick, 2)
+    new Button(armJoystick::getL2Button)
         .whenReleased(superstructure.intake.closePiston())
         .whenPressed(superstructure.intakeBallCommand());
 
-    new JoystickButton(armJoystick, 4).whenPressed(superstructure.ejectBallCommand());
+    new Button(armJoystick::getL1Button).whileActiveOnce(superstructure.ejectBallCommand());
 
     //    var stepButton = new Button(() -> armJoystick.getRawButton(3));
     //    new POVButton(driveJoystick, POV_UP)

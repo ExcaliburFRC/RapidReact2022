@@ -19,7 +19,7 @@ public final class Constants {
     public static final int PING = 9;
     public static final int ECHO = 8;
     public static final int COLOR_LIMIT = 60;
-    public static final int SONIC_LIMIT = 69;
+    public static final int SONIC_LIMIT = 85;
     public static final int MAX_BALLS = 2;
     public static final int FWD_CHANNEL = 3;
     public static final int REV_CHANNEL = 4;
@@ -39,7 +39,6 @@ public final class Constants {
     public static final double OPEN_HEIGHT = FORWARD_SOFT_LIMIT - SAFETY_DISTANCE;
     public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT;
     public static final double HALF_HEIGHT = OPEN_HEIGHT / 2.0;
-
     public static final Value ANGLED = Value.kReverse;
     public static final Value STRAIGHT = Value.kForward;
   }
