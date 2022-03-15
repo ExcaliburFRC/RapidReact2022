@@ -51,19 +51,13 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-//    new JoystickButton(driveJoystick, 8)//        .whileActiveOnce(superstructure.shootBallsCommand(leds));
-//
-//    new JoystickButton(armJoystick, 2)
-//        .whenReleased(superstructure.intake.closePiston())
-//        .whenPressed(superstructure.intakeBallCommand());
-//
-//    new JoystickButton(armJoystick, 4).whenPressed(superstructure.ejectBallCommand());
+    new Button(armJoystick::getR2Button).whenPressed(superstructure.shootBallsCommand(leds));
 
-    //    var stepButton = new Button(() -> armJoystick.getRawButton(3));
-    //    new POVButton(driveJoystick, POV_UP)
-    //        .whenPressed(
-    //            climber.climbSeries(
-    //                stepButton, stepButton, stepButton, stepButton, stepButton, stepButton));
+    new Button(armJoystick::getL2Button)
+        .whenReleased(superstructure.intake.closePiston())
+        .whenPressed(superstructure.intakeBallCommand());
+
+    new Button(armJoystick::getL1Button).whileActiveOnce(superstructure.ejectBallCommand());
 
     climber
         .climberManualCommand(
