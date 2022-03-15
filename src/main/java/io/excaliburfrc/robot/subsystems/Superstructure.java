@@ -2,10 +2,7 @@ package io.excaliburfrc.robot.subsystems;
 
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.sequence;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.lib.RepeatingCommand;
 import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
 
@@ -23,7 +20,8 @@ public class Superstructure {
   }
 
   public Command intakeBallCommand() {
-    return new ConditionalCommand(intake.pullIntoUpper(), new InstantCommand(), intake.intakeBallTrigger)
+    return new ConditionalCommand(
+            intake.pullIntoUpper(), new InstantCommand(), intake.intakeBallTrigger)
         .andThen(intake.openPiston())
         .andThen(intake.pullIntoIntake())
         .andThen(
@@ -34,7 +32,7 @@ public class Superstructure {
                 // output ball from intake / shooter
                 new ConditionalCommand(
                     // outputs the ball from the shooter
-                    intake.pullIntoUpper().andThen(intake.pullIntoShooter()),
+                    intake.pullIntoUpper().andThen(intake.pullIntoShooter()).alongWith(shooter.ejectLow()),
                     // outputs the ball from intake
                     intake.ejectFromIntake(),
                     // decides to output from intake or from shooter
@@ -43,11 +41,16 @@ public class Superstructure {
                 intake::isOurColor));
   }
 
-  public Command ejectBallCommand() {
-    return sequence(intake.ejectFromIntake(), intake.ejectFromUpper());
+//  public Command ejectBallCommand() {
+//    return sequence(intake.closePiston(), intake.ejectFromIntake(), intake.ejectFromUpper(), intake.ejectFromIntake())
+//        .until(intake::isEmpty);
+//  }
+
+  public Command ejectBallCommand(){
+    return intake.rawEject();
   }
 
-  public void resetBallCounter() {
-    intake.resetBallCounter();
+  public Command resetBallCounterCommand() {
+    return new InstantCommand(intake::resetBallCounter);
   }
 }
