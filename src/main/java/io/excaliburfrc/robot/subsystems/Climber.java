@@ -30,7 +30,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
           ClimberConstants.FORWARD_CHANNEL,
           ClimberConstants.REVERSE_CHANNEL);
   private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false, 0.95);
-  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true, 0.95);
+  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true, 0.85);
 
   private final TrapezoidProfile elevatorProfile =
       new TrapezoidProfile(
