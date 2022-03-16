@@ -67,23 +67,23 @@ public class RobotContainer {
     //            climber.climbSeries(
     //                stepButton, stepButton, stepButton, stepButton, stepButton, stepButton));
 
-    climber
-        .climberManualCommand(
-            () -> driveJoystick.getPOV() == 0,
-            () -> driveJoystick.getPOV() == 180,
-            driveJoystick::getTriangleButton,
-            driveJoystick::getCrossButton,
-            () -> driveJoystick.getPOV() == 90,
-            () -> driveJoystick.getPOV() == 270)
-        .schedule();
+//    climber
+//        .climberManualCommand(
+//            () -> driveJoystick.getPOV() == 0,
+//            () -> driveJoystick.getPOV() == 180,
+//            driveJoystick::getTriangleButton,
+//            driveJoystick::getCrossButton,
+//            () -> driveJoystick.getPOV() == 90,
+//            () -> driveJoystick.getPOV() == 270)
+//        .schedule();
 
     new Button(driveJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
-    new POVButton(armJoystick, 0).whenPressed(shooter.incrementTarget(1));
-    new POVButton(armJoystick, 180).whenPressed(shooter.incrementTarget(-1));
+    new POVButton(driveJoystick, 0).whenPressed(shooter.incrementTarget(1));
+    new POVButton(driveJoystick, 180).whenPressed(shooter.incrementTarget(-1));
 
     new Button(driveJoystick::getOptionsButton).toggleWhenPressed(intake.allowCommand());
 
