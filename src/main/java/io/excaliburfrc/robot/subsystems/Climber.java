@@ -4,24 +4,21 @@ import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.robot.Constants.ClimberConstants.*;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
+
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 
 public class Climber extends SubsystemBase {
   private final DoubleSolenoid anglerPiston =
@@ -31,10 +28,6 @@ public class Climber extends SubsystemBase {
           ClimberConstants.REVERSE_CHANNEL);
   private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false, 0.95);
   private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true, 0.85);
-
-  private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, kG, kV, kA);
-  private final ElevatorFeedforward diagonalFF =
-      new ElevatorFeedforward(kS, kG * Math.cos(ANGLE), kV, kA);
 
   private static class ClimberSide{
     private final CANSparkMax motor;
