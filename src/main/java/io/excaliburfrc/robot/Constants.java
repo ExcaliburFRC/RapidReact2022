@@ -1,5 +1,6 @@
 package io.excaliburfrc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
@@ -87,6 +88,8 @@ public final class Constants {
 
     public static final double MOTOR_ROTATION_TO_METERS =
         GEARING * 2 * Math.PI * Units.inchesToMeters(6);
+
+    public static final Translation2d HUB_POS = new Translation2d(8.247, 4.092);
   }
 
   public static class LedsConstants {
