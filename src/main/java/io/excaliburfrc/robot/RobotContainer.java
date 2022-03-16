@@ -127,8 +127,6 @@ public class RobotContainer {
 
     new Button(driveJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
 
-    new Button(driveJoystick::getCircleButton).whileActiveOnce(climber.openFullyCommand());
-
     DriverStation.reportWarning("Manual!", false);
   }
 
