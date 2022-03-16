@@ -1,6 +1,7 @@
 package io.excaliburfrc.robot.subsystems;
 
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.sequence;
+import static io.excaliburfrc.lib.TriggerUtils.Falling;
 
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.lib.RepeatingCommand;
@@ -15,8 +16,10 @@ public class Superstructure {
         .deadlineWith(
             shooter.accelerateFenderCommand(),
             new RepeatingCommand(
-                sequence(new WaitUntilCommand(shooter.atTargetVelocity), intake.pullIntoShooter())),
-            leds.setColorCommand(LedMode.GREEN));
+                sequence(
+                    new WaitUntilCommand(shooter::isAtTargetVelocity),
+                    intake.pullIntoShooter(shooter.ballShotTrigger))),
+            leds.setColorCommand(LedMode.VIOLET));
   }
 
   public Command intakeBallCommand() {
@@ -32,25 +35,28 @@ public class Superstructure {
                 // output ball from intake / shooter
                 new ConditionalCommand(
                     // outputs the ball from the shooter
-                    intake.pullIntoUpper().andThen(intake.pullIntoShooter()).alongWith(shooter.ejectLow()),
+                    intake
+                        .pullIntoUpper()
+                        .andThen(intake.pullIntoShooter(Falling(intake.upperBallTrigger)))
+                        .deadlineWith(shooter.ejectLow()),
                     // outputs the ball from intake
                     intake.ejectFromIntake(),
                     // decides to output from intake or from shooter
                     intake.upperBallTrigger.negate()),
                 // decides by ball color
-                intake::isOurColor));
+                intake::isOurColor),
+            intake.closePiston());
   }
 
-//  public Command ejectBallCommand() {
-//    return sequence(intake.closePiston(), intake.ejectFromIntake(), intake.ejectFromUpper(), intake.ejectFromIntake())
-//        .until(intake::isEmpty);
-//  }
-
-  public Command ejectBallCommand(){
-    return intake.rawEject();
+  public Command ejectBallCommand() {
+    return intake.ejectAll();
   }
 
-  public Command resetBallCounterCommand() {
-    return new InstantCommand(intake::resetBallCounter);
+  //  public Command ejectBallCommand() {
+  //    return intake.rawEject();
+  //  }
+
+  public Command resetBallCounterCommand(int n) {
+    return new InstantCommand(() -> intake.resetBallCounter(n));
   }
 }

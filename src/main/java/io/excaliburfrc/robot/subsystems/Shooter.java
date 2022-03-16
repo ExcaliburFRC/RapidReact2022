@@ -1,7 +1,7 @@
 package io.excaliburfrc.robot.subsystems;
 
 import static io.excaliburfrc.lib.CAN.*;
-import static io.excaliburfrc.robot.Constants.ShooterConstants.RPS_DROP_ON_SHOOT;
+import static io.excaliburfrc.lib.TriggerUtils.Falling;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -10,11 +10,9 @@ import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
@@ -36,12 +34,11 @@ public class Shooter extends SubsystemBase {
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV);
   private final PIDController pid = new PIDController(ShooterConstants.kP, 0, 0);
 
+  final Trigger ballShotTrigger =
+      Falling(new Trigger(() -> currentTarget.get() - getVelocity() > 5));
+
   private Mode controlMode = Mode.OFF;
   private double velocity = 0;
-
-  private double lastVelocity = velocity;
-  private final Trigger ballShotTrigger =
-      new Trigger(() -> pid.getSetpoint() > 0 && lastVelocity - velocity > RPS_DROP_ON_SHOOT);
 
   public Shooter() {
     ValidateREVCAN(
@@ -84,8 +81,6 @@ public class Shooter extends SubsystemBase {
   public double getVelocity() {
     return velocity;
   }
-
-  final Trigger atTargetVelocity = new Trigger(this::isAtTargetVelocity).debounce(0.1);
 
   public boolean isAtTargetVelocity() {
     return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
@@ -136,7 +131,6 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    lastVelocity = velocity;
     updateVelocity();
 
     switch (controlMode) {
@@ -155,10 +149,6 @@ public class Shooter extends SubsystemBase {
         leader.setVoltage(pidOutput + ffOutput);
         break;
     }
-
-    SmartDashboard.putBoolean("ball shot trigger", ballShotTrigger.get());
-    SmartDashboard.putNumber("diff", lastVelocity - velocity);
-    DriverStation.reportWarning("vel " + velocity, false);
   }
 
   private enum Mode {

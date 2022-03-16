@@ -54,10 +54,9 @@ public class RobotContainer {
     new Button(armJoystick::getR2Button).whenPressed(superstructure.shootBallsCommand(leds));
 
     new Button(armJoystick::getL2Button)
-        .whenReleased(superstructure.intake.closePiston())
         .whenPressed(superstructure.intakeBallCommand());
 
-    new Button(armJoystick::getL1Button).whileActiveOnce(superstructure.ejectBallCommand());
+    new Button(armJoystick::getL1Button).whenPressed(superstructure.ejectBallCommand());
 
     climber
         .climberManualCommand(

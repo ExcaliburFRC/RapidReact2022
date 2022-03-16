@@ -1,6 +1,8 @@
 package io.excaliburfrc.robot.subsystems;
 
+import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 import static io.excaliburfrc.lib.CAN.*;
+import static io.excaliburfrc.lib.TriggerUtils.Falling;
 import static io.excaliburfrc.robot.Constants.IntakeConstants.*;
 
 import com.revrobotics.CANSparkMax;
@@ -14,7 +16,7 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
+import io.excaliburfrc.lib.RepeatingCommand;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -30,27 +32,27 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final Ultrasonic upperSensor = new Ultrasonic(PING, ECHO);
   final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
   private final DoubleSolenoid intakePiston =
-        new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
+      new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
   public Intake() {
     ValidateREVCAN(
-          // reset factory settings
-          intakeMotor.restoreFactoryDefaults(),
-          upperMotor.restoreFactoryDefaults(),
-          // set the motors to break mode -- we don't want cargo to be able to escape
-          upperMotor.setIdleMode(IdleMode.kBrake),
-          intakeMotor.setIdleMode(IdleMode.kBrake),
-          // decrease status frames -- nothing is of interest here
-          upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
-          upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
-          upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
-          intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
-          intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
-          intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND));
+        // reset factory settings
+        intakeMotor.restoreFactoryDefaults(),
+        upperMotor.restoreFactoryDefaults(),
+        // set the motors to break mode -- we don't want cargo to be able to escape
+        upperMotor.setIdleMode(IdleMode.kBrake),
+        intakeMotor.setIdleMode(IdleMode.kBrake),
+        // decrease status frames -- nothing is of interest here
+        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        upperMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
+        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
+        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
+        intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND));
 
     // report if we pass the limit
     new Trigger(() -> ballCount.get() > MAX_BALLS)
-          .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
+        .whenActive(() -> DriverStation.reportWarning("Too many Cargo on robot!", false));
 
     intakeMotor.setInverted(true);
     upperMotor.setInverted(true);
@@ -67,96 +69,120 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   public Command pullIntoIntake() {
     return new StartEndCommand(
-          () -> intakeMotor.set(Speeds.intakeInDutyCycle), () -> intakeMotor.set(0), this)
-          .until(intakeBallTrigger)
-          .andThen(ballCount::incrementAndGet);
+            () -> intakeMotor.set(Speeds.intakeInDutyCycle), () -> intakeMotor.set(0), this)
+        .until(intakeBallTrigger)
+        .andThen(ballCount::incrementAndGet);
   }
 
   public Command pullIntoUpper() {
     return new StartEndCommand(
-          () -> {
-            intakeMotor.set(Speeds.intakeInDutyCycle);
-            upperMotor.set(Speeds.upperInDutyCycle);
-          },
-          () -> {
-            intakeMotor.set(0);
-            upperMotor.set(0);
-          },
-          this)
-          .until(upperBallTrigger);
+            () -> {
+              intakeMotor.set(Speeds.intakeInDutyCycle);
+              upperMotor.set(Speeds.upperInDutyCycle);
+            },
+            () -> {
+              intakeMotor.set(0);
+              upperMotor.set(0);
+            },
+            this)
+        .until(upperBallTrigger);
   }
 
-  public Command pullIntoShooter() {
+  public Command pullIntoShooter(Trigger ballShotTrigger) {
     return new StartEndCommand(
-          () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
-          .until(upperBallTrigger.negate())
-          .andThen(ballCount::decrementAndGet);
+            () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
+        .until(ballShotTrigger)
+        .andThen(ballCount::decrementAndGet);
+  }
+
+  public Command ejectAll() {
+    return deadline(
+        new WaitUntilCommand(this::isEmpty),
+        new RepeatingCommand(
+            sequence(
+                new WaitUntilCommand(Falling(intakeBallTrigger)),
+                new InstantCommand(ballCount::decrementAndGet))),
+        new StartEndCommand(
+            () -> {
+              intakeMotor.set(Speeds.intakeEjectDutyCycle);
+              upperMotor.set(Speeds.upperEjectDutyCycle);
+            },
+            () -> {
+              intakeMotor.set(0);
+              upperMotor.set(0);
+            }));
   }
 
   public Command ejectFromIntake() {
-    return new StartEndCommand(
-          () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
-          () -> intakeMotor.set(0),
-          this).until(intakeBallTrigger.negate())
-          .andThen(ballCount::decrementAndGet);
+    return new ConditionalCommand(
+        new FunctionalCommand(
+                () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
+                () -> {},
+                interrupted -> intakeMotor.set(0),
+                Falling(intakeBallTrigger),
+                this)
+            .andThen(ballCount::decrementAndGet),
+        new InstantCommand(),
+        intakeBallTrigger);
   }
 
   public Command ejectFromUpper() {
     return new StartEndCommand(
-          () -> upperMotor.set(Speeds.upperEjectDutyCycle), () -> upperMotor.set(0), this)
-          .until(intakeBallTrigger)
-          .until(this::isEmpty);
+            () -> upperMotor.set(Speeds.upperEjectDutyCycle), () -> upperMotor.set(0), this)
+        .until(intakeBallTrigger)
+        .until(this::isEmpty);
   }
 
   public Command rawEject() {
-    return new StartEndCommand(() -> {
-      upperMotor.set(Speeds.upperEjectDutyCycle);
-      intakeMotor.set(Speeds.intakeEjectDutyCycle);
-    },
-          () -> {
-            upperMotor.set(0);
-            intakeMotor.set(0);
-          }, this);
+    return new StartEndCommand(
+        () -> {
+          upperMotor.set(Speeds.upperEjectDutyCycle);
+          intakeMotor.set(Speeds.intakeEjectDutyCycle);
+        },
+        () -> {
+          upperMotor.set(0);
+          intakeMotor.set(0);
+        },
+        this);
   }
 
   public Command manualCommand(
-        BooleanSupplier intakeIn,
-        BooleanSupplier intakeOut,
-        BooleanSupplier upperIn,
-        BooleanSupplier upperOut,
-        BooleanSupplier pistonState) {
+      BooleanSupplier intakeIn,
+      BooleanSupplier intakeOut,
+      BooleanSupplier upperIn,
+      BooleanSupplier upperOut,
+      BooleanSupplier pistonState) {
     return new RunCommand(
-          () -> {
-            if (intakeIn.getAsBoolean()) intakeMotor.set(Speeds.intakeInDutyCycle);
-            else if (intakeOut.getAsBoolean()) intakeMotor.set(-Speeds.intakeInDutyCycle);
-            else intakeMotor.set(0);
-            if (upperIn.getAsBoolean()) upperMotor.set(Speeds.upperShootDutyCycle);
-            else if (upperOut.getAsBoolean()) upperMotor.set(-Speeds.upperInDutyCycle);
-            else upperMotor.set(0);
-            if (pistonState.getAsBoolean())
-              intakePiston.set(
-                    intakePiston.get() == Value.kForward ? Value.kReverse : Value.kForward);
-          },
-          this);
+        () -> {
+          if (intakeIn.getAsBoolean()) intakeMotor.set(Speeds.intakeInDutyCycle);
+          else if (intakeOut.getAsBoolean()) intakeMotor.set(-Speeds.intakeInDutyCycle);
+          else intakeMotor.set(0);
+          if (upperIn.getAsBoolean()) upperMotor.set(Speeds.upperShootDutyCycle);
+          else if (upperOut.getAsBoolean()) upperMotor.set(-Speeds.upperInDutyCycle);
+          else upperMotor.set(0);
+          if (pistonState.getAsBoolean())
+            intakePiston.set(
+                intakePiston.get() == Value.kForward ? Value.kReverse : Value.kForward);
+        },
+        this);
   }
 
   @Deprecated
   public Command blindShootBallCommand() {
     return new FunctionalCommand(
-          // init
-          () -> {
-          },
-          // exe
-          () -> upperMotor.set(Speeds.upperShootDutyCycle),
-          // end
-          _interrupted -> {
-            upperMotor.set(0);
-            intakeMotor.set(0);
-          },
-          // isFinished
-          // stop after we've shot a ball
-          () -> false)
-          .withTimeout(0.1);
+            // init
+            () -> {},
+            // exe
+            () -> upperMotor.set(Speeds.upperShootDutyCycle),
+            // end
+            _interrupted -> {
+              upperMotor.set(0);
+              intakeMotor.set(0);
+            },
+            // isFinished
+            // stop after we've shot a ball
+            () -> false)
+        .withTimeout(0.1);
   }
 
   boolean isOurColor() {
@@ -178,8 +204,8 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     return result || allow.get();
   }
 
-  void resetBallCounter() {
-    ballCount.set(0);
+  void resetBallCounter(int n) {
+    ballCount.set(n);
   }
 
   @Override
@@ -201,7 +227,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     static final double intakeInDutyCycle = 0.3;
     static final double upperInDutyCycle = 0.1;
 
-    static final double upperShootDutyCycle = 0.7;
+    static final double upperShootDutyCycle = 0.6;
   }
 
   @Override
@@ -219,7 +245,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   public boolean isEmpty() {
-    // ballCount.get() < 1 &&
-    return upperBallTrigger.negate().get() && intakeBallTrigger.negate().get();
+    return ballCount.get() < 1;
   }
 }
