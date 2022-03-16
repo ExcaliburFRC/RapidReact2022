@@ -82,8 +82,8 @@ public class RobotContainer {
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
-    new POVButton(armJoystick, 0).whenPressed(shooter.incrementTarget(1));
-    new POVButton(armJoystick, 180).whenPressed(shooter.incrementTarget(-1));
+    new POVButton(driveJoystick, 0).whenPressed(shooter.incrementTarget(1));
+    new POVButton(driveJoystick, 180).whenPressed(shooter.incrementTarget(-1));
 
     new Button(driveJoystick::getOptionsButton).toggleWhenPressed(intake.allowCommand());
 
