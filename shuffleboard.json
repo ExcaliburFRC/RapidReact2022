@@ -275,6 +275,16 @@
                   "_type": "Text View",
                   "_source0": "network_table:///LiveWindow/Drive/heading",
                   "_title": "heading"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///LiveWindow/Drive/distance from hub",
+                  "_title": "/LiveWindow/Drive/distance from hub"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///LiveWindow/Drive/angle turn to hub",
+                  "_title": "/LiveWindow/Drive/angle turn to hub"
                 }
               ]
             }

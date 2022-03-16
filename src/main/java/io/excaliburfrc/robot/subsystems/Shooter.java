@@ -10,9 +10,11 @@ import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
@@ -39,7 +41,7 @@ public class Shooter extends SubsystemBase {
 
   private double lastVelocity = velocity;
   private final Trigger ballShotTrigger =
-      new Trigger(() -> pid.getSetpoint() > 0 && lastVelocity - velocity < RPS_DROP_ON_SHOOT);
+      new Trigger(() -> pid.getSetpoint() > 0 && lastVelocity - velocity > RPS_DROP_ON_SHOOT);
 
   public Shooter() {
     ValidateREVCAN(
@@ -138,6 +140,10 @@ public class Shooter extends SubsystemBase {
         leader.setVoltage(pidOutput + ffOutput);
         break;
     }
+
+    SmartDashboard.putBoolean("ball shot trigger", ballShotTrigger.get());
+    SmartDashboard.putNumber("diff", lastVelocity - velocity);
+    DriverStation.reportWarning("vel " + velocity, false);
   }
 
   private enum Mode {

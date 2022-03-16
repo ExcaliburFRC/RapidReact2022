@@ -52,7 +52,7 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new JoystickButton(armJoystick, 1)
+    new JoystickButton(driveJoystick, 8)
         .whileActiveOnce(new BlindShootBallsCommand(intake, shooter, leds));
 
     new JoystickButton(armJoystick, 2)
