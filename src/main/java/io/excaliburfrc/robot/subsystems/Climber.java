@@ -23,7 +23,7 @@ import io.excaliburfrc.robot.Constants.ClimberConstants;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-public class Climber extends SubsystemBase implements AutoCloseable {
+public class Climber extends SubsystemBase {
   private final DoubleSolenoid anglerPiston =
       new DoubleSolenoid(
           PneumaticsModuleType.CTREPCM,
@@ -32,17 +32,11 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, false, 0.95);
   private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, true, 0.85);
 
-  private final TrapezoidProfile elevatorProfile =
-      new TrapezoidProfile(
-          new TrapezoidProfile.Constraints(MAX_VELOCITY, MAX_ACCELERATION),
-          new TrapezoidProfile.State(OPEN_HEIGHT, 0), // The goal state
-          new TrapezoidProfile.State(0, 0)); // The init state
-
   private final ElevatorFeedforward upFF = new ElevatorFeedforward(kS, kG, kV, kA);
   private final ElevatorFeedforward diagonalFF =
       new ElevatorFeedforward(kS, kG * Math.cos(ANGLE), kV, kA);
 
-  private static class ClimberSide implements AutoCloseable {
+  private static class ClimberSide{
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final SparkMaxPIDController controller;
@@ -75,53 +69,15 @@ public class Climber extends SubsystemBase implements AutoCloseable {
       encoder.setPosition(0);
     }
 
-    public void setReference(double position, double velocityFF) {
-      controller.setReference(position, ControlType.kPosition, 0, velocityFF, ArbFFUnits.kVoltage);
-    }
-
-    public Command pullUpCommand() {
-      return new FunctionalCommand(
-          () -> {},
-          () -> motor.set(-OPEN_LOOP_CLIMB_DUTY_CYCLE),
-          __ -> motor.set(0),
-          () -> encoder.getPosition() <= CLOSED_HEIGHT);
-    }
-
-    public Command pullUpHalfCommand(RelativeEncoder otherEncoder) {
-      return new FunctionalCommand(
-          () -> {},
-          () ->
-              motor.set(
-                  -OPEN_LOOP_CLIMB_DUTY_CYCLE * otherEncoder.getPosition() / encoder.getPosition()),
-          __ -> motor.set(0),
-          () -> encoder.getPosition() <= HALF_HEIGHT);
-    }
-
-    public Command openFullyCommand() {
-      return new FunctionalCommand(
-          () -> {},
-          () -> motor.set(OPEN_LOOP_CLIMB_DUTY_CYCLE),
-          __ -> motor.set(0),
-          () -> encoder.getPosition() >= OPEN_HEIGHT);
-    }
-
-    /** AutoCloseable */
-    public void close() {
-      motor.close();
-    }
-
     public Command manualCommand(BooleanSupplier up, BooleanSupplier down) {
       return new FunctionalCommand(
           () -> {},
           () -> {
             if (up.getAsBoolean()) {
               motor.set(Mspeed / 4);
-              System.out.println("up");
             } else if (down.getAsBoolean()) {
-              System.out.println("down");
               motor.set(-Mspeed);
             } else {
-              System.out.println("nil");
               motor.set(0);
             }
           },
@@ -164,65 +120,6 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     }
   }
 
-  /** AutoCloseable */
-  @Override
-  public void close() {
-    left.close();
-    right.close();
-    anglerPiston.close();
-  }
-
-  public Command openFullyCommand() {
-    return new ParallelCommandGroup(left.openFullyCommand(), right.openFullyCommand());
-  }
-
-  public Command pullUpRobotCommand() {
-    return left.pullUpCommand().alongWith(right.pullUpCommand());
-  }
-
-  public Command pullUpHalfRobotCommand() {
-    return left.pullUpHalfCommand(right.encoder).alongWith(right.pullUpHalfCommand(left.encoder));
-  }
-
-  public Command openAnglerCommand() {
-    return new InstantCommand(() -> anglerPiston.set(ANGLED), this);
-  }
-
-  public Command straightenAnglerCommand() {
-    return new InstantCommand(() -> anglerPiston.set(STRAIGHT), this);
-  }
-
-  public Command climbSeries(
-      BooleanSupplier openFirst,
-      BooleanSupplier closeFirst,
-      BooleanSupplier openSecond,
-      BooleanSupplier angleSecond,
-      BooleanSupplier closeSecond,
-      BooleanSupplier closeAngle) {
-    return new SequentialCommandGroup(
-            new PrintCommand("Started Climb Series"),
-            new WaitUntilCommand(openFirst),
-            new PrintCommand("Started Climb Series 2"),
-            openFullyCommand(),
-            new WaitUntilCommand(closeFirst),
-            new PrintCommand("Started Climb Series 3"),
-            pullUpRobotCommand(),
-            new WaitUntilCommand(openSecond),
-            new PrintCommand("Started Climb Series 4"),
-            openFullyCommand(),
-            new WaitUntilCommand(angleSecond),
-            new PrintCommand("Started Climb Series 5"),
-            openAnglerCommand(),
-            new WaitUntilCommand(() -> !angleSecond.getAsBoolean()),
-            new WaitUntilCommand(closeSecond),
-            new PrintCommand("Started Climb Series 6"),
-            pullUpHalfRobotCommand(),
-            new WaitUntilCommand(closeAngle),
-            new PrintCommand("Started Climb Series 7"),
-            straightenAnglerCommand())
-        .withName("climb series");
-  }
-
   public Command climberManualCommand(
       BooleanSupplier leftUp,
       BooleanSupplier leftDown,
@@ -233,18 +130,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new ParallelCommandGroup(
          left.manualCommand(leftUp, leftDown),
                    right.manualCommand(rightUp, rightDown),
-        new FunctionalCommand(
-            () -> {},
-            () -> {
-              if (pistonAngled.getAsBoolean()) {
-                anglerPiston.set(ANGLED);
-              }
-              if (pistonStraight.getAsBoolean()) {
-                anglerPiston.set(STRAIGHT);
-              }
-            },
-            __ -> {},
-            () -> false));
+            pistonCommand(pistonAngled, pistonStraight));
   }
 
   public Command climberTuneCommand(
@@ -257,8 +143,13 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return new ParallelCommandGroup(
         left.tuneCommand(leftUp, leftDown),
         right.tuneCommand(rightUp, rightDown),
-        new FunctionalCommand(
-            () -> {},
+pistonCommand(pistonAngled, pistonStraight));
+  }
+
+  private FunctionalCommand pistonCommand(BooleanSupplier pistonAngled, BooleanSupplier pistonStraight) {
+    return new FunctionalCommand(
+            () -> {
+            },
             () -> {
               if (pistonAngled.getAsBoolean()) {
                 anglerPiston.set(ANGLED);
@@ -267,22 +158,13 @@ public class Climber extends SubsystemBase implements AutoCloseable {
                 anglerPiston.set(STRAIGHT);
               }
             },
-            __ -> {},
-            () -> false));
+            __ -> {
+            },
+            () -> false);
   }
 
   public Command disableSoftLimits() {
     return left.disableAndResetSoftLimits().alongWith(right.disableAndResetSoftLimits());
-  }
-
-  private void achieveState(TrapezoidProfile.State setpoint) {
-    ElevatorFeedforward ff = anglerPiston.get() == ANGLED ? diagonalFF : upFF;
-    left.setReference(setpoint.position, ff.calculate(setpoint.velocity));
-    right.setReference(setpoint.position, ff.calculate(setpoint.velocity));
-  }
-
-  private Command reachBarCommand(Consumer<TrapezoidProfile.State> toRun) {
-    return new TrapezoidProfileCommand(elevatorProfile, toRun, this);
   }
 
   @Override
