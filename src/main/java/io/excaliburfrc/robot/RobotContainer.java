@@ -51,7 +51,7 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new Button(armJoystick::getR2Button).whenPressed(superstructure.shootBallsCommand(leds));
+    new Button(armJoystick::getR2Button).toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
     new Button(armJoystick::getL2Button).whenPressed(superstructure.intakeBallCommand());
 
