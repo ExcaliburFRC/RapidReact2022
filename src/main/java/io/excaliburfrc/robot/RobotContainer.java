@@ -24,7 +24,7 @@ import io.excaliburfrc.robot.subsystems.*;
  */
 public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
-  private final Joystick armJoystick = new Joystick(1);
+  private final PS4Controller armJoystick = new PS4Controller(1);
   // The robot's subsystems and commands are defined here...
   private final Intake intake = new Intake();
   private final Climber climber = new Climber();
@@ -52,14 +52,14 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new JoystickButton(armJoystick, 1)
-        .whileActiveOnce(new BlindShootBallsCommand(intake, shooter, leds));
-
-    new JoystickButton(armJoystick, 2)
-        .whenReleased(intake.setPistonCommand(Value.kReverse))
-        .whileActiveContinuous(intake.intakeBallCommand());
-
-    new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
+//    new JoystickButton(armJoystick, 1)
+//        .whileActiveOnce(new BlindShootBallsCommand(intake, shooter, leds));
+//
+//    new JoystickButton(armJoystick, 2)
+//        .whenReleased(intake.setPistonCommand(Value.kReverse))
+//        .whileActiveContinuous(intake.intakeBallCommand());
+//
+//    new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
 
     //    var stepButton = new Button(() -> armJoystick.getRawButton(3));
     //    new POVButton(driveJoystick, POV_UP)
@@ -69,15 +69,15 @@ public class RobotContainer {
 
     climber
         .climberManualCommand(
-            () -> driveJoystick.getPOV() == 0,
-            () -> driveJoystick.getPOV() == 180,
-            driveJoystick::getTriangleButton,
-            driveJoystick::getCrossButton,
-            () -> driveJoystick.getPOV() == 90,
-            () -> driveJoystick.getPOV() == 270)
+            armJoystick::getTriangleButton,
+              armJoystick::getCrossButton,
+              () -> armJoystick.getPOV() == 0,
+              () -> armJoystick.getPOV() == 180,
+              () -> armJoystick.getPOV() == 90,
+            () -> armJoystick.getPOV() == 270)
         .schedule();
 
-    new Button(driveJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
+    new Button(armJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));

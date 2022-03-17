@@ -37,9 +37,9 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "2,0": {
+          "5,0": {
             "size": [
-              8,
+              5,
               4
             ],
             "content": {
@@ -76,6 +76,91 @@
               "_type": "Text View",
               "_source0": "network_table:///LiveWindow/Shooter/rps",
               "_title": "rps"
+            }
+          },
+          "2,2": {
+            "size": [
+              2,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/ball shot trigger",
+              "_title": "/SmartDashboard/ball shot trigger",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "2,1": {
+            "size": [
+              2,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///LiveWindow/Shooter/velocity",
+              "_title": "/LiveWindow/Shooter/velocity"
+            }
+          },
+          "2,0": {
+            "size": [
+              2,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/diff",
+              "_title": "diff"
+            }
+          },
+          "4,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///LiveWindow/Intake/Cargo Count",
+              "_title": "/LiveWindow/Intake/Cargo Count"
+            }
+          },
+          "4,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///LiveWindow/Intake/Upper Cargo",
+              "_title": "/LiveWindow/Intake/Upper Cargo",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "4,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///LiveWindow/Intake/Intake Cargo",
+              "_title": "/LiveWindow/Intake/Intake Cargo",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "3,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///LiveWindow/Intake/Allow",
+              "_title": "/LiveWindow/Intake/Allow",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
             }
           }
         }
@@ -275,6 +360,16 @@
                   "_type": "Text View",
                   "_source0": "network_table:///LiveWindow/Drive/heading",
                   "_title": "heading"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///LiveWindow/Drive/distance from hub",
+                  "_title": "distance from hub"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///LiveWindow/Drive/angle turn to hub",
+                  "_title": "angle turn to hub"
                 }
               ]
             }
