@@ -44,8 +44,6 @@ public class Shooter extends SubsystemBase {
   private double velocity = 0;
 
   private double lastVelocity = velocity;
-  private final Trigger ballShotTrigger =
-      new Trigger(() -> pid.getSetpoint() > 0 && lastVelocity - velocity > RPS_DROP_ON_SHOOT);
 
   public Shooter() {
     ValidateREVCAN(
