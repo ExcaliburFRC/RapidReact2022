@@ -1,6 +1,8 @@
 package io.excaliburfrc.robot.subsystems;
 
+import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 import static io.excaliburfrc.lib.CAN.*;
+import static io.excaliburfrc.lib.TriggerUtils.Falling;
 import static io.excaliburfrc.robot.Constants.IntakeConstants.*;
 
 import com.revrobotics.CANSparkMax;
@@ -14,22 +16,21 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import io.excaliburfrc.lib.RepeatingCommand;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
 public class Intake extends SubsystemBase implements AutoCloseable {
-  private final AtomicInteger ballCount = new AtomicInteger(0);
+  private final AtomicInteger ballCount = new AtomicInteger(1);
   private final AtomicBoolean allow = new AtomicBoolean(false);
 
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax upperMotor = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
   private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kMXP);
-  private final Trigger intakeBallTrigger =
-      new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT);
+  final Trigger intakeBallTrigger = new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT);
   private final Ultrasonic upperSensor = new Ultrasonic(PING, ECHO);
-  private final Trigger upperBallTrigger =
-      new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
+  final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
@@ -58,57 +59,92 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     Ultrasonic.setAutomaticMode(true);
   }
 
-  public Command intakeBallCommand() {
-    return new FunctionalCommand(
-            () -> intakePiston.set(Value.kForward),
-            () -> intakeMotor.set(Speeds.intakeInDutyCycle),
-            __ -> intakeMotor.set(0),
-            intakeBallTrigger)
-        .andThen(
-            new ConditionalCommand(
-                // increment ball count; input until upper sensor detects a ball
-                new FunctionalCommand(
-                    // init
-                    ballCount::incrementAndGet,
-                    // exe
-                    () -> {
-                      intakeMotor.set(Speeds.intakeInDutyCycle);
-                      upperMotor.set(Speeds.upperInDutyCycle);
-                    },
-                    // end
-                    __ -> {
-                      intakeMotor.set(0);
-                      upperMotor.set(0);
-                      //                      intakePiston.set(Value.kReverse);
-                    },
-                    // isFinished
-                    upperBallTrigger,
-                    this),
+  public Command openPiston() {
+    return new InstantCommand(() -> intakePiston.set(Value.kForward), this);
+  }
 
-                // output sets motor until ball entry sensor no longer sees a ball
-                new FunctionalCommand(
-                        // init
-                        () -> {},
-                        // exe
-                        () -> {
-                          intakeMotor.set(Speeds.ejectDutyCycle);
-                          upperMotor.set(Speeds.ejectDutyCycle);
-                        },
-                        // end
-                        __ -> {
-                          intakeMotor.set(0);
-                          upperMotor.set(0);
-                          //                          intakePiston.set(Value.kReverse);
-                        },
-                        // isFinished
-                        intakeBallTrigger.negate())
-                    .andThen(
-                        new StartEndCommand(
-                                () -> intakeMotor.set(Speeds.ejectDutyCycle),
-                                () -> intakeMotor.set(0))
-                            .withTimeout(0.5)),
-                // decides by ball color
-                this::isOurColor));
+  public Command closePiston() {
+    return new InstantCommand(() -> intakePiston.set(Value.kReverse), this);
+  }
+
+  public Command pullIntoIntake() {
+    return new StartEndCommand(
+            () -> intakeMotor.set(Speeds.intakeInDutyCycle), () -> intakeMotor.set(0), this)
+        .until(intakeBallTrigger)
+        .andThen(ballCount::incrementAndGet);
+  }
+
+  public Command pullIntoUpper() {
+    return new StartEndCommand(
+            () -> {
+              intakeMotor.set(Speeds.intakeInDutyCycle);
+              upperMotor.set(Speeds.upperInDutyCycle);
+            },
+            () -> {
+              intakeMotor.set(0);
+              upperMotor.set(0);
+            },
+            this)
+        .until(upperBallTrigger);
+  }
+
+  public Command pullIntoShooter(Trigger ballShotTrigger) {
+    return new StartEndCommand(
+            () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
+        .until(ballShotTrigger)
+        .andThen(ballCount::decrementAndGet);
+  }
+
+  public Command ejectAll() {
+    return deadline(
+        new WaitUntilCommand(this::isEmpty),
+        new RepeatingCommand(
+            sequence(
+                new WaitUntilCommand(Falling(intakeBallTrigger)),
+                new InstantCommand(ballCount::decrementAndGet))),
+        new StartEndCommand(
+            () -> {
+              intakePiston.set(Value.kReverse);
+              intakeMotor.set(Speeds.intakeEjectDutyCycle);
+              upperMotor.set(Speeds.upperEjectDutyCycle);
+            },
+            () -> {
+              intakeMotor.set(0);
+              upperMotor.set(0);
+            }));
+  }
+
+  public Command ejectFromIntake() {
+    return new ConditionalCommand(
+        new FunctionalCommand(
+                () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
+                () -> {},
+                interrupted -> intakeMotor.set(0),
+                Falling(intakeBallTrigger),
+                this)
+            .andThen(ballCount::decrementAndGet),
+        new InstantCommand(),
+        intakeBallTrigger);
+  }
+
+  public Command ejectFromUpper() {
+    return new StartEndCommand(
+            () -> upperMotor.set(Speeds.upperEjectDutyCycle), () -> upperMotor.set(0), this)
+        .until(intakeBallTrigger)
+        .until(this::isEmpty);
+  }
+
+  public Command rawEject() {
+    return new StartEndCommand(
+        () -> {
+          upperMotor.set(Speeds.upperEjectDutyCycle);
+          intakeMotor.set(Speeds.intakeEjectDutyCycle);
+        },
+        () -> {
+          upperMotor.set(0);
+          intakeMotor.set(0);
+        },
+        this);
   }
 
   public Command manualCommand(
@@ -132,27 +168,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         this);
   }
 
-  /** Shoot *one* ball; will end after a ball is shot. */
-  public Command shootBallCommand() {
-    return new FunctionalCommand(
-        // init
-        () -> {},
-        // exe
-        () -> {
-          upperMotor.set(Speeds.upperShootDutyCycle);
-          intakeMotor.set(Speeds.intakeShootDutyCycle);
-        },
-        // end
-        _interrupted -> {
-          if (!_interrupted) ballCount.decrementAndGet();
-          upperMotor.set(0);
-          intakeMotor.set(0);
-        },
-        // isFinished
-        // stop after we've shot a ball
-        upperBallTrigger.negate());
-  }
-
+  @Deprecated
   public Command blindShootBallCommand() {
     return new FunctionalCommand(
             // init
@@ -170,7 +186,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .withTimeout(0.1);
   }
 
-  private boolean isOurColor() {
+  boolean isOurColor() {
     var red = intakeSensor.getRed();
     var blue = intakeSensor.getBlue();
     boolean result = false;
@@ -189,24 +205,15 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     return result || allow.get();
   }
 
+  void resetBallCounter(int n) {
+    ballCount.set(n);
+  }
+
   @Override
   public void close() {
     this.intakeMotor.close();
     this.upperMotor.close();
     this.upperSensor.close();
-  }
-
-  public Command ejectCommand() {
-    return new StartEndCommand(
-        () -> {
-          this.intakeMotor.set(Speeds.ejectDutyCycle);
-          this.upperMotor.set(Speeds.ejectDutyCycle);
-        },
-        () -> {
-          this.intakeMotor.set(0);
-          this.upperMotor.set(0);
-        },
-        this);
   }
 
   public Command allowCommand() {
@@ -215,30 +222,26 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   private enum Speeds {
     ;
-    static final double ejectDutyCycle = -0.6;
+    static final double intakeEjectDutyCycle = -0.4;
+    static final double upperEjectDutyCycle = -0.2;
 
     static final double intakeInDutyCycle = 0.3;
     static final double upperInDutyCycle = 0.1;
 
-    static final double intakeShootDutyCycle = 0.4;
-    static final double upperShootDutyCycle = 0.7;
-  }
-
-  public Command setPistonCommand(Value val) {
-    return new InstantCommand(() -> intakePiston.set(val));
+    static final double upperShootDutyCycle = 0.6;
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Subsystem");
 
-    SendableRegistry.remove(upperSensor);
+    //    SendableRegistry.remove(upperSensor);
     SendableRegistry.remove(intakePiston);
 
     builder.addBooleanProperty("Allow", allow::get, allow::set);
     builder.addBooleanProperty("Intake Cargo", intakeBallTrigger, null);
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
-    //    builder.addDoubleProperty("Cargo Count", ballCount::get, null);
+    builder.addDoubleProperty("Cargo Count", ballCount::get, null);
     builder.addBooleanProperty("Intake Piston", () -> intakePiston.get() == Value.kForward, null);
   }
 

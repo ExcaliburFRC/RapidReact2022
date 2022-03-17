@@ -22,7 +22,7 @@ public class BlindShootBallsCommand extends ParallelCommandGroup {
             new SequentialCommandGroup(
                 new WaitUntilCommand(new Trigger(shooter::isAtTargetVelocity).and(trigger)),
                 intake.blindShootBallCommand())),
-        leds.setColorCommand(LedMode.PINK));
+        leds.setColorCommand(LedMode.VIOLET));
   }
 
   public BlindShootBallsCommand(Intake intake, Shooter shooter, LEDs leds) {

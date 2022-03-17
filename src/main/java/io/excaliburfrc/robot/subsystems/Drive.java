@@ -10,6 +10,8 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -127,9 +129,22 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    SendableRegistry.remove(this);
     SendableRegistry.remove(gyro);
     SendableRegistry.remove(drive);
     SmartDashboard.putData("Field", field);
+    builder.addDoubleProperty("distance from hub", this::getDistanceFromHub, null);
+    builder.addDoubleProperty("angle turn to hub", this::getAngleFromHub, null);
+  }
+
+  public double getDistanceFromHub() {
+    Translation2d myTranslation2d = odometry.getPoseMeters().getTranslation();
+    return myTranslation2d.getDistance(HUB_POS);
+  }
+
+  public double getAngleFromHub() {
+    Pose2d myPos = odometry.getPoseMeters();
+    double Dx = HUB_POS.getX() - myPos.getTranslation().getX();
+    double Dy = HUB_POS.getY() - myPos.getTranslation().getY();
+    return new Rotation2d(Dy, Dx).minus(myPos.getRotation()).getDegrees();
   }
 }

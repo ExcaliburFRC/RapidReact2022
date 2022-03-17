@@ -2,6 +2,7 @@ package io.excaliburfrc.robot.subsystems;
 
 import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.robot.Constants.ShooterConstants.RPS_DROP_ON_SHOOT;
+import static io.excaliburfrc.lib.TriggerUtils.Falling;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -35,6 +36,9 @@ public class Shooter extends SubsystemBase {
   private final SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV);
   private final PIDController pid = new PIDController(ShooterConstants.kP, 0, 0);
+
+  final Trigger ballShotTrigger =
+      Falling(new Trigger(() -> currentTarget.get() - getVelocity() > 5));
 
   private Mode controlMode = Mode.OFF;
   private double velocity = 0;
@@ -87,6 +91,19 @@ public class Shooter extends SubsystemBase {
 
   public boolean isAtTargetVelocity() {
     return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
+  }
+
+  public Command ejectLow() {
+    return new StartEndCommand(
+        () -> {
+          controlMode = Mode.MANUAL;
+          leader.set(0.35);
+        },
+        () -> {
+          controlMode = Mode.OFF;
+          leader.set(0);
+        },
+        this);
   }
 
   public Command incrementTarget(int diff) {
