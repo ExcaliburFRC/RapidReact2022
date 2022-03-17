@@ -104,6 +104,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
                 new InstantCommand(ballCount::decrementAndGet))),
         new StartEndCommand(
             () -> {
+              intakePiston.set(Value.kReverse);
               intakeMotor.set(Speeds.intakeEjectDutyCycle);
               upperMotor.set(Speeds.upperEjectDutyCycle);
             },
