@@ -1,26 +1,61 @@
 {
   "NetworkTables": {
     "LiveWindow": {
+      "Drive": {
+        "open": false
+      },
       "Shooter": {
         "open": true
       },
+      "Ungrouped": {
+        "Scheduler": {
+          "open": false
+        },
+        "open": false
+      },
       "open": true
+    },
+    "SmartDashboard": {
+      "Field": {
+        "open": false
+      },
+      "field": {
+        "open": false
+      }
     },
     "types": {
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Climber": "Subsystem",
       "/LiveWindow/Drive": "Subsystem",
+      "/LiveWindow/Intake": "Subsystem",
       "/LiveWindow/Shooter": "Subsystem",
+      "/LiveWindow/Superstructure": "Subsystem",
       "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
-      "/SmartDashboard/Autos": "String Chooser"
+      "/SmartDashboard/Autos": "String Chooser",
+      "/SmartDashboard/Field": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/Field": {
+        "traj": {
+          "arrowSize": 0,
+          "style": ""
+        },
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables Settings": {
     "mode": "Client",
     "serverTeam": "6738"
+  },
+  "NetworkTables View": {
+    "visible": false
   },
   "Plots": {
     "Plot <0>": {
@@ -46,7 +81,7 @@
               "max": 81.0
             }
           ],
-          "height": 591,
+          "height": 759,
           "series": [
             {
               "color": [
@@ -89,7 +124,10 @@
           "yaxis2": true,
           "yaxis3": true
         }
-      ]
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }

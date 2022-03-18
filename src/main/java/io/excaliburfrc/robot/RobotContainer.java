@@ -51,11 +51,12 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
+
     new Button(armJoystick::getR2Button).toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
-    new Button(armJoystick::getL2Button).whenPressed(superstructure.intakeBallCommand());
+    new Button(armJoystick::getL2Button).toggleWhenPressed(superstructure.intakeBallCommand());
 
-    new Button(armJoystick::getL1Button).whenPressed(superstructure.ejectBallCommand());
+    new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
     climber
         .climberManualCommand(
@@ -67,7 +68,7 @@ public class RobotContainer {
             () -> armJoystick.getPOV() == 270)
         .schedule();
 
-    new Button(armJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
+        new Button(armJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));

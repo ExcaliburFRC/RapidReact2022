@@ -14,6 +14,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.lib.RepeatingCommand;
@@ -90,8 +91,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   public Command pullIntoShooter(Trigger ballShotTrigger) {
     return new StartEndCommand(
-            () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
-        .until(ballShotTrigger)
+            () -> upperMotor.set(Speeds.upperShootDutyCycle),
+          () -> upperMotor.set(0),
+          this)
+        .until(ballShotTrigger).andThen(new WaitCommand(0.5))
         .andThen(ballCount::decrementAndGet);
   }
 
@@ -117,13 +120,13 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   public Command ejectFromIntake() {
     return new ConditionalCommand(
         new FunctionalCommand(
-                () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
-                () -> {},
-                interrupted -> intakeMotor.set(0),
-                Falling(intakeBallTrigger),
+              () -> {},
+              () -> {intakeMotor.set(Speeds.intakeEjectDutyCycle);},
+              interrupted -> intakeMotor.set(0),
+                intakeBallTrigger.negate(),
                 this)
             .andThen(ballCount::decrementAndGet),
-        new InstantCommand(),
+        new PrintCommand("did nothing"),
         intakeBallTrigger);
   }
 
@@ -137,6 +140,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   public Command rawEject() {
     return new StartEndCommand(
         () -> {
+          intakePiston.set(Value.kReverse);
           upperMotor.set(Speeds.upperEjectDutyCycle);
           intakeMotor.set(Speeds.intakeEjectDutyCycle);
         },
@@ -144,7 +148,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
           upperMotor.set(0);
           intakeMotor.set(0);
         },
-        this);
+        this).alongWith(new RepeatingCommand(new SequentialCommandGroup(new WaitUntilCommand(Falling(intakeBallTrigger))))).andThen(ballCount::decrementAndGet);
   }
 
   public Command manualCommand(
@@ -224,11 +228,20 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     ;
     static final double intakeEjectDutyCycle = -0.4;
     static final double upperEjectDutyCycle = -0.2;
+    static final double upperShootDutyCycle = 0.6;
+
 
     static final double intakeInDutyCycle = 0.3;
     static final double upperInDutyCycle = 0.1;
 
-    static final double upperShootDutyCycle = 0.6;
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("intakeSensor IR", intakeSensor.getIR());
+    SmartDashboard.putNumber("intakeSensor dist", intakeSensor.getProximity());
+    SmartDashboard.putNumber("red", intakeSensor.getRed());
+    SmartDashboard.putNumber("blue", intakeSensor.getBlue());
   }
 
   @Override
