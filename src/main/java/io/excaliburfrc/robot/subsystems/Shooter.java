@@ -1,7 +1,6 @@
 package io.excaliburfrc.robot.subsystems;
 
 import static io.excaliburfrc.lib.CAN.*;
-import static io.excaliburfrc.robot.Constants.ShooterConstants.RPS_DROP_ON_SHOOT;
 import static io.excaliburfrc.lib.TriggerUtils.Falling;
 
 import com.revrobotics.CANSparkMax;
@@ -37,13 +36,10 @@ public class Shooter extends SubsystemBase {
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV);
   private final PIDController pid = new PIDController(ShooterConstants.kP, 0, 0);
 
-  final Trigger ballShotTrigger =
-      Falling(new Trigger(() -> currentTarget.get() - getVelocity() > 5));
+  final Trigger ballShotTrigger = new Trigger(() -> currentTarget.get() - getVelocity() > 7).debounce(0.3);
 
   private Mode controlMode = Mode.OFF;
   private double velocity = 0;
-
-  private double lastVelocity = velocity;
 
   public Shooter() {
     ValidateREVCAN(
@@ -136,7 +132,6 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    lastVelocity = velocity;
     updateVelocity();
 
     switch (controlMode) {
@@ -157,7 +152,6 @@ public class Shooter extends SubsystemBase {
     }
 
     SmartDashboard.putBoolean("ball shot trigger", ballShotTrigger.get());
-    SmartDashboard.putNumber("diff", lastVelocity - velocity);
     DriverStation.reportWarning("vel " + velocity, false);
   }
 
