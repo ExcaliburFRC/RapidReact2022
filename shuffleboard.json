@@ -24,7 +24,7 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "1,0": {
+          "0,4": {
             "size": [
               1,
               1
@@ -37,9 +37,9 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "2,0": {
+          "1,0": {
             "size": [
-              8,
+              4,
               4
             ],
             "content": {
@@ -67,15 +67,44 @@
               "_title": "Autos"
             }
           },
-          "1,1": {
+          "0,2": {
             "size": [
               1,
               1
             ],
             "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///LiveWindow/Shooter/rps",
-              "_title": "rps"
+              "_type": "Boolean Box",
+              "_source0": "network_table:///LiveWindow/Intake/Upper Cargo",
+              "_title": "/LiveWindow/Intake/Upper Cargo",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "0,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///LiveWindow/Intake/Intake Cargo",
+              "_title": "/LiveWindow/Intake/Intake Cargo",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "5,0": {
+            "size": [
+              5,
+              4
+            ],
+            "content": {
+              "_type": "Field",
+              "_source0": "network_table:///SmartDashboard/Field",
+              "_title": "/SmartDashboard/Field",
+              "Game/Game": "A2022_Rapid_React",
+              "Visuals/Robot Icon Size": 50.0,
+              "Visuals/Show Outside Circles": false
             }
           }
         }
@@ -198,6 +227,11 @@
                   "_type": "PID Controller",
                   "_source0": "network_table:///LiveWindow/Ungrouped/PIDController[1]",
                   "_title": "PIDController[1]"
+                },
+                {
+                  "_type": "PID Controller",
+                  "_source0": "network_table:///LiveWindow/Ungrouped/PIDController[2]",
+                  "_title": "PIDController[2]"
                 }
               ]
             }
@@ -279,12 +313,17 @@
                 {
                   "_type": "Text View",
                   "_source0": "network_table:///LiveWindow/Drive/distance from hub",
-                  "_title": "/LiveWindow/Drive/distance from hub"
+                  "_title": "distance from hub"
                 },
                 {
                   "_type": "Text View",
                   "_source0": "network_table:///LiveWindow/Drive/angle turn to hub",
-                  "_title": "/LiveWindow/Drive/angle turn to hub"
+                  "_title": "angle turn to hub"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///LiveWindow/Drive/gyro",
+                  "_title": "gyro"
                 }
               ]
             }

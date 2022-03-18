@@ -1,6 +1,7 @@
 package io.excaliburfrc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
@@ -18,8 +19,8 @@ public final class Constants {
     public static final int UPPER_MOTOR_ID = 41; // PDP 11
     public static final int PING = 9;
     public static final int ECHO = 8;
-    public static final int COLOR_LIMIT = 60;
-    public static final int SONIC_LIMIT = 85;
+    public static final int COLOR_LIMIT = 55;
+    public static final int SONIC_LIMIT = 110;
     public static final int MAX_BALLS = 2;
     public static final int FWD_CHANNEL = 3;
     public static final int REV_CHANNEL = 4;
@@ -74,9 +75,17 @@ public final class Constants {
     public static final double GEARING = 1.0 / 10.71;
 
     public static final double MOTOR_ROTATION_TO_METERS =
-        GEARING * 2 * Math.PI * Units.inchesToMeters(6);
+        GEARING * Math.PI * Units.inchesToMeters(6);
 
     public static final Translation2d HUB_POS = new Translation2d(8.247, 4.092);
+
+    public static final double kS = 0.13086;
+    public static final double kV = 2.8806;
+    public static final double kA = 0.39188;
+    public static final double kP = 0.045064;
+    public static DifferentialDriveKinematics driveKinematics =
+        new DifferentialDriveKinematics(0.70);
+    public static final double kP_ang = 1.0 / 180.0;
   }
 
   public static class LedsConstants {

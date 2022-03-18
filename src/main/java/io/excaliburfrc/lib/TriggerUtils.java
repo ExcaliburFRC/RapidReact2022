@@ -14,7 +14,7 @@ public class TriggerUtils {
             boolean present = this$ref.getAsBoolean();
 
             boolean ret;
-            ret = previous && !present;
+            ret = !previous && present;
             previous = present;
             return ret;
           }
