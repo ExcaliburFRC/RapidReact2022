@@ -33,12 +33,9 @@ public final class Constants {
 
     public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.9;
 
-    public static final double SAFETY_DISTANCE = 0.1;
-    public static final float FORWARD_SOFT_LIMIT = 174.78738f;
-    public static final float REVERSE_SOFT_LIMIT = 0f;
-    public static final double OPEN_HEIGHT = FORWARD_SOFT_LIMIT - SAFETY_DISTANCE;
+    public static final float FORWARD_SOFT_LIMIT = 64.7f;
+    public static final float REVERSE_SOFT_LIMIT = 2f;
     public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT;
-    public static final double HALF_HEIGHT = OPEN_HEIGHT / 2.0;
 
     public static final Value ANGLED = Value.kReverse;
     public static final Value STRAIGHT = Value.kForward;

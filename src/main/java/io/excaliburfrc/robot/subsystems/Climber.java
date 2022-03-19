@@ -32,14 +32,12 @@ public class Climber extends SubsystemBase {
   private static class ClimberSide{
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
-    private final SparkMaxPIDController controller;
 
     private final double Mspeed;
 
     public ClimberSide(int motorId, boolean isMotorReversed, double Mspeed) {
       motor = new CANSparkMax(motorId, MotorType.kBrushless);
       encoder = motor.getEncoder();
-      controller = motor.getPIDController();
 
       this.Mspeed = Mspeed;
 
@@ -51,13 +49,10 @@ public class Climber extends SubsystemBase {
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
-          motor.setSoftLimit(SoftLimitDirection.kReverse, 0),
+          motor.setSoftLimit(SoftLimitDirection.kReverse, REVERSE_SOFT_LIMIT),
           motor.enableSoftLimit(SoftLimitDirection.kReverse, true),
           motor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.FORWARD_SOFT_LIMIT),
-          motor.enableSoftLimit(SoftLimitDirection.kForward, false),
-          controller.setP(kP),
-          controller.setI(kI),
-          controller.setD(kD));
+          motor.enableSoftLimit(SoftLimitDirection.kForward, true));
       motor.setInverted(isMotorReversed);
       encoder.setPosition(0);
     }
