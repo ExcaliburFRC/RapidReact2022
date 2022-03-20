@@ -60,14 +60,14 @@ public class RobotContainer {
     climber
         .climberManualCommand(
             armJoystick::getTriangleButton,
-              armJoystick::getCrossButton,
-              () -> armJoystick.getPOV() == 0,
-              () -> armJoystick.getPOV() == 180,
-              () -> armJoystick.getPOV() == 90,
+            armJoystick::getCrossButton,
+            () -> armJoystick.getPOV() == 0,
+            () -> armJoystick.getPOV() == 180,
+            () -> armJoystick.getPOV() == 90,
             () -> armJoystick.getPOV() == 270)
         .schedule();
 
-        new Button(armJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
+    new Button(armJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
