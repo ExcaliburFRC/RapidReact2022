@@ -18,9 +18,6 @@ public final class Constants {
     public static final int UPPER_MOTOR_ID = 41; // PDP 11
     public static final int UPPER_PING = 9;
     public static final int UPPER_ECHO = 8;
-    public static final int BALL_SHOT_PING = 7;
-    public static final int BALL_SHOT_ECHO = 6;
-    public static final int BALL_SHOT_LIMIT = 150;
     public static final int COLOR_LIMIT = 55;
     public static final int SONIC_LIMIT = 110;
     public static final int MAX_BALLS = 2;

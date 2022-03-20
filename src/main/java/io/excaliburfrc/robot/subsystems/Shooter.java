@@ -12,7 +12,6 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
@@ -35,7 +34,6 @@ public class Shooter extends SubsystemBase {
   private final PIDController pid = new PIDController(ShooterConstants.kP, 0, 0);
 
   private double velocity = 0;
-  private double lastVelocity = velocity;
 
   final Trigger ballShotTrigger = new Trigger(() -> pid.getPositionError() > 5);
 
@@ -132,7 +130,6 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    lastVelocity = velocity;
     updateVelocity();
 
     switch (controlMode) {
@@ -151,9 +148,6 @@ public class Shooter extends SubsystemBase {
         leader.setVoltage(pidOutput + ffOutput);
         break;
     }
-
-    //    SmartDashboard.putBoolean("ball shot trigger", ballShotTrigger.get());
-    SmartDashboard.putNumber("difference", lastVelocity - getVelocity());
   }
 
   private enum Mode {

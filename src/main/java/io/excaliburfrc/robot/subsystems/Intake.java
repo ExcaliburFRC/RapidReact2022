@@ -32,10 +32,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   final Trigger intakeBallTrigger =
       new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT).debounce(0.1);
   private final Ultrasonic upperSensor = new Ultrasonic(UPPER_PING, UPPER_ECHO);
-  private final Ultrasonic ballShotSensor = new Ultrasonic(BALL_SHOT_PING, BALL_SHOT_ECHO);
   final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
-  //  final Trigger ballShotTrigger =
-  //      Falling(new Trigger(() -> ballShotSensor.getRangeMM() < BALL_SHOT_LIMIT));
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
@@ -97,27 +94,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     return new StartEndCommand(
             () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
         .until(ballShotTrigger)
-        //        .andThen(new WaitCommand(0.5))
         .andThen(ballCount::decrementAndGet);
-  }
-
-  public Command ejectAll() {
-    return deadline(
-        new WaitUntilCommand(this::isEmpty),
-        new RepeatingCommand(
-            sequence(
-                new WaitUntilCommand(Falling(intakeBallTrigger)),
-                new InstantCommand(ballCount::decrementAndGet))),
-        new StartEndCommand(
-            () -> {
-              intakePiston.set(Value.kReverse);
-              intakeMotor.set(Speeds.intakeEjectDutyCycle);
-              upperMotor.set(Speeds.upperEjectDutyCycle);
-            },
-            () -> {
-              intakeMotor.set(0);
-              upperMotor.set(0);
-            }));
   }
 
   public Command ejectFromIntake() {
@@ -133,13 +110,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
             .andThen(ballCount::decrementAndGet),
         new PrintCommand("did nothing"),
         intakeBallTrigger);
-  }
-
-  public Command ejectFromUpper() {
-    return new StartEndCommand(
-            () -> upperMotor.set(Speeds.upperEjectDutyCycle), () -> upperMotor.set(0), this)
-        .until(intakeBallTrigger)
-        .until(this::isEmpty);
   }
 
   public Command rawEject() {
@@ -263,8 +233,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
     builder.addBooleanProperty("Intake Piston", () -> intakePiston.get() == Value.kForward, null);
-    //    builder.addBooleanProperty("Ball Shot", ballShotTrigger, null);
-    builder.addDoubleProperty("Ball Shot Sensor", ballShotSensor::getRangeMM, null);
   }
 
   public boolean isEmpty() {
