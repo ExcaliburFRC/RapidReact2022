@@ -31,28 +31,11 @@ public final class Constants {
     public static final int LEFT_MOTOR_ID = 30;
     public static final int RIGHT_MOTOR_ID = 31;
 
-    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.9;
-
     public static final float FORWARD_SOFT_LIMIT = 64.7f;
     public static final float REVERSE_SOFT_LIMIT = 2f;
-    public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT;
 
     public static final Value ANGLED = Value.kReverse;
     public static final Value STRAIGHT = Value.kForward;
-
-    public static final double kP = 0;
-    public static final double kI = 0;
-    public static final double kD = 0;
-    public static final double kG = -0.069981;
-    public static final double kS = 0.17846;
-    public static final double kV = 11.301;
-    public static final double kA = 0.49015;
-
-    public static final double ANGLE = 45;
-    public static final double MAX_VELOCITY = 0.5;
-    public static final double MAX_ACCELERATION = 1;
-
-    public static final double HEIGHT_TO_OPEN_PISTON = 20;
   }
 
   public static class ShooterConstants {

@@ -1,7 +1,6 @@
 package io.excaliburfrc.robot;
 
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,7 +9,6 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import io.excaliburfrc.robot.commands.BlindShootBallsCommand;
 import io.excaliburfrc.robot.commands.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.ShootBallsCommand;
@@ -52,28 +50,22 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-//    new JoystickButton(armJoystick, 1)
-//        .whileActiveOnce(new BlindShootBallsCommand(intake, shooter, leds));
-//
-//    new JoystickButton(armJoystick, 2)
-//        .whenReleased(intake.setPistonCommand(Value.kReverse))
-//        .whileActiveContinuous(intake.intakeBallCommand());
-//
-//    new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
-
-    //    var stepButton = new Button(() -> armJoystick.getRawButton(3));
-    //    new POVButton(driveJoystick, POV_UP)
-    //        .whenPressed(
-    //            climber.climbSeries(
-    //                stepButton, stepButton, stepButton, stepButton, stepButton, stepButton));
+    //    new JoystickButton(armJoystick, 1)
+    //        .whileActiveOnce(new BlindShootBallsCommand(intake, shooter, leds));
+    //
+    //    new JoystickButton(armJoystick, 2)
+    //        .whenReleased(intake.setPistonCommand(Value.kReverse))
+    //        .whileActiveContinuous(intake.intakeBallCommand());
+    //
+    //    new JoystickButton(armJoystick, 4).whileHeld(intake.ejectCommand());
 
     climber
         .climberManualCommand(
             armJoystick::getTriangleButton,
-              armJoystick::getCrossButton,
-              () -> armJoystick.getPOV() == 0,
-              () -> armJoystick.getPOV() == 180,
-              () -> armJoystick.getPOV() == 90,
+            armJoystick::getCrossButton,
+            () -> armJoystick.getPOV() == 0,
+            () -> armJoystick.getPOV() == 180,
+            () -> armJoystick.getPOV() == 90,
             () -> armJoystick.getPOV() == 270)
         .schedule();
 

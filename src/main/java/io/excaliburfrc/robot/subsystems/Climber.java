@@ -9,15 +9,12 @@ import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import io.excaliburfrc.robot.Constants.ClimberConstants;
-
 import java.util.function.BooleanSupplier;
 
 public class Climber extends SubsystemBase {
@@ -29,7 +26,7 @@ public class Climber extends SubsystemBase {
   private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, true, 0.95);
   private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, false, 0.85);
 
-  private static class ClimberSide{
+  private static class ClimberSide {
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
 
@@ -116,9 +113,9 @@ public class Climber extends SubsystemBase {
       BooleanSupplier pistonAngled,
       BooleanSupplier pistonStraight) {
     return new ParallelCommandGroup(
-         left.manualCommand(leftUp, leftDown),
-                   right.manualCommand(rightUp, rightDown),
-            pistonCommand(pistonAngled, pistonStraight));
+        left.manualCommand(leftUp, leftDown),
+        right.manualCommand(rightUp, rightDown),
+        pistonCommand(pistonAngled, pistonStraight));
   }
 
   public Command climberTuneCommand(
@@ -131,24 +128,23 @@ public class Climber extends SubsystemBase {
     return new ParallelCommandGroup(
         left.tuneCommand(leftUp, leftDown),
         right.tuneCommand(rightUp, rightDown),
-pistonCommand(pistonAngled, pistonStraight));
+        pistonCommand(pistonAngled, pistonStraight));
   }
 
-  private FunctionalCommand pistonCommand(BooleanSupplier pistonAngled, BooleanSupplier pistonStraight) {
+  private FunctionalCommand pistonCommand(
+      BooleanSupplier pistonAngled, BooleanSupplier pistonStraight) {
     return new FunctionalCommand(
-            () -> {
-            },
-            () -> {
-              if (pistonAngled.getAsBoolean()) {
-                anglerPiston.set(ANGLED);
-              }
-              if (pistonStraight.getAsBoolean()) {
-                anglerPiston.set(STRAIGHT);
-              }
-            },
-            __ -> {
-            },
-            () -> false);
+        () -> {},
+        () -> {
+          if (pistonAngled.getAsBoolean()) {
+            anglerPiston.set(ANGLED);
+          }
+          if (pistonStraight.getAsBoolean()) {
+            anglerPiston.set(STRAIGHT);
+          }
+        },
+        __ -> {},
+        () -> false);
   }
 
   public Command disableSoftLimits() {
