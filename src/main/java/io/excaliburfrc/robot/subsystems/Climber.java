@@ -114,9 +114,9 @@ public class Climber extends SubsystemBase {
       BooleanSupplier pistonAngled,
       BooleanSupplier pistonStraight) {
     return new ParallelCommandGroup(
-         left.manualCommand(leftUp, leftDown),
-                   right.manualCommand(rightUp, rightDown),
-            pistonCommand(pistonAngled, pistonStraight));
+        left.manualCommand(leftUp, leftDown),
+        right.manualCommand(rightUp, rightDown),
+        pistonCommand(pistonAngled, pistonStraight));
   }
 
   public Command climberTuneCommand(
@@ -129,22 +129,23 @@ public class Climber extends SubsystemBase {
     return new ParallelCommandGroup(
         left.tuneCommand(leftUp, leftDown),
         right.tuneCommand(rightUp, rightDown),
-pistonCommand(pistonAngled, pistonStraight));
+        pistonCommand(pistonAngled, pistonStraight));
   }
 
-  private FunctionalCommand pistonCommand(BooleanSupplier pistonAngled, BooleanSupplier pistonStraight) {
+  private FunctionalCommand pistonCommand(
+      BooleanSupplier pistonAngled, BooleanSupplier pistonStraight) {
     return new FunctionalCommand(
-            () -> {},
-            () -> {
-              if (pistonAngled.getAsBoolean()) {
-                anglerPiston.set(ANGLED);
-              }
-              if (pistonStraight.getAsBoolean()) {
-                anglerPiston.set(STRAIGHT);
-              }
-            },
-            __ -> {},
-            () -> false);
+        () -> {},
+        () -> {
+          if (pistonAngled.getAsBoolean()) {
+            anglerPiston.set(ANGLED);
+          }
+          if (pistonStraight.getAsBoolean()) {
+            anglerPiston.set(STRAIGHT);
+          }
+        },
+        __ -> {},
+        () -> false);
   }
 
   public Command disableSoftLimits() {

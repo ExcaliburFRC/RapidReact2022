@@ -16,10 +16,10 @@ public final class Constants {
   public static final class IntakeConstants {
     public static final int INTAKE_MOTOR_ID = 40; // PDP 4
     public static final int UPPER_MOTOR_ID = 41; // PDP 11
-    public static final int PING = 9;
-    public static final int ECHO = 8;
-    public static final int COLOR_LIMIT = 60;
-    public static final int SONIC_LIMIT = 69;
+    public static final int UPPER_PING = 9;
+    public static final int UPPER_ECHO = 8;
+    public static final int COLOR_LIMIT = 55;
+    public static final int SONIC_LIMIT = 110;
     public static final int MAX_BALLS = 2;
     public static final int FWD_CHANNEL = 3;
     public static final int REV_CHANNEL = 4;
@@ -31,11 +31,8 @@ public final class Constants {
     public static final int LEFT_MOTOR_ID = 30;
     public static final int RIGHT_MOTOR_ID = 31;
 
-    public static final double OPEN_LOOP_CLIMB_DUTY_CYCLE = 0.9;
-
     public static final float FORWARD_SOFT_LIMIT = 64.7f;
     public static final float REVERSE_SOFT_LIMIT = 2f;
-    public static final double CLOSED_HEIGHT = REVERSE_SOFT_LIMIT;
 
     public static final Value ANGLED = Value.kReverse;
     public static final Value STRAIGHT = Value.kForward;
@@ -57,7 +54,7 @@ public final class Constants {
     public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
     // 121.45182291666667;
-    public static final double FENDER_SHOT_RPM = 72;
+    public static final double FENDER_SHOT_RPM = 74;
     public static final double TOLERANCE = 2;
   }
 

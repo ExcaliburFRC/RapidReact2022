@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,8 +33,11 @@ public class Shooter extends SubsystemBase {
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV);
   private final PIDController pid = new PIDController(ShooterConstants.kP, 0, 0);
 
-  private Mode controlMode = Mode.OFF;
   private double velocity = 0;
+
+  final Trigger ballShotTrigger = new Trigger(() -> pid.getPositionError() > 5);
+
+  private Mode controlMode = Mode.OFF;
 
   public Shooter() {
     ValidateREVCAN(
@@ -79,6 +83,19 @@ public class Shooter extends SubsystemBase {
 
   public boolean isAtTargetVelocity() {
     return Math.abs(getVelocity() - pid.getSetpoint()) < ShooterConstants.TOLERANCE;
+  }
+
+  public Command ejectLow() {
+    return new StartEndCommand(
+        () -> {
+          controlMode = Mode.MANUAL;
+          leader.set(0.35);
+        },
+        () -> {
+          controlMode = Mode.OFF;
+          leader.set(0);
+        },
+        this);
   }
 
   public Command incrementTarget(int diff) {
@@ -147,6 +164,8 @@ public class Shooter extends SubsystemBase {
     builder.setSmartDashboardType("Subsystem");
     builder.addDoubleProperty("rps", currentTarget::get, null);
     builder.addDoubleProperty("velocity", this::getVelocity, null);
+    builder.addDoubleProperty("velError", pid::getPositionError, null);
+    builder.addBooleanProperty("peak", ballShotTrigger, null);
     builder.addDoubleProperty("targetVelocity", pid::getSetpoint, null);
     builder.addDoubleProperty("control effort", leader::getAppliedOutput, null);
     builder.addDoubleProperty("control current", leader::getOutputCurrent, null);
