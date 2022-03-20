@@ -1,7 +1,6 @@
 package io.excaliburfrc.robot.subsystems;
 
 import static io.excaliburfrc.lib.CAN.*;
-import static io.excaliburfrc.lib.TriggerUtils.Falling;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -10,7 +9,6 @@ import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -36,12 +34,10 @@ public class Shooter extends SubsystemBase {
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV);
   private final PIDController pid = new PIDController(ShooterConstants.kP, 0, 0);
 
-
   private double velocity = 0;
   private double lastVelocity = velocity;
 
-  final Trigger ballShotTrigger =
-      new Trigger(() -> velocity - lastVelocity > 1 && pid.getSetpoint() != 0);
+  final Trigger ballShotTrigger = new Trigger(() -> pid.getPositionError() > 5);
 
   private Mode controlMode = Mode.OFF;
 
@@ -156,7 +152,7 @@ public class Shooter extends SubsystemBase {
         break;
     }
 
-    SmartDashboard.putBoolean("ball shot trigger", ballShotTrigger.get());
+    //    SmartDashboard.putBoolean("ball shot trigger", ballShotTrigger.get());
     SmartDashboard.putNumber("difference", lastVelocity - getVelocity());
   }
 
@@ -174,6 +170,8 @@ public class Shooter extends SubsystemBase {
     builder.setSmartDashboardType("Subsystem");
     builder.addDoubleProperty("rps", currentTarget::get, null);
     builder.addDoubleProperty("velocity", this::getVelocity, null);
+    builder.addDoubleProperty("velError", pid::getPositionError, null);
+    builder.addBooleanProperty("peak", ballShotTrigger, null);
     builder.addDoubleProperty("targetVelocity", pid::getSetpoint, null);
     builder.addDoubleProperty("control effort", leader::getAppliedOutput, null);
     builder.addDoubleProperty("control current", leader::getOutputCurrent, null);

@@ -4,6 +4,7 @@ import static edu.wpi.first.wpilibj2.command.CommandGroupBase.sequence;
 import static io.excaliburfrc.lib.TriggerUtils.Falling;
 
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.lib.RepeatingCommand;
 import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
 
@@ -13,12 +14,13 @@ public class Superstructure extends SubsystemBase {
 
   public Command shootBallsCommand(LEDs leds) {
     return new ParallelDeadlineGroup(
-            shooter.accelerateFenderCommand(),
-            new RepeatingCommand(
-                sequence(
-                    new WaitUntilCommand(shooter::isAtTargetVelocity),
-                    intake.pullIntoShooter(shooter.ballShotTrigger))),
-            leds.setColorCommand(LedMode.VIOLET));
+        new WaitUntilCommand(intake::isEmpty),
+        shooter.accelerateFenderCommand(),
+        new RepeatingCommand(
+            sequence(
+                new WaitUntilCommand(new Trigger(shooter::isAtTargetVelocity).debounce(0.2)),
+                intake.pullIntoShooter(Falling(shooter.ballShotTrigger)))),
+        leds.setColorCommand(LedMode.VIOLET));
   }
 
   public Command intakeBallCommand() {

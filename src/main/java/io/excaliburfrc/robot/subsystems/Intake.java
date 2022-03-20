@@ -29,9 +29,13 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax upperMotor = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
   private final ColorSensorV3 intakeSensor = new ColorSensorV3(I2C.Port.kMXP);
-  final Trigger intakeBallTrigger = new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT);
-  private final Ultrasonic upperSensor = new Ultrasonic(PING, ECHO);
+  final Trigger intakeBallTrigger =
+      new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT).debounce(0.1);
+  private final Ultrasonic upperSensor = new Ultrasonic(UPPER_PING, UPPER_ECHO);
+  private final Ultrasonic ballShotSensor = new Ultrasonic(BALL_SHOT_PING, BALL_SHOT_ECHO);
   final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
+  //  final Trigger ballShotTrigger =
+  //      Falling(new Trigger(() -> ballShotSensor.getRangeMM() < BALL_SHOT_LIMIT));
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
@@ -91,10 +95,9 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   public Command pullIntoShooter(Trigger ballShotTrigger) {
     return new StartEndCommand(
-            () -> upperMotor.set(Speeds.upperShootDutyCycle),
-          () -> upperMotor.set(0),
-          this)
-        .until(ballShotTrigger).andThen(new WaitCommand(0.5))
+            () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
+        .until(ballShotTrigger)
+        //        .andThen(new WaitCommand(0.5))
         .andThen(ballCount::decrementAndGet);
   }
 
@@ -120,9 +123,11 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   public Command ejectFromIntake() {
     return new ConditionalCommand(
         new FunctionalCommand(
-              () -> {},
-              () -> {intakeMotor.set(Speeds.intakeEjectDutyCycle);},
-              interrupted -> intakeMotor.set(0),
+                () -> {},
+                () -> {
+                  intakeMotor.set(Speeds.intakeEjectDutyCycle);
+                },
+                interrupted -> intakeMotor.set(0),
                 intakeBallTrigger.negate(),
                 this)
             .andThen(ballCount::decrementAndGet),
@@ -139,16 +144,20 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   public Command rawEject() {
     return new StartEndCommand(
-        () -> {
-          intakePiston.set(Value.kReverse);
-          upperMotor.set(Speeds.upperEjectDutyCycle);
-          intakeMotor.set(Speeds.intakeEjectDutyCycle);
-        },
-        () -> {
-          upperMotor.set(0);
-          intakeMotor.set(0);
-        },
-        this).alongWith(new RepeatingCommand(new SequentialCommandGroup(new WaitUntilCommand(Falling(intakeBallTrigger))))).andThen(ballCount::decrementAndGet);
+            () -> {
+              intakePiston.set(Value.kReverse);
+              upperMotor.set(Speeds.upperEjectDutyCycle);
+              intakeMotor.set(Speeds.intakeEjectDutyCycle);
+            },
+            () -> {
+              upperMotor.set(0);
+              intakeMotor.set(0);
+            },
+            this)
+        .alongWith(
+            new RepeatingCommand(
+                new SequentialCommandGroup(new WaitUntilCommand(Falling(intakeBallTrigger)))))
+        .andThen(ballCount::decrementAndGet);
   }
 
   public Command manualCommand(
@@ -230,10 +239,8 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     static final double upperEjectDutyCycle = -0.2;
     static final double upperShootDutyCycle = 0.6;
 
-
     static final double intakeInDutyCycle = 0.3;
     static final double upperInDutyCycle = 0.1;
-
   }
 
   @Override
@@ -256,6 +263,8 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
     builder.addBooleanProperty("Intake Piston", () -> intakePiston.get() == Value.kForward, null);
+    //    builder.addBooleanProperty("Ball Shot", ballShotTrigger, null);
+    builder.addDoubleProperty("Ball Shot Sensor", ballShotSensor::getRangeMM, null);
   }
 
   public boolean isEmpty() {
