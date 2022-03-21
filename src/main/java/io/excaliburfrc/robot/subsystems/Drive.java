@@ -170,6 +170,12 @@ public class Drive extends SubsystemBase {
         right, ControlType.kVelocity, 0, feedforward.calculate(right), ArbFFUnits.kVoltage);
   }
 
+  public Command rotateToHub() {
+    return new PIDCommand(
+            rotationController, this::getAngleFromHub, 0, rot -> drive.arcadeDrive(0, rot), this)
+        .until(() -> rotationController.getPositionError() > 5);
+  }
+
   public Command followTrajectoryCommand(Trajectory trajectory) {
     return resetOdometryCommand(trajectory.getInitialPose())
         .andThen(

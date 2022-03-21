@@ -61,6 +61,10 @@ public class RobotContainer {
 
     new Button(armJoystick::getR2Button).toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
+    new Button(driveJoystick::getCircleButton)
+        .toggleWhenPressed(
+            drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
+
     // when intake is required
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
         .whenReleased(superstructure.intake.closePiston());
