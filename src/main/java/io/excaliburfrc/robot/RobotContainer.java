@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -73,15 +74,21 @@ public class RobotContainer {
 
     new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
-    climber
-        .climberManualCommand(
+    climber.setDefaultCommand(
+        climber.climberManualCommand(
             () -> armJoystick.getPOV() == 0,
             () -> armJoystick.getPOV() == 180,
             armJoystick::getTriangleButton,
             armJoystick::getCrossButton,
             () -> armJoystick.getPOV() == 90,
-            () -> armJoystick.getPOV() == 270)
-        .schedule();
+            () -> armJoystick.getPOV() == 270));
+
+    new Button(driveJoystick::getSquareButton)
+        .toggleWhenPressed(
+            new ConditionalCommand(
+                superstructure.intake.closePiston(),
+                superstructure.intake.openPiston(),
+                superstructure.intake::isOpen));
 
     new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
 
