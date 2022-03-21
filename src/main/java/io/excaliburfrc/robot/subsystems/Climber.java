@@ -145,7 +145,8 @@ public class Climber extends SubsystemBase {
           }
         },
         __ -> {},
-        () -> false);
+        () -> false,
+        this);
   }
 
   public Command disableSoftLimits() {

@@ -74,14 +74,15 @@ public class RobotContainer {
 
     new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
-    climber.setDefaultCommand(
-        climber.climberManualCommand(
+    climber
+        .climberManualCommand(
             () -> armJoystick.getPOV() == 0,
             () -> armJoystick.getPOV() == 180,
             armJoystick::getTriangleButton,
             armJoystick::getCrossButton,
             () -> armJoystick.getPOV() == 90,
-            () -> armJoystick.getPOV() == 270));
+            () -> armJoystick.getPOV() == 270)
+        .schedule();
 
     new Button(driveJoystick::getSquareButton)
         .toggleWhenPressed(
