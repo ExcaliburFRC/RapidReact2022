@@ -92,7 +92,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   public Command intakeTick() {
     return new StartEndCommand(
             () -> intakeMotor.set(Speeds.intakeInDutyCycle), () -> intakeMotor.set(0))
-        .until(Falling(intakeBallTrigger));
+        .until(intakeBallTrigger.negate());
   }
 
   public Command pullIntoShooter(Trigger ballShotTrigger) {
@@ -216,12 +216,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   @Override
-  public void periodic() {
-    SmartDashboard.putNumber("intakeSensor IR", intakeSensor.getIR());
-    SmartDashboard.putNumber("intakeSensor dist", intakeSensor.getProximity());
-    SmartDashboard.putNumber("red", intakeSensor.getRed());
-    SmartDashboard.putNumber("blue", intakeSensor.getBlue());
-  }
+  public void periodic() {}
 
   @Override
   public void initSendable(SendableBuilder builder) {
