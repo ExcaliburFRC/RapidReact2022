@@ -1,6 +1,5 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.lib.TriggerUtils.Falling;
 import static io.excaliburfrc.robot.Constants.IntakeConstants.*;
@@ -101,9 +100,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     return new ConditionalCommand(
         new FunctionalCommand(
                 () -> {},
-                () -> {
-                  intakeMotor.set(Speeds.intakeEjectDutyCycle);
-                },
+                () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
                 interrupted -> intakeMotor.set(0),
                 intakeBallTrigger.negate(),
                 this)

@@ -7,11 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import io.excaliburfrc.robot.commands.auto.FourBallAuto;
-import io.excaliburfrc.robot.commands.auto.checkTrajectory.Try1;
-import io.excaliburfrc.robot.commands.auto.checkTrajectory.TrySlalums;
 import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.auto.twoBalls.Cargo4Bottom;
@@ -39,16 +35,14 @@ public class RobotContainer {
   private final SendableChooser<Command> chooser = new SendableChooser<>();
 
   public RobotContainer() {
-    chooser.addOption(
-        "4Ball", new FourBallAuto(drive, superstructure, leds));
+    //    chooser.addOption(
+    //        "4Ball", new FourBallAuto(drive, superstructure, leds));
     chooser.addOption(
         "TopOut",
         new NoRamseteTopFender(drive, superstructure.intake, superstructure.shooter, leds));
     chooser.addOption(
         "BottomOut",
         new NoRamseteBottomFender(drive, superstructure.intake, superstructure.shooter, leds));
-    chooser.addOption("try path", new Try1(drive));
-    chooser.addOption("try slalum", new TrySlalums(drive));
     chooser.addOption("2BallsCargo4", new Cargo4Bottom(drive, superstructure, leds));
     chooser.addOption("2BallsCargo5", new Cargo5Bottom(drive, superstructure, leds));
     chooser.addOption("2BallsCargo6", new Cargo6Bottom(drive, superstructure, leds));
@@ -67,6 +61,10 @@ public class RobotContainer {
 
     new Button(armJoystick::getR2Button).toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
+    // when intake is required
+    new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
+        .whenReleased(superstructure.intake.closePiston());
+
     new Button(armJoystick::getL2Button).toggleWhenPressed(superstructure.intakeBallCommand());
 
     new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
@@ -81,7 +79,7 @@ public class RobotContainer {
             () -> armJoystick.getPOV() == 270)
         .schedule();
 
-    new Button(armJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
+    new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
@@ -99,36 +97,24 @@ public class RobotContainer {
     CommandScheduler.getInstance().clearButtons();
     CommandScheduler.getInstance().cancelAll();
 
-    superstructure.intake.setDefaultCommand(
-        superstructure.intake.manualCommand(
-            () -> armJoystick.getRawButton(2),
-            () -> armJoystick.getRawButton(4),
-            () -> armJoystick.getRawButton(5),
-            () -> armJoystick.getRawButton(6),
-            () -> armJoystick.getRawButtonPressed(8)));
-
     drive.setDefaultCommand(
         drive.arcadeDriveCommand(
             () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
-    new JoystickButton(armJoystick, 1).whenHeld(superstructure.shooter.accelerateFenderCommand());
-    new JoystickButton(armJoystick, 9).whenHeld(superstructure.shooter.manualCommand());
-
-    new JoystickButton(armJoystick, 12).whenHeld(superstructure.shootBallsCommand(leds));
 
     climber
-        .climberTuneCommand(
-            () -> driveJoystick.getPOV() == 0,
-            () -> driveJoystick.getPOV() == 180,
-            driveJoystick::getTriangleButton,
-            driveJoystick::getCrossButton,
-            () -> driveJoystick.getPOV() == 90,
-            () -> driveJoystick.getPOV() == 270)
+        .climberManualCommand(
+            armJoystick::getTriangleButton,
+            armJoystick::getCrossButton,
+            () -> armJoystick.getPOV() == 0,
+            () -> armJoystick.getPOV() == 180,
+            () -> armJoystick.getPOV() == 90,
+            () -> armJoystick.getPOV() == 270)
         .schedule();
+
+    new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
-
-    new Button(driveJoystick::getL1Button).whileActiveOnce(climber.disableSoftLimits());
 
     DriverStation.reportWarning("Manual!", false);
   }
