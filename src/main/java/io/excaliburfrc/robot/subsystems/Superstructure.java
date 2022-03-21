@@ -20,6 +20,7 @@ public class Superstructure {
             sequence(
                 new WaitUntilCommand(new Trigger(shooter::isAtTargetVelocity).debounce(0.2)),
                 intake.pullIntoShooter(Falling(shooter.ballShotTrigger)))),
+        sequence(new WaitUntilCommand(Falling(intake.upperBallTrigger)), intake.intakeTick()),
         leds.setColorCommand(LedMode.VIOLET));
   }
 

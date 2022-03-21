@@ -72,10 +72,10 @@ public class RobotContainer {
     climber
         .climberManualCommand(
             () -> armJoystick.getPOV() == 0,
-              () -> armJoystick.getPOV() == 180,
-              armJoystick::getTriangleButton,
-              armJoystick::getCrossButton,
-              () -> armJoystick.getPOV() == 90,
+            () -> armJoystick.getPOV() == 180,
+            armJoystick::getTriangleButton,
+            armJoystick::getCrossButton,
+            () -> armJoystick.getPOV() == 90,
             () -> armJoystick.getPOV() == 270)
         .schedule();
 

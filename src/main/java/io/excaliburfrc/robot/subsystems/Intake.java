@@ -89,6 +89,12 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .until(upperBallTrigger);
   }
 
+  public Command intakeTick() {
+    return new StartEndCommand(
+            () -> intakeMotor.set(Speeds.intakeInDutyCycle), () -> intakeMotor.set(0))
+        .until(Falling(intakeBallTrigger));
+  }
+
   public Command pullIntoShooter(Trigger ballShotTrigger) {
     return new StartEndCommand(
             () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
