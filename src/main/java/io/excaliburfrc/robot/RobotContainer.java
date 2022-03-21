@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import io.excaliburfrc.robot.commands.auto.noramsete.DontMove;
 import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.auto.twoBalls.Cargo4Bottom;
@@ -44,6 +45,7 @@ public class RobotContainer {
     chooser.addOption(
         "BottomOut",
         new NoRamseteBottomFender(drive, superstructure.intake, superstructure.shooter, leds));
+    chooser.addOption("DontMove", new DontMove(drive, superstructure.intake, superstructure.shooter, leds));
     chooser.addOption("2BallsCargo4", new Cargo4Bottom(drive, superstructure, leds));
     chooser.addOption("2Cargo5", new Cargo5Bottom(drive, superstructure, leds));
     chooser.addOption("2BallsCargo6", new Cargo6Bottom(drive, superstructure, leds));
