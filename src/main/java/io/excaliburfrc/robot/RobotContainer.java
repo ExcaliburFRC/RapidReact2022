@@ -44,7 +44,7 @@ public class RobotContainer {
         "BottomOut",
         new NoRamseteBottomFender(drive, superstructure.intake, superstructure.shooter, leds));
     chooser.addOption("2BallsCargo4", new Cargo4Bottom(drive, superstructure, leds));
-    chooser.addOption("2BallsCargo5", new Cargo5Bottom(drive, superstructure, leds));
+    chooser.addOption("2Cargo5", new Cargo5Bottom(drive, superstructure, leds));
     chooser.addOption("2BallsCargo6", new Cargo6Bottom(drive, superstructure, leds));
     SmartDashboard.putData("Autos", chooser);
   }
