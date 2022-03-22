@@ -24,8 +24,8 @@ public class Climber extends SubsystemBase {
           ClimberConstants.FORWARD_CHANNEL,
           ClimberConstants.REVERSE_CHANNEL);
 
-  private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, true, 0.95);
-  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, false, 0.85);
+  private final ClimberSide left = new ClimberSide(LEFT_MOTOR_ID, true, 0.9);
+  private final ClimberSide right = new ClimberSide(RIGHT_MOTOR_ID, false, 0.9);
 
   private static class ClimberSide {
     private final CANSparkMax motor;
@@ -47,20 +47,21 @@ public class Climber extends SubsystemBase {
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
           motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
           motor.setSoftLimit(SoftLimitDirection.kReverse, REVERSE_SOFT_LIMIT),
-          motor.enableSoftLimit(SoftLimitDirection.kReverse, true),
+          motor.enableSoftLimit(SoftLimitDirection.kReverse, false),
           motor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.FORWARD_SOFT_LIMIT),
-          motor.enableSoftLimit(SoftLimitDirection.kForward, true));
+          motor.enableSoftLimit(SoftLimitDirection.kForward, false));
       motor.setInverted(isMotorReversed);
 
       encoder.setPosition(0);
     }
 
-    public Command manualCommand(BooleanSupplier up, BooleanSupplier down) {
+    public Command manualCommand(
+        BooleanSupplier up, BooleanSupplier down, BooleanSupplier fastButton) {
       return new FunctionalCommand(
           () -> {},
           () -> {
             if (up.getAsBoolean()) {
-              motor.set(Mspeed / 4);
+              motor.set(fastButton.getAsBoolean() ? Mspeed / 1.5 : Mspeed / 4);
             } else if (down.getAsBoolean()) {
               motor.set(-Mspeed);
             } else {
@@ -112,10 +113,11 @@ public class Climber extends SubsystemBase {
       BooleanSupplier rightUp,
       BooleanSupplier rightDown,
       BooleanSupplier pistonAngled,
-      BooleanSupplier pistonStraight) {
+      BooleanSupplier pistonStraight,
+      BooleanSupplier fastButton) {
     return new ParallelCommandGroup(
-        left.manualCommand(leftUp, leftDown),
-        right.manualCommand(rightUp, rightDown),
+        left.manualCommand(leftUp, leftDown, fastButton),
+        right.manualCommand(rightUp, rightDown, fastButton),
         pistonCommand(pistonAngled, pistonStraight));
   }
 

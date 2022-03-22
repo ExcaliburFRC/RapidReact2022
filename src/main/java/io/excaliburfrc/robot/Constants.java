@@ -78,7 +78,7 @@ public final class Constants {
     public static final double kP = 0.045064;
     public static final DifferentialDriveKinematics driveKinematics =
         new DifferentialDriveKinematics(0.70);
-    public static final double kP_ang = 1.0 / 180.0;
+    public static final double kP_ang = 0.006666666666666667;
   }
 
   public static class LedsConstants {

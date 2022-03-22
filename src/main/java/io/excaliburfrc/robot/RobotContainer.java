@@ -45,7 +45,8 @@ public class RobotContainer {
     chooser.addOption(
         "BottomOut",
         new NoRamseteBottomFender(drive, superstructure.intake, superstructure.shooter, leds));
-    chooser.addOption("DontMove", new DontMove(drive, superstructure.intake, superstructure.shooter, leds));
+    chooser.addOption(
+        "DontMove", new DontMove(drive, superstructure.intake, superstructure.shooter, leds));
     chooser.addOption("2BallsCargo4", new Cargo4Bottom(drive, superstructure, leds));
     chooser.addOption("2Cargo5", new Cargo5Bottom(drive, superstructure, leds));
     chooser.addOption("2BallsCargo6", new Cargo6Bottom(drive, superstructure, leds));
@@ -83,7 +84,8 @@ public class RobotContainer {
             armJoystick::getTriangleButton,
             armJoystick::getCrossButton,
             () -> armJoystick.getPOV() == 90,
-            () -> armJoystick.getPOV() == 270)
+            () -> armJoystick.getPOV() == 270,
+            armJoystick::getR1Button)
         .schedule();
 
     new Button(driveJoystick::getSquareButton)
@@ -93,7 +95,7 @@ public class RobotContainer {
                 superstructure.intake.openPiston(),
                 superstructure.intake::isOpen));
 
-    new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
+    //    new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
@@ -122,7 +124,8 @@ public class RobotContainer {
             () -> armJoystick.getPOV() == 0,
             () -> armJoystick.getPOV() == 180,
             () -> armJoystick.getPOV() == 90,
-            () -> armJoystick.getPOV() == 270)
+            () -> armJoystick.getPOV() == 270,
+            armJoystick::getR1Button)
         .schedule();
 
     new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
