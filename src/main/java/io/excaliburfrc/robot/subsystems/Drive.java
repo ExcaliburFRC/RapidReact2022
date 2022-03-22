@@ -83,6 +83,12 @@ public class Drive extends SubsystemBase {
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
+
+        leftLeader.setSmartCurrentLimit(50),
+        leftFollower.setSmartCurrentLimit(50),
+        rightLeader.setSmartCurrentLimit(50),
+        rightFollower.setSmartCurrentLimit(50),
+
         leftEncoder.setPositionConversionFactor(MOTOR_ROTATION_TO_METERS),
         rightEncoder.setPositionConversionFactor(MOTOR_ROTATION_TO_METERS),
 
