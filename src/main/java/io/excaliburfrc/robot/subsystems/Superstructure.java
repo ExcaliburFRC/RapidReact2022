@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.lib.RepeatingCommand;
 import io.excaliburfrc.robot.subsystems.LEDs.LedMode;
 
-public class Superstructure extends SubsystemBase {
+public class Superstructure {
   public final Intake intake = new Intake();
   public final Shooter shooter = new Shooter();
 
@@ -20,6 +20,7 @@ public class Superstructure extends SubsystemBase {
             sequence(
                 new WaitUntilCommand(new Trigger(shooter::isAtTargetVelocity).debounce(0.2)),
                 intake.pullIntoShooter(Falling(shooter.ballShotTrigger)))),
+        sequence(intake.intakeTick()),
         leds.setColorCommand(LedMode.VIOLET));
   }
 
@@ -52,18 +53,6 @@ public class Superstructure extends SubsystemBase {
   public Command ejectBallCommand() {
     return intake.rawEject();
   }
-
-  public Command closePistonCommand() {
-    return intake.closePiston();
-  }
-
-  public Command openPistonCommand() {
-    return intake.openPiston();
-  }
-
-  //  public Command ejectBallCommand() {
-  //    return intake.rawEject();
-  //  }
 
   public Command resetBallCounterCommand(int n) {
     return new InstantCommand(() -> intake.resetBallCounter(n));

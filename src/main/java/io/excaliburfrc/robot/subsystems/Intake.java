@@ -1,6 +1,5 @@
 package io.excaliburfrc.robot.subsystems;
 
-import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 import static io.excaliburfrc.lib.CAN.*;
 import static io.excaliburfrc.lib.TriggerUtils.Falling;
 import static io.excaliburfrc.robot.Constants.IntakeConstants.*;
@@ -14,7 +13,6 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.lib.RepeatingCommand;
@@ -90,6 +88,12 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .until(upperBallTrigger);
   }
 
+  public Command intakeTick() {
+    return new StartEndCommand(
+            () -> intakeMotor.set(Speeds.intakeInDutyCycle), () -> intakeMotor.set(0))
+        .until(intakeBallTrigger.negate());
+  }
+
   public Command pullIntoShooter(Trigger ballShotTrigger) {
     return new StartEndCommand(
             () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
@@ -101,9 +105,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     return new ConditionalCommand(
         new FunctionalCommand(
                 () -> {},
-                () -> {
-                  intakeMotor.set(Speeds.intakeEjectDutyCycle);
-                },
+                () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
                 interrupted -> intakeMotor.set(0),
                 intakeBallTrigger.negate(),
                 this)
@@ -145,8 +147,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
           else if (upperOut.getAsBoolean()) upperMotor.set(-Speeds.upperInDutyCycle);
           else upperMotor.set(0);
           if (pistonState.getAsBoolean())
-            intakePiston.set(
-                intakePiston.get() == Value.kForward ? Value.kReverse : Value.kForward);
+            intakePiston.set(isOpen() ? Value.kReverse : Value.kForward);
         },
         this);
   }
@@ -214,12 +215,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   @Override
-  public void periodic() {
-    SmartDashboard.putNumber("intakeSensor IR", intakeSensor.getIR());
-    SmartDashboard.putNumber("intakeSensor dist", intakeSensor.getProximity());
-    SmartDashboard.putNumber("red", intakeSensor.getRed());
-    SmartDashboard.putNumber("blue", intakeSensor.getBlue());
-  }
+  public void periodic() {}
 
   @Override
   public void initSendable(SendableBuilder builder) {
@@ -232,7 +228,11 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Intake Cargo", intakeBallTrigger, null);
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
-    builder.addBooleanProperty("Intake Piston", () -> intakePiston.get() == Value.kForward, null);
+    builder.addBooleanProperty("Intake Piston", this::isOpen, null);
+  }
+
+  public boolean isOpen() {
+    return intakePiston.get() == Value.kForward;
   }
 
   public boolean isEmpty() {

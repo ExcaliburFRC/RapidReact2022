@@ -5,23 +5,28 @@ import static io.excaliburfrc.robot.Constants.DrivetrainConstants.*;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -44,11 +49,18 @@ public class Drive extends SubsystemBase {
   private final RelativeEncoder rightEncoder = rightLeader.getEncoder();
   private final RelativeEncoder leftEncoder = leftLeader.getEncoder();
 
+  private final SparkMaxPIDController leftController = leftLeader.getPIDController();
+  private final SparkMaxPIDController rightController = rightLeader.getPIDController();
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
+
+  private final PIDController rotationController = new PIDController(kP_ang, 0, 0);
+
   private final DifferentialDrive drive = new DifferentialDrive(leftLeader, rightLeader);
 
   private final DifferentialDriveOdometry odometry;
   private final Field2d field = new Field2d();
   private final AHRS gyro = new AHRS();
+  private final RamseteController ramseteController = new RamseteController();
 
   public Drive() {
     ValidateREVCAN(
@@ -71,6 +83,10 @@ public class Drive extends SubsystemBase {
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DEFAULT),
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         rightLeader.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DEFAULT),
+        leftLeader.setSmartCurrentLimit(50),
+        leftFollower.setSmartCurrentLimit(50),
+        rightLeader.setSmartCurrentLimit(50),
+        rightFollower.setSmartCurrentLimit(50),
         leftEncoder.setPositionConversionFactor(MOTOR_ROTATION_TO_METERS),
         rightEncoder.setPositionConversionFactor(MOTOR_ROTATION_TO_METERS),
 
@@ -94,6 +110,7 @@ public class Drive extends SubsystemBase {
 
     odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
     drive.setSafetyEnabled(false);
+    rotationController.enableContinuousInput(-180, 180);
   }
 
   public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
@@ -131,6 +148,8 @@ public class Drive extends SubsystemBase {
   public void initSendable(SendableBuilder builder) {
     SendableRegistry.remove(gyro);
     SendableRegistry.remove(drive);
+    builder.addDoubleProperty(
+        "gyro", () -> odometry.getPoseMeters().getRotation().getDegrees(), null);
     SmartDashboard.putData("Field", field);
     builder.addDoubleProperty("distance from hub", this::getDistanceFromHub, null);
     builder.addDoubleProperty("angle turn to hub", this::getAngleFromHub, null);
@@ -146,5 +165,40 @@ public class Drive extends SubsystemBase {
     double Dx = HUB_POS.getX() - myPos.getTranslation().getX();
     double Dy = HUB_POS.getY() - myPos.getTranslation().getY();
     return new Rotation2d(Dy, Dx).minus(myPos.getRotation()).getDegrees();
+  }
+
+  public void achieveVelocity(double left, double right) {
+    leftController.setReference(
+        left, ControlType.kVelocity, 0, feedforward.calculate(left), ArbFFUnits.kVoltage);
+    rightController.setReference(
+        right, ControlType.kVelocity, 0, feedforward.calculate(right), ArbFFUnits.kVoltage);
+  }
+
+  public Command rotateToHub() {
+    return new PIDCommand(
+            rotationController, this::getAngleFromHub, 0, rot -> drive.arcadeDrive(0, rot), this)
+        .until(() -> rotationController.getPositionError() > 5);
+  }
+
+  public Command followTrajectoryCommand(Trajectory trajectory) {
+    return resetOdometryCommand(trajectory.getInitialPose())
+        .andThen(
+            new RamseteCommand(
+                trajectory,
+                odometry::getPoseMeters,
+                ramseteController,
+                driveKinematics,
+                this::achieveVelocity,
+                this));
+  }
+
+  public Command rotateToAngleCommand(double degrees) {
+    return new PIDCommand(
+            rotationController,
+            () -> odometry.getPoseMeters().getRotation().getDegrees(),
+            degrees,
+            output -> drive.arcadeDrive(0, output),
+            this)
+        .until(new Trigger(() -> rotationController.getPositionError() < 5).debounce(0.1));
   }
 }
