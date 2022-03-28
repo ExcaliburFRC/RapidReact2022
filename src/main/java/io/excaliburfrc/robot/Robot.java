@@ -84,6 +84,5 @@ public class Robot extends TimedRobot {
   public void testInit() {
     LiveWindow.setEnabled(false);
     CommandScheduler.getInstance().enable();
-    m_robotContainer.manualButton();
   }
 }
