@@ -1,49 +1,56 @@
 {
   "NetworkTables": {
     "LiveWindow": {
-      "Drive": {
+      "Intake": {
         "open": false
       },
       "Shooter": {
-        "open": true
+        "open": false
       },
       "Ungrouped": {
         "Scheduler": {
           "open": false
-        },
+        }
+      }
+    },
+    "SmartDashboard": {
+      "Field": {
+        "open": true
+      },
+      "field": {
         "open": false
       },
       "open": true
     },
-    "SmartDashboard": {
-      "Field": {
-        "open": false
-      },
-      "field": {
-        "open": false
-      }
-    },
     "types": {
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Climber": "Subsystem",
-      "/LiveWindow/Drive": "Subsystem",
       "/LiveWindow/Intake": "Subsystem",
       "/LiveWindow/Shooter": "Subsystem",
-      "/LiveWindow/Superstructure": "Subsystem",
       "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
-      "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
       "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
-      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
       "/SmartDashboard/Autos": "String Chooser",
       "/SmartDashboard/Field": "Field2d"
     },
     "windows": {
+      "/SmartDashboard/Autos": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Field": {
+        "Robot": {
+          "length": 0.699999988079071,
+          "width": 0.699999988079071
+        },
+        "height": 8.229999542236328,
+        "image": "C:\\Users\\student\\RapidReact2022\\field22.png",
         "traj": {
           "arrowSize": 0,
           "style": ""
         },
+        "width": 16.459999084472656,
         "window": {
           "visible": true
         }
@@ -51,83 +58,6 @@
     }
   },
   "NetworkTables Settings": {
-    "mode": "Client",
-    "serverTeam": "6738"
-  },
-  "NetworkTables View": {
-    "visible": false
-  },
-  "Plots": {
-    "Plot <0>": {
-      "plots": [
-        {
-          "axis": [
-            {
-              "label": "rot/s",
-              "lockMax": true,
-              "lockMin": true,
-              "max": 200.0
-            },
-            {
-              "label": "duty cycle",
-              "lockMax": true,
-              "lockMin": true,
-              "max": 1.1
-            },
-            {
-              "label": "amps",
-              "lockMax": true,
-              "lockMin": true,
-              "max": 81.0
-            }
-          ],
-          "height": 759,
-          "series": [
-            {
-              "color": [
-                0.2980392277240753,
-                0.44705885648727417,
-                0.6901960968971252,
-                1.0
-              ],
-              "id": "NT:/LiveWindow/Shooter/velocity"
-            },
-            {
-              "color": [
-                0.8666667342185974,
-                0.5176470875740051,
-                0.32156863808631897,
-                1.0
-              ],
-              "id": "NT:/LiveWindow/Shooter/targetVelocity"
-            },
-            {
-              "color": [
-                0.3333333432674408,
-                0.658823549747467,
-                0.4078431725502014,
-                1.0
-              ],
-              "id": "NT:/LiveWindow/Shooter/control effort"
-            },
-            {
-              "color": [
-                0.9578059315681458,
-                0.9459375739097595,
-                0.020206892862915993,
-                1.0
-              ],
-              "id": "NT:/LiveWindow/Shooter/control current",
-              "marker": "Up"
-            }
-          ],
-          "yaxis2": true,
-          "yaxis3": true
-        }
-      ],
-      "window": {
-        "visible": false
-      }
-    }
+    "mode": "Client"
   }
 }

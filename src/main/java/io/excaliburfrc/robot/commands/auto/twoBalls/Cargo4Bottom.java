@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import io.excaliburfrc.robot.subsystems.*;
 
 public class Cargo4Bottom extends SequentialCommandGroup {
-  private static final Pose2d START = new Pose2d(7.7, 1.9, degrees(260));
-  private static final Pose2d BOTTOM_SHOOT = new Pose2d(7.5, 2.82, degrees(70));
+  private static final Pose2d START = new Pose2d(7.579407, 1.767444, degrees(272.000000));
+  private static final Pose2d BOTTOM_SHOOT = new Pose2d(7.644466, 3.025257, degrees(70.000000));
 
   public Cargo4Bottom(Drive drive, Superstructure superstructure, LEDs leds) {
     super(
