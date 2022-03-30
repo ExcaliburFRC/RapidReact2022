@@ -8,13 +8,13 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.commands.auto.noramsete.DontMove;
 import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteBottomFender;
 import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.auto.twoBalls.Cargo4Bottom;
 import io.excaliburfrc.robot.commands.auto.twoBalls.Cargo5Bottom;
 import io.excaliburfrc.robot.commands.auto.twoBalls.Cargo6Bottom;
+import io.excaliburfrc.robot.commands.auto.twoBalls.HumanPlayerTerminal;
 import io.excaliburfrc.robot.subsystems.*;
 
 /**
@@ -49,6 +49,7 @@ public class RobotContainer {
     chooser.addOption("2BallsCargo4", new Cargo4Bottom(drive, superstructure, leds));
     chooser.addOption("2Cargo5", new Cargo5Bottom(drive, superstructure, leds));
     chooser.addOption("2BallsCargo6", new Cargo6Bottom(drive, superstructure, leds));
+    chooser.addOption("HP", new HumanPlayerTerminal(drive, superstructure, leds));
     SmartDashboard.putData("Autos", chooser);
   }
 
@@ -58,16 +59,16 @@ public class RobotContainer {
 
     drive.setDefaultCommand(
         drive.arcadeDriveCommand(
-            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, ()-> false));
+            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, () -> false));
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new Button(driveJoystick::getR2Button).toggleWhenPressed(superstructure.shootBallsCommand(leds));
+    new Button(driveJoystick::getR2Button)
+        .toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
-
-//    new Button(driveJoystick::getCircleButton)
-//        .toggleWhenPressed(
-//            drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
+    //    new Button(driveJoystick::getCircleButton)
+    //        .toggleWhenPressed(
+    //            drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
 
     // when intake is required
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
@@ -97,11 +98,11 @@ public class RobotContainer {
 
     //    new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
 
-    new Button(()-> driveJoystick.getRawButton(12))
+    new Button(() -> driveJoystick.getTouchpadPressed())
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
-//    new POVButton(driveJoystick, 0).whenPressed(superstructure.shooter.incrementTarget(1));
-//    new POVButton(driveJoystick, 180).whenPressed(superstructure.shooter.incrementTarget(-1));
+    //    new POVButton(driveJoystick, 0).whenPressed(superstructure.shooter.incrementTarget(1));
+    //    new POVButton(driveJoystick, 180).whenPressed(superstructure.shooter.incrementTarget(-1));
 
     new Button(driveJoystick::getOptionsButton)
         .toggleWhenPressed(superstructure.intake.allowCommand());

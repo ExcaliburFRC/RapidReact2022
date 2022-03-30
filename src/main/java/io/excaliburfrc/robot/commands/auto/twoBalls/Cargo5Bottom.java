@@ -3,7 +3,6 @@ package io.excaliburfrc.robot.commands.auto.twoBalls;
 import static io.excaliburfrc.robot.commands.auto.Trajectories.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import io.excaliburfrc.robot.subsystems.*;
 
@@ -17,8 +16,7 @@ public class Cargo5Bottom extends SequentialCommandGroup {
         drive.resetOdometryCommand(START),
         deadline(
             drive.followTrajectoryCommand(
-                generateTrajectory(
-                    START, innerWaypoints(OUR_CARGO_5), BOTTOM_SHOOT, FORWARD())),
+                generateTrajectory(START, innerWaypoints(OUR_CARGO_5), BOTTOM_SHOOT, FORWARD())),
             superstructure.intakeBallCommand()),
         superstructure.shootBallsCommand(leds));
   }

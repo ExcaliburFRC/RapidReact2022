@@ -41,16 +41,16 @@
       },
       "/SmartDashboard/Field": {
         "Robot": {
-          "length": 0.699999988079071,
-          "width": 0.699999988079071
+          "length": 0.6999999269843101,
+          "width": 0.6999999269843101
         },
-        "height": 8.229999542236328,
+        "height": 8.229997665062546,
         "image": "C:\\Users\\student\\RapidReact2022\\field22.png",
         "traj": {
           "arrowSize": 0,
           "style": ""
         },
-        "width": 16.459999084472656,
+        "width": 16.459995359927415,
         "window": {
           "visible": true
         }
