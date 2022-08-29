@@ -25,7 +25,6 @@ import io.excaliburfrc.robot.subsystems.*;
  */
 public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
-  private final PS4Controller armJoystick = new PS4Controller(1);
   // The robot's subsystems and commands are defined here...
   private final Superstructure superstructure = new Superstructure();
   private final Climber climber = new Climber();
@@ -59,49 +58,49 @@ public class RobotContainer {
 
     drive.setDefaultCommand(
         drive.arcadeDriveCommand(
-            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
+            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, ()-> false));
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new Button(armJoystick::getR2Button).toggleWhenPressed(superstructure.shootBallsCommand(leds));
+    new Button(driveJoystick::getR2Button).toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
-    new Button(driveJoystick::getCircleButton)
-        .toggleWhenPressed(
-            drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
+//    new Button(driveJoystick::getCircleButton)
+//        .toggleWhenPressed(
+//            drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
 
     // when intake is required
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
         .whenReleased(superstructure.intake.closePiston());
 
-    new Button(armJoystick::getL2Button).toggleWhenPressed(superstructure.intakeBallCommand());
+    new Button(driveJoystick::getL2Button).toggleWhenPressed(superstructure.intakeBallCommand());
 
-    new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
+    new Button(driveJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
     climber
         .climberManualCommand(
-            () -> armJoystick.getPOV() == 0,
-            () -> armJoystick.getPOV() == 180,
-            armJoystick::getTriangleButton,
-            armJoystick::getCrossButton,
-            () -> armJoystick.getPOV() == 90,
-            () -> armJoystick.getPOV() == 270,
-            armJoystick::getR1Button)
+            () -> driveJoystick.getPOV() == 0,
+            () -> driveJoystick.getPOV() == 180,
+            driveJoystick::getTriangleButton,
+            driveJoystick::getCrossButton,
+            () -> driveJoystick.getPOV() == 90,
+            () -> driveJoystick.getPOV() == 270,
+            driveJoystick::getR1Button)
         .schedule();
 
-    new Button(driveJoystick::getSquareButton)
-        .toggleWhenPressed(
-            new ConditionalCommand(
-                superstructure.intake.closePiston(),
-                superstructure.intake.openPiston(),
-                superstructure.intake::isOpen));
+//    new Button(driveJoystick::getSquareButton)
+//        .toggleWhenPressed(
+//            new ConditionalCommand(
+//                superstructure.intake.closePiston(),
+//                superstructure.intake.openPiston(),
+//                superstructure.intake::isOpen));
 
     //    new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(driveJoystick::getShareButton)
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
-    new POVButton(driveJoystick, 0).whenPressed(superstructure.shooter.incrementTarget(1));
-    new POVButton(driveJoystick, 180).whenPressed(superstructure.shooter.incrementTarget(-1));
+    new Button(driveJoystick::getCircleButtonPressed).whenPressed(superstructure.shooter.incrementTarget(1));
+    new Button(driveJoystick::getSquareButtonPressed).whenPressed(superstructure.shooter.incrementTarget(-1));
 
     new Button(driveJoystick::getOptionsButton)
         .toggleWhenPressed(superstructure.intake.allowCommand());
@@ -109,32 +108,32 @@ public class RobotContainer {
     DriverStation.reportWarning("Buttons!", false);
   }
 
-  void manualButton() {
-    CommandScheduler.getInstance().clearButtons();
-    CommandScheduler.getInstance().cancelAll();
-
-    drive.setDefaultCommand(
-        drive.arcadeDriveCommand(
-            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
-
-    climber
-        .climberManualCommand(
-            armJoystick::getTriangleButton,
-            armJoystick::getCrossButton,
-            () -> armJoystick.getPOV() == 0,
-            () -> armJoystick.getPOV() == 180,
-            () -> armJoystick.getPOV() == 90,
-            () -> armJoystick.getPOV() == 270,
-            armJoystick::getR1Button)
-        .schedule();
-
-    new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
-
-    new Button(driveJoystick::getShareButton)
-        .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
-
-    DriverStation.reportWarning("Manual!", false);
-  }
+  void manualButton() {}
+//    CommandScheduler.getInstance().clearButtons();
+//    CommandScheduler.getInstance().cancelAll();
+//
+//    drive.setDefaultCommand(
+//        drive.arcadeDriveCommand(
+//            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
+//
+//    climber
+//        .climberManualCommand(
+//            armJoystick::getTriangleButton,
+//            armJoystick::getCrossButton,
+//            () -> armJoystick.getPOV() == 0,
+//            () -> armJoystick.getPOV() == 180,
+//            () -> armJoystick.getPOV() == 90,
+//            () -> armJoystick.getPOV() == 270,
+//            armJoystick::getR1Button)
+//        .schedule();
+//
+//    new Button(armJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
+//
+//    new Button(driveJoystick::getShareButton)
+//        .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+//
+//    DriverStation.reportWarning("Manual!", false);
+//  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
