@@ -67,7 +67,7 @@ public class Shooter extends SubsystemBase {
   public Command manualCommand() {
     return new FunctionalCommand(
         () -> controlMode = Mode.MANUAL,
-        () -> leader.set(0.6738),
+        () -> leader.set(0.1),
         __ -> leader.set(0),
         () -> false,
         this);

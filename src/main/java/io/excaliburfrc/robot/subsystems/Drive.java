@@ -111,6 +111,7 @@ public class Drive extends SubsystemBase {
     odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
     drive.setSafetyEnabled(false);
     rotationController.enableContinuousInput(-180, 180);
+    drive.setMaxOutput(0.2);
   }
 
   public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
