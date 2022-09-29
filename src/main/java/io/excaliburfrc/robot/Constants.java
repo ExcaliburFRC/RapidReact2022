@@ -56,7 +56,7 @@ public final class Constants {
 
     // 121.45182291666667;
     public static final double FENDER_SHOT_RPM = 74;
-    public static final double TOLERANCE = 2;
+    public static final double TOLERANCE = 4;
   }
 
   public static class DrivetrainConstants {

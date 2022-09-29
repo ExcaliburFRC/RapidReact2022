@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import io.excaliburfrc.robot.commands.auto.oneBall.ballFive;
+import io.excaliburfrc.robot.commands.auto.oneBall.ballFour;
 import io.excaliburfrc.robot.commands.auto.twoBalls.fiveFour;
 import io.excaliburfrc.robot.subsystems.*;
 
@@ -72,6 +74,12 @@ public class RobotContainer {
 
     new Button(driveJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
+//    new Button(()-> driveJoystick.getTriangleButton() && driveJoystick.getPOV() == 0)
+//          .toggleWhenPressed(
+//                new StartEndCommand(
+//                      ()-> drive.setMaxOutput(0.2),
+//                      ()-> drive.setMaxOutput(1)));
+
     climber
         .climberManualCommand(
             () -> driveJoystick.getPOV() == 0,
@@ -137,6 +145,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return new fiveFour(drive, leds, superstructure);
+//    return new fiveFour(drive, leds, superstructure);
+    return new ballFour(drive, leds, superstructure);
   }
 }
