@@ -29,17 +29,20 @@ public class RobotContainer {
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
   private final SendableChooser<Command> chooser = new SendableChooser<>();
-  private final SendableChooser<Command> initialBallCounter = new SendableChooser<>();
+  public final SendableChooser<Integer> initialBallCounter = new SendableChooser<>();
 
   public RobotContainer() {
-    //    chooser.addOption(
-    //        "4Ball", new FourBallAuto(drive, superstructure, leds));
+        chooser.addOption(
+            "fiveFour", new fiveFour(drive, leds, superstructure));
+        chooser.addOption(
+            "ballFive", new ballFive(drive, leds, superstructure));
+        chooser.addOption(
+            "ballFour", new ballFour(drive, leds, superstructure));
+
     SmartDashboard.putData("Autos", chooser);
 
-    initialBallCounter.addOption(
-        "1", new InstantCommand(() -> superstructure.intake.resetBallCounter(1)));
-    initialBallCounter.addOption(
-        "2", new InstantCommand(() -> superstructure.intake.resetBallCounter(2)));
+    initialBallCounter.addOption("1", 1);
+    initialBallCounter.addOption("2", 2);
 
     SmartDashboard.putData("initial balls", initialBallCounter);
   }
@@ -139,13 +142,19 @@ public class RobotContainer {
     DriverStation.reportWarning("Manual!", false);
   }
 
+  public void setBallCount(int n){
+    superstructure.intake.resetBallCounter(n);
+  }
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-//    return new fiveFour(drive, leds, superstructure);
-    return new ballFour(drive, leds, superstructure);
+    return chooser.getSelected();
+  }
+  public int getInitBalls() {
+    return initialBallCounter.getSelected().intValue();
   }
 }
