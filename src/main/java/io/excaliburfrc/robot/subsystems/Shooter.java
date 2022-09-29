@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.ShooterConstants;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
   private final AtomicInteger currentTarget =
@@ -56,7 +57,7 @@ public class Shooter extends SubsystemBase {
         follower.setPeriodicFramePeriod(PeriodicFrame.kStatus0, StatusFramePeriods.DO_NOT_SEND),
         follower.setPeriodicFramePeriod(PeriodicFrame.kStatus1, StatusFramePeriods.DO_NOT_SEND),
         follower.setPeriodicFramePeriod(PeriodicFrame.kStatus2, StatusFramePeriods.DO_NOT_SEND),
-        leader.setSmartCurrentLimit(80),
+        leader.setSmartCurrentLimit(60),
         // setup following
         follower.follow(leader));
     leader.setInverted(true);
@@ -64,10 +65,10 @@ public class Shooter extends SubsystemBase {
     encoder.setDistancePerPulse(ShooterConstants.ROTATIONS_PER_PULSE);
   }
 
-  public Command manualCommand() {
+  public Command manualCommand(DoubleSupplier speed) {
     return new FunctionalCommand(
         () -> controlMode = Mode.MANUAL,
-        () -> leader.set(0.6738),
+        () -> leader.set(speed.getAsDouble()),
         __ -> leader.set(0),
         () -> false,
         this);
