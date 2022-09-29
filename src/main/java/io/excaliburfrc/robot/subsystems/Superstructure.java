@@ -51,7 +51,7 @@ public class Superstructure {
   }
 
   public Command ejectBallCommand() {
-    return intake.rawEject();
+    return intake.rawEject().withTimeout(0.8);
   }
 
   public Command resetBallCounterCommand(int n) {

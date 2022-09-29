@@ -20,6 +20,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -28,6 +30,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
+
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -113,6 +117,10 @@ public class Drive extends SubsystemBase {
     rotationController.enableContinuousInput(-180, 180);
   }
 
+  public Command setMaxOutput(double output){
+    return new InstantCommand(()-> drive.setMaxOutput(output));
+  }
+
   public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return arcadeDriveCommand(xSpeed, zRotation, () -> false);
   }
@@ -190,6 +198,15 @@ public class Drive extends SubsystemBase {
                 driveKinematics,
                 this::achieveVelocity,
                 this));
+  }
+
+  public Command followTrajectoryCommand(
+        Pose2d start,
+        List<Translation2d> interiorWaypoints,
+        Pose2d end,
+        TrajectoryConfig config){
+    return followTrajectoryCommand(TrajectoryGenerator.generateTrajectory(
+          start, interiorWaypoints, end, config));
   }
 
   public Command rotateToAngleCommand(double degrees) {

@@ -20,7 +20,7 @@ public enum Trajectories {
   public static final Translation2d THEIR_CARGO_3 = new Translation2d(11.66, 2.03);
   public static final Translation2d OUR_CARGO_3 = new Translation2d(10.6, 0.93);
   public static final Translation2d THEIR_CARGO_4 = new Translation2d(9.23, 0.3);
-  public static final Translation2d OUR_CARGO_4 = new Translation2d(7.7, 0.3);
+  public static final Translation2d OUR_CARGO_4 = new Translation2d(7.672, 0.269);
   public static final Translation2d OUR_CARGO_5 = new Translation2d(5.18, 1.9);
   public static final Translation2d THEIR_CARGO_5 = new Translation2d(4.55, 3.25);
   public static final Translation2d OUR_CARGO_6 = new Translation2d(15.55, 7.12);
