@@ -7,9 +7,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.commands.auto.twoBalls.fiveFour;
-import io.excaliburfrc.robot.commands.auto.noramsete.DontMove;
-import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteBottomFender;
-import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteTopFender;
 import io.excaliburfrc.robot.subsystems.*;
 
 /**
@@ -20,7 +17,7 @@ import io.excaliburfrc.robot.subsystems.*;
  */
 public class RobotContainer {
   private final PS4Controller driveJoystick = new PS4Controller(0);
-//  private final PS4Controller armJoystick = new PS4Controller(1);
+  //  private final PS4Controller armJoystick = new PS4Controller(1);
   // The robot's subsystems and commands are defined here...
   private final Superstructure superstructure = new Superstructure();
   private final Climber climber = new Climber();
@@ -37,8 +34,10 @@ public class RobotContainer {
     //        "4Ball", new FourBallAuto(drive, superstructure, leds));
     SmartDashboard.putData("Autos", chooser);
 
-    initialBallCounter.addOption("1", new InstantCommand(()-> superstructure.intake.resetBallCounter(1)));
-    initialBallCounter.addOption("2", new InstantCommand(()-> superstructure.intake.resetBallCounter(2)));
+    initialBallCounter.addOption(
+        "1", new InstantCommand(() -> superstructure.intake.resetBallCounter(1)));
+    initialBallCounter.addOption(
+        "2", new InstantCommand(() -> superstructure.intake.resetBallCounter(2)));
 
     SmartDashboard.putData("initial balls", initialBallCounter);
   }
@@ -53,13 +52,14 @@ public class RobotContainer {
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new Button(driveJoystick::getR2Button).toggleWhenPressed(superstructure.shootBallsCommand(leds));
-//    new Button(driveJoystick::getR2Button)
-//          .toggleWhenPressed(superstructure.shooter.manualCommand(()-> 0.5));
+    new Button(driveJoystick::getR2Button)
+        .toggleWhenPressed(superstructure.shootBallsCommand(leds));
+    //    new Button(driveJoystick::getR2Button)
+    //          .toggleWhenPressed(superstructure.shooter.manualCommand(()-> 0.5));
 
-//    new Button(driveJoystick::getCircleButton)
-//        .toggleWhenPressed(
-//            drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
+    //    new Button(driveJoystick::getCircleButton)
+    //        .toggleWhenPressed(
+    //            drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
 
     new Button(driveJoystick::getTouchpadPressed)
             .toggleWhenPressed(drive.toggleSpeedCommand());
