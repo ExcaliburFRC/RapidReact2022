@@ -115,7 +115,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   public Command rawEject() {
-    return new StartEndCommand(
+    return openPiston()
+          .andThen(new WaitCommand(0.25))
+          .andThen(
+          new StartEndCommand(
             () -> {
               intakePiston.set(Value.kReverse);
               upperMotor.set(Speeds.upperEjectDutyCycle);
@@ -125,7 +128,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
               upperMotor.set(0);
               intakeMotor.set(0);
             },
-            this)
+            this))
         .alongWith(
             new RepeatingCommand(
                 new SequentialCommandGroup(new WaitUntilCommand(Falling(intakeBallTrigger)))))
