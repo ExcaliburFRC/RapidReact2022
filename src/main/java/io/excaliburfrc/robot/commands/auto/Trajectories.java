@@ -37,11 +37,11 @@ public enum Trajectories {
   }
 
   public static TrajectoryConfig FORWARD() {
-    return new TrajectoryConfig(1, 1).setReversed(false);
+    return new TrajectoryConfig(0.8, 0.8).setReversed(false);
   }
 
   public static TrajectoryConfig REVERSE() {
-    return new TrajectoryConfig(1, 1).setReversed(true);
+    return new TrajectoryConfig(0.6, 0.6).setReversed(true);
   }
 
   public static List<Translation2d> innerWaypoints(Translation2d... waypoints) {
