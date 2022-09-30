@@ -155,6 +155,6 @@ public class RobotContainer {
     return chooser.getSelected();
   }
   public int getInitBalls() {
-    return initialBallCounter.getSelected().intValue();
+    return initialBallCounter.getSelected();
   }
 }
