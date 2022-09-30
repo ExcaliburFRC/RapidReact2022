@@ -69,6 +69,9 @@ public class RobotContainer {
         .toggleWhenPressed(
             drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
 
+    new Button(driveJoystick::getTouchpadPressed)
+            .toggleWhenPressed(drive.toggleSpeedCommand());
+
     // when intake is required
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
         .whenReleased(superstructure.intake.closePiston());

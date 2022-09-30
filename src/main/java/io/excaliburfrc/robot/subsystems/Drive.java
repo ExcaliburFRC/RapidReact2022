@@ -113,6 +113,13 @@ public class Drive extends SubsystemBase {
     rotationController.enableContinuousInput(-180, 180);
   }
 
+  public Command toggleSpeedCommand(){
+    return new StartEndCommand(
+            ()-> drive.setMaxOutput(0.25),
+            ()-> drive.setMaxOutput(1)
+    );
+  }
+
   public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return arcadeDriveCommand(xSpeed, zRotation, () -> false);
   }
