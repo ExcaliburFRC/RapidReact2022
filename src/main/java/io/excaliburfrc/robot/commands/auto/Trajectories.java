@@ -32,7 +32,6 @@ public enum Trajectories {
   public static Trajectory generateTrajectory(
       Pose2d start, List<Translation2d> innerWaypoints, Pose2d end, TrajectoryConfig config) {
     var traj = TrajectoryGenerator.generateTrajectory(start, innerWaypoints, end, config);
-    var name = "trajectory " + Thread.currentThread().getStackTrace()[2].getFileName();
     return traj;
   }
 
