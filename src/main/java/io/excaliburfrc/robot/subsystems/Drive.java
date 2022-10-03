@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import io.excaliburfrc.lib.RunEndCommand;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -126,11 +127,12 @@ public class Drive extends SubsystemBase {
 
   public Command arcadeDriveCommand(
       DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier slowMode) {
-    return new RunCommand(
+    return new RunEndCommand(
         () ->
             drive.arcadeDrive(
                 xSpeed.getAsDouble() * (slowMode.getAsBoolean() ? 0.5 : 1),
                 zRotation.getAsDouble()),
+            ()-> drive.arcadeDrive(0, 0),
         this);
   }
 
