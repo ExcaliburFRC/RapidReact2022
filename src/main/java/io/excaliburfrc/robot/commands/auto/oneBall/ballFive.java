@@ -3,7 +3,6 @@ package io.excaliburfrc.robot.commands.auto.oneBall;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import io.excaliburfrc.robot.commands.auto.Trajectories;
@@ -22,7 +21,7 @@ public class ballFive extends SequentialCommandGroup {
     super(
           drive.resetOdometryCommand(start),
           drive.followTrajectoryCommand(TrajectoryGenerator.generateTrajectory(
-                start, innerWaypoints(ball1), end, FORWARD())
+                start, innerWaypoints(ball1), end, FORWARD)
           ).alongWith(superstructure.intakeBallCommand())
                 .andThen(superstructure.shootBallsCommand(leds))
     );

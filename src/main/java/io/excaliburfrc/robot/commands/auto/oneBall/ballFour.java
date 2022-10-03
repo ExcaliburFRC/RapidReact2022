@@ -23,7 +23,7 @@ public class ballFour extends SequentialCommandGroup {
     super(
           drive.resetOdometryCommand(start),
           drive.followTrajectoryCommand(TrajectoryGenerator.generateTrajectory(
-                      start, innerWaypoints(ball1, stop1), end, FORWARD())
+                      start, innerWaypoints(ball1, stop1), end, FORWARD)
                 ).alongWith(superstructure.intakeBallCommand())
                 .andThen(superstructure.shootBallsCommand(leds))
     );

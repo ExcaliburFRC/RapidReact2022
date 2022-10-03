@@ -22,12 +22,12 @@ public class fiveFour extends SequentialCommandGroup {
 		super(
 				drive.resetOdometryCommand(START),
 				superstructure.shootBallsCommand(leds),
-				drive.followTrajectoryCommand(START, innerWaypoints(), STOP_1, REVERSE()),
+				drive.followTrajectoryCommand(START, innerWaypoints(), STOP_1, REVERSE),
 				new SequentialCommandGroup(
-                        drive.followTrajectoryCommand(STOP_1, innerWaypoints(), BALL_1, FORWARD()),
-                        drive.followTrajectoryCommand(BALL_1, innerWaypoints(), BALL_2, FORWARD())
+                        drive.followTrajectoryCommand(STOP_1, innerWaypoints(), BALL_1, FORWARD),
+                        drive.followTrajectoryCommand(BALL_1, innerWaypoints(), BALL_2, FORWARD)
                 ).alongWith(superstructure.intakeBallCommand(), superstructure.intakeBallCommand()),
-				drive.followTrajectoryCommand(BALL_2, innerWaypoints(), START, FORWARD()),
+				drive.followTrajectoryCommand(BALL_2, innerWaypoints(), START, FORWARD),
 				superstructure.shootBallsCommand(leds));
 	}
 }
