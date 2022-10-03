@@ -117,6 +117,10 @@ public class Drive extends SubsystemBase {
     rotationController.enableContinuousInput(-180, 180);
   }
 
+  public double getDegrees(){
+    return odometry.getPoseMeters().getRotation().getDegrees();
+  }
+
   public Command setMaxOutput(double output){
     return new InstantCommand(()-> drive.setMaxOutput(output));
   }
@@ -156,11 +160,10 @@ public class Drive extends SubsystemBase {
   public void initSendable(SendableBuilder builder) {
     SendableRegistry.remove(gyro);
     SendableRegistry.remove(drive);
-    builder.addDoubleProperty(
-        "gyro", () -> odometry.getPoseMeters().getRotation().getDegrees(), null);
     SmartDashboard.putData("Field", field);
     builder.addDoubleProperty("distance from hub", this::getDistanceFromHub, null);
     builder.addDoubleProperty("angle turn to hub", this::getAngleFromHub, null);
+    builder.addDoubleProperty("degrees", this::getDegrees, null);
   }
 
   public double getDistanceFromHub() {
@@ -187,7 +190,9 @@ public class Drive extends SubsystemBase {
             rotationController, this::getAngleFromHub, 0, rot -> drive.arcadeDrive(0, rot), this)
         .until(() -> rotationController.getPositionError() > 5);
   }
-
+public Pose2d getOdometryPose(){
+    return this.odometry.getPoseMeters();
+}
 
   public Command followTrajectoryCommand(Trajectory trajectory) {
     return resetOdometryCommand(trajectory.getInitialPose())
