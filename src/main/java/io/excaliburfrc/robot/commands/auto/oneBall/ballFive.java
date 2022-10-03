@@ -23,7 +23,8 @@ public class ballFive extends SequentialCommandGroup {
           superstructure.shootBallsCommand(leds),
           drive.arcadeDriveCommand(() -> 0, () -> -0.3)
                 .until(()-> drive.getDegrees() > -140 && drive.getDegrees() < -130),
-          drive.followTrajectoryCommand(drive.getOdometryPose(), innerWaypoints(ball1), start, FORWARD())
+          drive.followTrajectoryCommand(
+                drive.getOdometryPose(), innerWaypoints(ball1), start, FORWARD)
                 .alongWith(superstructure.intakeBallCommand()),
           superstructure.shootBallsCommand(leds));
 
