@@ -149,6 +149,10 @@ public class Drive extends SubsystemBase {
         this);
   }
 
+  public double getFieldAngle(){
+    return odometry.getPoseMeters().getRotation().getDegrees();
+  }
+
   @Override
   public void periodic() {
     field.setRobotPose(
