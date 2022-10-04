@@ -3,6 +3,7 @@ package io.excaliburfrc.robot.commands.auto.twoBalls;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import static edu.wpi.first.math.geometry.Rotation2d.fromDegrees;
@@ -26,9 +27,16 @@ static final Pose2d START = new Pose2d(8.2, 2.40, Rotation2d.fromDegrees(90));
             superstructure.shootBallsCommand(leds),
             drive.followTrajectoryCommand(START, innerWaypoints(), STOP1, REVERSE),
             new SequentialCommandGroup(
-                  drive.followTrajectoryCommand(STOP1, innerWaypoints(), ball1, FORWARD),
-                  drive.followTrajectoryCommand(ball1, innerWaypoints(), ball2, FORWARD),
-                  drive.followTrajectoryCommand(ball2, innerWaypoints(), START, FORWARD)
+                  // set the end velocity to max vel so the robot doesn't pause
+                  new InstantCommand(()-> FORWARD.setEndVelocity(FORWARD.getMaxVelocity())),
+                  drive.followTrajectoryCommand(
+                        STOP1, innerWaypoints(), ball1, FORWARD),
+                  drive.followTrajectoryCommand(
+                        ball1, innerWaypoints(), ball2, FORWARD),
+                  // set the end velocity back to normal so the robot doesn't hit the Fender
+                  new InstantCommand(()-> FORWARD.setEndVelocity(0)),
+                  drive.followTrajectoryCommand(
+                        ball2, innerWaypoints(), START, FORWARD)
                   ).alongWith(superstructure.intakeBallCommand().andThen(superstructure.intakeBallCommand())),
             superstructure.shootBallsCommand(leds));
     }
