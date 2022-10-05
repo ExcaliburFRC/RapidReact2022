@@ -14,9 +14,6 @@ import static io.excaliburfrc.robot.commands.auto.Trajectories.FORWARD;
 import static io.excaliburfrc.robot.commands.auto.Trajectories.innerWaypoints;
 
 public class ballSix {
-
-
-
     public class ballFour extends SequentialCommandGroup {
         static final Pose2d start = new Pose2d(7.213, 4.925, Rotation2d.fromDegrees(135));
         static final Pose2d end = new Pose2d(7.83, 4.925, Rotation2d.fromDegrees(350));
