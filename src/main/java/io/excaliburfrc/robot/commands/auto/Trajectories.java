@@ -35,8 +35,8 @@ public enum Trajectories {
     return traj;
   }
 
-  public static final TrajectoryConfig FORWARD = new TrajectoryConfig(0.8, 0.8).setReversed(false);
-  public static final TrajectoryConfig REVERSE = new TrajectoryConfig(0.6, 0.6).setReversed(true);
+  public static final TrajectoryConfig FORWARD = new TrajectoryConfig(1.5, 1.5).setReversed(false);
+  public static final TrajectoryConfig REVERSE = new TrajectoryConfig(1, 1).setReversed(true);
 
   public static List<Translation2d> innerWaypoints(Translation2d... waypoints) {
     return List.of(waypoints);

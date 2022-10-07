@@ -13,7 +13,9 @@ public class Superstructure {
   public final Shooter shooter = new Shooter();
 
   public Command shootBallsCommand(LEDs leds) {
-    return new ParallelDeadlineGroup(
+//    return drive.arcadeDriveCommand(()-> 0, ()-> -0.3)
+//          .until(()-> drive.getDistanceFromHub() >= 0.61).andThen(
+          return new ParallelDeadlineGroup(
         new WaitUntilCommand(intake::isEmpty),
         shooter.accelerateFenderCommand(),
         new RepeatingCommand(
