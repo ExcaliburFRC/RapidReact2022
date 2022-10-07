@@ -55,7 +55,7 @@ public final class Constants {
     public static final double ROTATIONS_PER_PULSE = RATIO / CPR;
 
     // 121.45182291666667;
-    public static final double FENDER_SHOT_RPM = 74;
+    public static final double FENDER_SHOT_RPM = 68;
     public static final double TOLERANCE = 4;
   }
 
