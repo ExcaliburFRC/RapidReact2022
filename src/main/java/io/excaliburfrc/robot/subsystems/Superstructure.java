@@ -24,6 +24,22 @@ public class Superstructure {
         leds.setColorCommand(LedMode.VIOLET));
   }
 
+  public Command teleopShootBallCommand(Drive drive,LEDs leds){
+    return new ParallelDeadlineGroup(
+            new WaitUntilCommand(intake::isEmpty),
+            new ParallelDeadlineGroup(
+                    shooter.accelerateFenderCommand(),
+                    drive.driveDis(drive.getOdometryPose().getTranslation(), -0.3, 0.6)),
+            drive.stop(),
+            new RepeatingCommand(
+                    sequence(
+                            new WaitUntilCommand(new Trigger(shooter::isAtTargetVelocity).debounce(0.2)),
+                            intake.pullIntoShooter(Falling(shooter.ballShotTrigger)))),
+            sequence(intake.intakeTick()),
+            leds.setColorCommand(LedMode.VIOLET));
+
+  }
+
   public Command intakeBallCommand() {
     return new ConditionalCommand(
             intake.pullIntoUpper(), new InstantCommand(), intake.intakeBallTrigger)
