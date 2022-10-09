@@ -116,7 +116,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
 
   public Command rawEject() {
     return openPiston()
-          .andThen(new WaitCommand(0.25))
+          .andThen(new WaitCommand(0.3))
           .andThen(
           new StartEndCommand(
             () -> {

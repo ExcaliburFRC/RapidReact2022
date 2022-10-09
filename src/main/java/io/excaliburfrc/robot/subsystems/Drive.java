@@ -121,6 +121,15 @@ public class Drive extends SubsystemBase {
     return odometry.getPoseMeters().getRotation().getDegrees();
   }
 
+  public Rotation2d getRotation(){
+    return odometry.getPoseMeters().getRotation();
+  }
+
+  public Pose2d getPose2d(){
+    return field.getRobotPose();
+  }
+
+
   public Command setMaxOutput(double output){
     return new InstantCommand(()-> drive.setMaxOutput(output));
   }

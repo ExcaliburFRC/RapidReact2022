@@ -1,5 +1,7 @@
 package io.excaliburfrc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
@@ -79,6 +81,9 @@ public final class Constants {
     public static final DifferentialDriveKinematics driveKinematics =
         new DifferentialDriveKinematics(0.70);
     public static final double kP_ang = 0.006666666666666667;
+
+    public static final Pose2d LOWER_FENDER =
+          new Pose2d(7.797, 2.821, Rotation2d.fromDegrees(75));
   }
 
   public static class LedsConstants {

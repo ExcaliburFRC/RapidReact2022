@@ -15,10 +15,10 @@ import io.excaliburfrc.robot.subsystems.Superstructure;
 import static io.excaliburfrc.robot.commands.auto.Trajectories.*;
 
 public class fiveFour extends SequentialCommandGroup {
-static final Pose2d START = new Pose2d(8.2, 2.40, Rotation2d.fromDegrees(90));
-  static final Pose2d ball1 = new Pose2d(Trajectories.OUR_CARGO_5.getX(), Trajectories.OUR_CARGO_5.getY(), fromDegrees(200));
+static final Pose2d START = new Pose2d(7.95, 2.6, Rotation2d.fromDegrees(93));
+  static final Pose2d ball1 = new Pose2d(Trajectories.OUR_CARGO_5.getX(), Trajectories.OUR_CARGO_5.getY(), fromDegrees(-135));
   static final Pose2d ball2 = new Pose2d(Trajectories.OUR_CARGO_4.getX(), Trajectories.OUR_CARGO_4.getY(), fromDegrees(0));
-  static final Pose2d STOP1 = new Pose2d(8.168, 1.676,START.getRotation());
+  static final Pose2d STOP1 = new Pose2d(7.95, 1.8,START.getRotation());
 
   public fiveFour(Drive drive, LEDs leds, Superstructure superstructure) {
       super(
