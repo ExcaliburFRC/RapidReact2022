@@ -10,22 +10,22 @@ import io.excaliburfrc.robot.subsystems.Drive;
 import io.excaliburfrc.robot.subsystems.LEDs;
 import io.excaliburfrc.robot.subsystems.Superstructure;
 
-import static io.excaliburfrc.robot.commands.auto.Trajectories.FORWARD;
-import static io.excaliburfrc.robot.commands.auto.Trajectories.innerWaypoints;
+import static io.excaliburfrc.robot.commands.auto.Trajectories.*;
 
 public class ballFour extends SequentialCommandGroup {
-  static final Pose2d start = new Pose2d(8.123, 2.551, Rotation2d.fromDegrees(80));
-  static final Pose2d end = new Pose2d(7.83, 2.486, Rotation2d.fromDegrees(50));
-  static final Translation2d ball1 = Trajectories.OUR_CARGO_4;
-  static final Translation2d stop1 = new Translation2d(7.413, 2.057);
+  static final Pose2d start = new Pose2d(7.95, 2.6, Rotation2d.fromDegrees(90));
+  static final Pose2d stop1 = new Pose2d(6.6, 1.65, Rotation2d.fromDegrees(0));
+  static final Pose2d ball1 = new Pose2d(OUR_CARGO_4, Rotation2d.fromDegrees(-90));
 
   public ballFour(Drive drive, LEDs leds, Superstructure superstructure) {
     super(
+          superstructure.shootBallsCommand(leds),
           drive.resetOdometryCommand(start),
-          drive.followTrajectoryCommand(TrajectoryGenerator.generateTrajectory(
-                      start, innerWaypoints(ball1, stop1), end, FORWARD)
-                ).alongWith(superstructure.intakeBallCommand())
-                .andThen(superstructure.shootBallsCommand(leds))
+          drive.followTrajectoryCommand(start, innerWaypoints(), stop1, REVERSE),
+          drive.followTrajectoryCommand(stop1, innerWaypoints(), ball1, FORWARD)
+                .alongWith(superstructure.intakeBallCommand()),
+          drive.followTrajectoryCommand(ball1, innerWaypoints(), stop1, REVERSE),
+          drive.followTrajectoryCommand(stop1, innerWaypoints(), start, FORWARD)
     );
   }
 }

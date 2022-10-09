@@ -11,26 +11,22 @@ import io.excaliburfrc.robot.subsystems.Superstructure;
 import static io.excaliburfrc.robot.commands.auto.Trajectories.*;
 
 public class FiveTerminal extends SequentialCommandGroup {
-  static final Pose2d start = new Pose2d(7.1, 2.4, Rotation2d.fromDegrees(24));
-  static final Pose2d stop1 = new Pose2d(6, 1, Rotation2d.fromDegrees(90));
-  static final Translation2d ball1 = new Translation2d(5.18, 1.9);
-  static final Pose2d ball2 = new Pose2d(1.15, 1.115, Rotation2d.fromDegrees(-160));
-  static final Pose2d stop2 = new Pose2d(1.15, 2.115, Rotation2d.fromDegrees(-40));
+  static final Pose2d START = new Pose2d(7.18, 2.8, Rotation2d.fromDegrees(38.39));
+  static final Pose2d STOP_1 = new Pose2d(6.29, 1.03, Rotation2d.fromDegrees(90)); // TODO: find pos
+  static final Translation2d BALL_1 = OUR_CARGO_5;
+  static final Pose2d BALL_2 = new Pose2d(OUR_TERMINAL_CARGO, Rotation2d.fromDegrees(180)); //TODO: find angle
+  static final Pose2d STOP_2 = new Pose2d(2.32, 2.23, Rotation2d.fromDegrees(-90)); // TODO: find pos
 
-  public FiveTerminal(Drive drive, Superstructure superstracture, LEDs leds){
+  public FiveTerminal(Drive drive, LEDs leds, Superstructure superstructure){
     super(
-          drive.resetOdometryCommand(start),
-          superstracture.shootBallsCommand(leds),
-          drive.followTrajectoryCommand(start, innerWaypoints(), stop1 ,REVERSE),
-          drive.followTrajectoryCommand(stop1, innerWaypoints(ball1), ball2, FORWARD)
-                .alongWith(superstracture.intakeBallCommand()
-                      .andThen(superstracture.intakeBallCommand())),
-          drive.followTrajectoryCommand(ball2, innerWaypoints(), stop2, REVERSE),
-          drive.followTrajectoryCommand(stop2, innerWaypoints(), start, FORWARD),
-          superstracture.shootBallsCommand(leds)
+          drive.resetOdometryCommand(START),
+          superstructure.shootBallsCommand(leds),
+          drive.followTrajectoryCommand(START, innerWaypoints(), STOP_1, REVERSE),
+          drive.followTrajectoryCommand(STOP_1, innerWaypoints(BALL_1), BALL_2, FORWARD)
+                .alongWith(superstructure.intakeBallCommand().andThen(superstructure.intakeBallCommand())),
+          drive.followTrajectoryCommand(BALL_2, innerWaypoints(), STOP_2, REVERSE),
+          drive.followTrajectoryCommand(STOP_2, innerWaypoints(), START, FORWARD),
+          superstructure.shootBallsCommand(leds)
     );
   }
-
-
-
 }

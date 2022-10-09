@@ -30,6 +30,7 @@ public class Superstructure {
     return new ConditionalCommand(
             intake.pullIntoUpper(), new InstantCommand(), intake.intakeBallTrigger)
         .andThen(intake.openPiston())
+          .andThen(new WaitCommand(0.3))
         .andThen(intake.pullIntoIntake())
         .andThen(
             new ConditionalCommand(
