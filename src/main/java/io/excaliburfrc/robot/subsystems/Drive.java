@@ -133,6 +133,9 @@ public class Drive extends SubsystemBase {
   public Command setMaxOutput(double output){
     return new InstantCommand(()-> drive.setMaxOutput(output));
   }
+  public Command stop(){
+    return arcadeDriveCommand(()-> 0, ()-> 0);
+  }
 
   public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return arcadeDriveCommand(xSpeed, zRotation, () -> false);
@@ -158,8 +161,13 @@ public class Drive extends SubsystemBase {
         this);
   }
 
-  public double getFieldAngle(){
-    return odometry.getPoseMeters().getRotation().getDegrees();
+  private static double getDis(double x1, double y1, double x2, double y2){
+    return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  }
+
+  public Command driveDis(Translation2d translation2d, double speed, double dis){
+	  return arcadeDriveCommand(()-> speed, ()-> 0)
+			  .until(()-> dis <= getDis(translation2d.getX(), translation2d.getY(), field.getRobotPose().getX(), field.getRobotPose().getY()));
   }
 
   @Override
@@ -204,7 +212,7 @@ public class Drive extends SubsystemBase {
         .until(() -> rotationController.getPositionError() > 5);
   }
 public Pose2d getOdometryPose(){
-    return this.odometry.getPoseMeters();
+    return this.field.getRobotPose();
 }
 
   public Command followTrajectoryCommand(Trajectory trajectory) {
