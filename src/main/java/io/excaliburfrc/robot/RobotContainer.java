@@ -6,9 +6,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import io.excaliburfrc.robot.commands.auto.Test.Test1;
+import io.excaliburfrc.robot.commands.auto.Test.ResetPos;
 import io.excaliburfrc.robot.commands.auto.oneBall.ballFive;
 import io.excaliburfrc.robot.commands.auto.oneBall.ballFour;
+import io.excaliburfrc.robot.commands.auto.oneBall.ballSix;
 import io.excaliburfrc.robot.commands.auto.twoBalls.FiveTerminal;
 import io.excaliburfrc.robot.commands.auto.twoBalls.fiveFour;
 import io.excaliburfrc.robot.subsystems.*;
@@ -43,7 +44,9 @@ public class RobotContainer {
         chooser.addOption(
             "FiveTerminal", new FiveTerminal(drive, leds, superstructure));
         chooser.addOption(
-            "test", new Test1(drive, leds, superstructure));
+            "ballSix", new ballSix(drive, leds, superstructure));
+        chooser.addOption(
+            "resetPos", new ResetPos(drive, leds, superstructure));
 
     SmartDashboard.putData("Autos", chooser);
 
@@ -174,7 +177,7 @@ public class RobotContainer {
     new Button(()-> driveJoystick.getRawButtonPressed(8))
           .toggleWhenPressed(superstructure.intake.allowCommand());
 
-    new Button(()-> driveJoystick.getRightBumperPressed())
+    new Button(()-> driveJoystick.getRightStickButton())
           .whenPressed(
                 new PrintCommand(drive.getOdometryPose().toString()));
 
