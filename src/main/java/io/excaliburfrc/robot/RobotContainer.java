@@ -20,8 +20,8 @@ import io.excaliburfrc.robot.subsystems.*;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  private final PS4Controller driveJoystick = new PS4Controller(0);
-  //  private final PS4Controller armJoystick = new PS4Controller(1);
+  private final XboxController driveJoystick = new XboxController(0);
+  private final PS4Controller armJoystick = new PS4Controller(1);
   // The robot's subsystems and commands are defined here...
   private final Superstructure superstructure = new Superstructure();
   private final Climber climber = new Climber();
@@ -59,12 +59,13 @@ public class RobotContainer {
 
     drive.setDefaultCommand(
         drive.arcadeDriveCommand(
-            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
+            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX));
 
     leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-    new Button(driveJoystick::getR2Button)
+    new Button(armJoystick::getR2Button)
         .toggleWhenPressed(superstructure.shootBallsCommand(leds));
+
     //    new Button(driveJoystick::getR2Button)
     //          .toggleWhenPressed(superstructure.shooter.manualCommand(()-> 0.5));
 
@@ -76,9 +77,9 @@ public class RobotContainer {
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
         .whenReleased(superstructure.intake.closePiston());
 
-    new Button(driveJoystick::getL2Button).toggleWhenPressed(superstructure.intakeBallCommand());
+    new Button(armJoystick::getL2Button).toggleWhenPressed(superstructure.intakeBallCommand());
 
-    new Button(driveJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
+    new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
 //    new Button(()-> driveJoystick.getTriangleButton() && driveJoystick.getPOV() == 0)
 //          .toggleWhenPressed(
@@ -88,16 +89,16 @@ public class RobotContainer {
 
     climber
         .climberManualCommand(
-            () -> driveJoystick.getPOV() == 0,
-            () -> driveJoystick.getPOV() == 180,
-            driveJoystick::getTriangleButton,
-            driveJoystick::getCrossButton,
-            () -> driveJoystick.getPOV() == 90,
-            () -> driveJoystick.getPOV() == 270,
-            driveJoystick::getR1Button)
+            () -> armJoystick.getPOV() == 0,
+            () -> armJoystick.getPOV() == 180,
+            armJoystick::getTriangleButton,
+            armJoystick::getCrossButton,
+            () -> armJoystick.getPOV() == 90,
+            () -> armJoystick.getPOV() == 270,
+            armJoystick::getR1Button)
         .schedule();
 
-    new Button(driveJoystick::getSquareButton)
+    new Button(driveJoystick::getXButtonPressed)
         .toggleWhenPressed(
             new ConditionalCommand(
                 superstructure.intake.closePiston(),
@@ -106,13 +107,13 @@ public class RobotContainer {
 
     //    new Button(driveJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
 
-    new Button(driveJoystick::getShareButton)
+    new Button(()-> driveJoystick.getRawButtonPressed(7))
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
     new POVButton(driveJoystick, 0).whenPressed(superstructure.shooter.incrementTarget(1));
     new POVButton(driveJoystick, 180).whenPressed(superstructure.shooter.incrementTarget(-1));
 
-    new Button(driveJoystick::getOptionsButton)
+    new Button(()-> driveJoystick.getRawButtonPressed(8))
         .toggleWhenPressed(superstructure.intake.allowCommand());
 
     new Button(()-> driveJoystick.getRawButton(12))
@@ -127,24 +128,52 @@ public class RobotContainer {
     CommandScheduler.getInstance().cancelAll();
 
     drive.setDefaultCommand(
-        drive.arcadeDriveCommand(
-            () -> -driveJoystick.getLeftY(), driveJoystick::getRightX, driveJoystick::getR1Button));
+          drive.arcadeDriveCommand(
+                () -> -driveJoystick.getLeftY(), driveJoystick::getRightX));
+
+    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
+
+    new Button(()-> driveJoystick.getRightTriggerAxis() > 0.1)
+          .toggleWhenPressed(superstructure.shootBallsCommand(leds));
+
+    // when intake is required
+    new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
+          .whenReleased(superstructure.intake.closePiston());
+
+    new Button(()-> driveJoystick.getLeftTriggerAxis() > 0.1).toggleWhenPressed(superstructure.intakeBallCommand());
+
+    new Button(driveJoystick::getLeftBumperPressed).toggleWhenPressed(superstructure.ejectBallCommand());
 
     climber
-        .climberManualCommand(
-            driveJoystick::getTriangleButton,
-            driveJoystick::getCrossButton,
-            () -> driveJoystick.getPOV() == 0,
-            () -> driveJoystick.getPOV() == 180,
-            () -> driveJoystick.getPOV() == 90,
-            () -> driveJoystick.getPOV() == 270,
-            driveJoystick::getR1Button)
-        .schedule();
+          .climberManualCommand(
+                () -> driveJoystick.getPOV() == 0,
+                () -> driveJoystick.getPOV() == 180,
+                driveJoystick::getYButton,
+                driveJoystick::getAButton,
+                () -> driveJoystick.getPOV() == 90,
+                () -> driveJoystick.getPOV() == 270,
+                driveJoystick::getRightBumper)
 
-    new Button(driveJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
+          .schedule();
 
-    new Button(driveJoystick::getShareButton)
-        .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+    new Button(driveJoystick::getXButtonPressed)
+          .toggleWhenPressed(
+                new ConditionalCommand(
+                      superstructure.intake.closePiston(),
+                      superstructure.intake.openPiston(),
+                      superstructure.intake::isOpen));
+
+    //    new Button(driveJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
+
+    new Button(()-> driveJoystick.getRawButtonPressed(7))
+          .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+
+    new Button(()-> driveJoystick.getRawButtonPressed(8))
+          .toggleWhenPressed(superstructure.intake.allowCommand());
+
+    new Button(()-> driveJoystick.getRightBumperPressed())
+          .whenPressed(
+                new PrintCommand(drive.getOdometryPose().toString()));
 
     DriverStation.reportWarning("Manual!", false);
   }
