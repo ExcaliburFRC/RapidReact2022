@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import io.excaliburfrc.robot.commands.auto.Test.Test1;
 import io.excaliburfrc.robot.commands.auto.oneBall.ballFive;
 import io.excaliburfrc.robot.commands.auto.oneBall.ballFour;
+import io.excaliburfrc.robot.commands.auto.twoBalls.FiveTerminal;
 import io.excaliburfrc.robot.commands.auto.twoBalls.fiveFour;
 import io.excaliburfrc.robot.subsystems.*;
 
@@ -39,6 +40,8 @@ public class RobotContainer {
             "ballFive", new ballFive(drive, leds, superstructure));
         chooser.addOption(
             "ballFour", new ballFour(drive, leds, superstructure));
+        chooser.addOption(
+            "FiveTerminal", new FiveTerminal(drive, leds, superstructure));
         chooser.addOption(
             "test", new Test1(drive, leds, superstructure));
 
