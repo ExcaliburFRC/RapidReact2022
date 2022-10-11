@@ -6,12 +6,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import io.excaliburfrc.robot.commands.auto.Test.ResetPos;
-import io.excaliburfrc.robot.commands.auto.oneBall.ballFive;
-import io.excaliburfrc.robot.commands.auto.oneBall.ballFour;
-import io.excaliburfrc.robot.commands.auto.oneBall.ballSix;
-import io.excaliburfrc.robot.commands.auto.twoBalls.FiveTerminal;
-import io.excaliburfrc.robot.commands.auto.twoBalls.fiveFour;
+import io.excaliburfrc.robot.commands.auto.oneBall.BallFive;
+import io.excaliburfrc.robot.commands.auto.oneBall.BallFour;
+import io.excaliburfrc.robot.commands.auto.twoBalls.TwoBalls_FiveTerminal;
+import io.excaliburfrc.robot.commands.auto.twoBalls.TwoBalls_FiveFour;
 import io.excaliburfrc.robot.subsystems.*;
 
 /**
@@ -35,18 +33,18 @@ public class RobotContainer {
   public final SendableChooser<Integer> initialBallCounter = new SendableChooser<>();
 
   public RobotContainer() {
-        chooser.addOption(
-            "fiveFour", new fiveFour(drive, leds, superstructure));
-        chooser.addOption(
-            "ballFive", new ballFive(drive, leds, superstructure));
-        chooser.addOption(
-            "ballFour", new ballFour(drive, leds, superstructure));
-        chooser.addOption(
-            "FiveTerminal", new FiveTerminal(drive, leds, superstructure));
-        chooser.addOption(
-            "ballSix", new ballSix(drive, leds, superstructure));
-        chooser.addOption(
-            "resetPos", new ResetPos(drive, leds, superstructure));
+    chooser.addOption(
+            "fiveFour", new TwoBalls_FiveFour(drive, leds, superstructure));
+    chooser.addOption(
+          "fiveTerminal", new TwoBalls_FiveTerminal(drive, leds, superstructure));
+    chooser.addOption(
+            "ballFive", new BallFive(drive, leds, superstructure));
+    chooser.addOption(
+            "ballFour", new BallFour(drive, leds, superstructure));
+//        chooser.addOption(
+//            "ballSix", new ballSix(drive, leds, superstructure));
+//        chooser.addOption(
+//            "resetPos", new ResetPos(drive, leds, superstructure));
 
     SmartDashboard.putData("Autos", chooser);
 
@@ -69,16 +67,6 @@ public class RobotContainer {
     new Button(armJoystick::getR2Button)
         .toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
-    //    new Button(driveJoystick::getR2Button)
-    //          .toggleWhenPressed(superstructure.shooter.manualCommand(()-> 0.5));
-
-    //    new Button(driveJoystick::getCircleButton)
-    //        .toggleWhenPressed(
-    //            drive.rotateToHub().deadlineWith(leds.setColorCommand(LEDs.LedMode.YELLOW)));
-
-    new Button(driveJoystick::getTouchpadPressed)
-            .toggleWhenPressed(drive.toggleSpeedCommand());
-
     // when intake is required
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
         .whenReleased(superstructure.intake.closePiston());
@@ -86,12 +74,6 @@ public class RobotContainer {
     new Button(armJoystick::getL2Button).toggleWhenPressed(superstructure.intakeBallCommand());
 
     new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
-
-//    new Button(()-> driveJoystick.getTriangleButton() && driveJoystick.getPOV() == 0)
-//          .toggleWhenPressed(
-//                new StartEndCommand(
-//                      ()-> drive.setMaxOutput(0.2),
-//                      ()-> drive.setMaxOutput(1)));
 
     climber
         .climberManualCommand(
@@ -111,8 +93,6 @@ public class RobotContainer {
                 superstructure.intake.openPiston(),
                 superstructure.intake::isOpen));
 
-    //    new Button(driveJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
-
     new Button(()-> driveJoystick.getRawButtonPressed(7))
         .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
 
@@ -122,9 +102,9 @@ public class RobotContainer {
     new Button(()-> driveJoystick.getRawButtonPressed(8))
         .toggleWhenPressed(superstructure.intake.allowCommand());
 
-    new Button(()-> driveJoystick.getRawButton(12))
-          .whenPressed(
-                new PrintCommand(drive.getOdometryPose().toString()));
+//    new Button(()-> driveJoystick.getRightStickButton())
+//          .whenPressed(
+//                new PrintCommand(drive.getOdometryPose().toString()));
 
     DriverStation.reportWarning("Buttons!", false);
   }
@@ -159,7 +139,6 @@ public class RobotContainer {
                 () -> driveJoystick.getPOV() == 90,
                 () -> driveJoystick.getPOV() == 270,
                 driveJoystick::getRightBumper)
-
           .schedule();
 
     new Button(driveJoystick::getXButtonPressed)
@@ -168,8 +147,6 @@ public class RobotContainer {
                       superstructure.intake.closePiston(),
                       superstructure.intake.openPiston(),
                       superstructure.intake::isOpen));
-
-    //    new Button(driveJoystick::getR1Button).whileActiveOnce(climber.disableSoftLimits());
 
     new Button(()-> driveJoystick.getRawButtonPressed(7))
           .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));

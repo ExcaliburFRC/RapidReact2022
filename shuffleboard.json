@@ -37,36 +37,6 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "5,0": {
-            "size": [
-              5,
-              4
-            ],
-            "content": {
-              "_type": "Camera Stream",
-              "_source0": "camera_server://limelight-output",
-              "_title": "limelight-output",
-              "Crosshair/Show crosshair": true,
-              "Crosshair/Crosshair color": "#FFFFFFFF",
-              "Controls/Show controls": true,
-              "Controls/Rotation": "NONE",
-              "compression": -1.0,
-              "fps": -1,
-              "imageWidth": -1,
-              "imageHeight": -1
-            }
-          },
-          "0,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "ComboBox Chooser",
-              "_source0": "network_table:///SmartDashboard/Autos",
-              "_title": "Autos"
-            }
-          },
           "1,1": {
             "size": [
               1,
@@ -78,53 +48,7 @@
               "_title": "rps"
             }
           },
-          "2,2": {
-            "size": [
-              2,
-              1
-            ],
-            "content": {
-              "_type": "Boolean Box",
-              "_source0": "network_table:///SmartDashboard/ball shot trigger",
-              "_title": "/SmartDashboard/ball shot trigger",
-              "Colors/Color when true": "#7CFC00FF",
-              "Colors/Color when false": "#8B0000FF"
-            }
-          },
-          "2,1": {
-            "size": [
-              2,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///LiveWindow/Shooter/velocity",
-              "_title": "/LiveWindow/Shooter/velocity"
-            }
-          },
           "2,0": {
-            "size": [
-              2,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/diff",
-              "_title": "diff"
-            }
-          },
-          "4,0": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///LiveWindow/Intake/Cargo Count",
-              "_title": "/LiveWindow/Intake/Cargo Count"
-            }
-          },
-          "4,1": {
             "size": [
               1,
               1
@@ -137,7 +61,7 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "4,2": {
+          "2,1": {
             "size": [
               1,
               1
@@ -150,17 +74,70 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "3,3": {
+          "0,2": {
             "size": [
               1,
               1
             ],
             "content": {
-              "_type": "Boolean Box",
-              "_source0": "network_table:///LiveWindow/Intake/Allow",
-              "_title": "/LiveWindow/Intake/Allow",
-              "Colors/Color when true": "#7CFC00FF",
-              "Colors/Color when false": "#8B0000FF"
+              "_type": "ComboBox Chooser",
+              "_source0": "network_table:///SmartDashboard/initial balls",
+              "_title": "initial balls"
+            }
+          },
+          "0,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "ComboBox Chooser",
+              "_source0": "network_table:///SmartDashboard/Autos",
+              "_title": "SmartDashboard/Autos"
+            }
+          },
+          "1,2": {
+            "size": [
+              3,
+              2
+            ],
+            "content": {
+              "_type": "Camera Stream",
+              "_source0": "camera_server://Microsoft_LifeCam_HD-3000-output",
+              "_title": "Microsoft_LifeCam_HD-3000-output",
+              "Crosshair/Show crosshair": true,
+              "Crosshair/Crosshair color": "#FFFFFFFF",
+              "Controls/Show controls": true,
+              "Controls/Rotation": "NONE",
+              "compression": -1.0,
+              "fps": -1,
+              "imageWidth": -1,
+              "imageHeight": -1
+            }
+          },
+          "4,0": {
+            "size": [
+              6,
+              4
+            ],
+            "content": {
+              "_type": "Field",
+              "_source0": "network_table:///SmartDashboard/Field",
+              "_title": "/SmartDashboard/Field",
+              "Game/Game": "A2022_Rapid_React",
+              "Visuals/Robot Icon Size": 50.0,
+              "Visuals/Show Outside Circles": false
+            }
+          },
+          "3,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///LiveWindow/Shooter/velocity",
+              "_title": "/LiveWindow/Shooter/velocity"
             }
           }
         }
@@ -283,6 +260,11 @@
                   "_type": "PID Controller",
                   "_source0": "network_table:///LiveWindow/Ungrouped/PIDController[1]",
                   "_title": "PIDController[1]"
+                },
+                {
+                  "_type": "PID Controller",
+                  "_source0": "network_table:///LiveWindow/Ungrouped/PIDController[2]",
+                  "_title": "LiveWindow/Ungrouped/PIDController[2]"
                 }
               ]
             }
@@ -341,6 +323,11 @@
                   "_type": "Text View",
                   "_source0": "network_table:///LiveWindow/Intake/Intake Piston",
                   "_title": "LiveWindow/Intake/Intake Piston"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///LiveWindow/Intake/ultrasonic",
+                  "_title": "ultrasonic"
                 }
               ]
             }
@@ -370,6 +357,16 @@
                   "_type": "Text View",
                   "_source0": "network_table:///LiveWindow/Drive/angle turn to hub",
                   "_title": "angle turn to hub"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///LiveWindow/Drive/gyro",
+                  "_title": "gyro"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///LiveWindow/Drive/degrees",
+                  "_title": "degrees"
                 }
               ]
             }
@@ -441,15 +438,50 @@
               "_source0": "network_table:///LiveWindow/Shooter/rps",
               "_title": "Shooter/rps"
             }
+          },
+          "6,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///LiveWindow/Shooter/velError",
+              "_title": "Shooter/velError"
+            }
+          },
+          "7,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///LiveWindow/Shooter/peak",
+              "_title": "Shooter/peak",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "8,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///LiveWindow/Shooter/NEO",
+              "_title": "Shooter/NEO"
+            }
           }
         }
       }
     }
   ],
   "windowGeometry": {
-    "x": -7.199999809265137,
-    "y": -7.199999809265137,
-    "width": 1550.4000244140625,
-    "height": 838.4000244140625
+    "x": -6.400000095367432,
+    "y": 1.600000023841858,
+    "width": 1547.199951171875,
+    "height": 828.7999877929688
   }
 }
