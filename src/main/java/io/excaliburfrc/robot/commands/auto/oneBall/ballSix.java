@@ -10,24 +10,23 @@ import io.excaliburfrc.robot.subsystems.Drive;
 import io.excaliburfrc.robot.subsystems.LEDs;
 import io.excaliburfrc.robot.subsystems.Superstructure;
 
-import static io.excaliburfrc.robot.commands.auto.Trajectories.FORWARD;
-import static io.excaliburfrc.robot.commands.auto.Trajectories.innerWaypoints;
+import static io.excaliburfrc.robot.commands.auto.Trajectories.*;
+import static io.excaliburfrc.robot.commands.auto.oneBall.ballSeven.stop1;
 
 public class ballSix extends SequentialCommandGroup {
-  static final Pose2d start = new Pose2d(7.213, 4.925, Rotation2d.fromDegrees(135));
-  static final Pose2d end = new Pose2d(7.83, 4.925, Rotation2d.fromDegrees(350));
+  static final Pose2d start = OUR_TOP_FENDER;
   static final Translation2d ball1 = Trajectories.OUR_CARGO_6;
-  static final Translation2d stop1 = new Translation2d(6.735, 5.202);
+  static final Pose2d STOP1 = new Pose2d( 4.86, 7.7, Rotation2d.fromDegrees( -77.12));
 
   public ballSix(Drive drive, LEDs leds, Superstructure superstructure) {
     super(
           drive.resetOdometryCommand(start),
           superstructure.shootBallsCommand(leds),
           drive.followTrajectoryCommand(
-                      start, innerWaypoints(stop1, ball1), end, FORWARD)
-                .alongWith(superstructure.intakeBallCommand())
-                .andThen(superstructure.shootBallsCommand(leds))
-    );
+                start, innerWaypoints(), STOP1, REVERSE),
+          drive.followTrajectoryCommand(STOP1, innerWaypoints(ball1), start, FORWARD)
+                .alongWith(superstructure.intakeBallCommand()),
+    superstructure.shootBallsCommand(leds));
   }
 }
 //I first shoot two balls and then I go a little bit back to stop1 so I can take a turn
