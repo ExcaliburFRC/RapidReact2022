@@ -70,7 +70,7 @@ public class Superstructure {
   }
 
   public Command ejectBallCommand() {
-    return intake.rawEject().withTimeout(0.8);
+    return intake.rawEject().withTimeout(1);
   }
 
   public Command resetBallCounterCommand(int n) {

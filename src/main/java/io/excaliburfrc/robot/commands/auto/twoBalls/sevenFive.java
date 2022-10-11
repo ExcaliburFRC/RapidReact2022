@@ -29,12 +29,6 @@ public class sevenFive extends SequentialCommandGroup {
                 drive.followTrajectoryCommand(BALL1, innerWaypoints(), BALL2, FORWARD),
                 drive.followTrajectoryCommand(BALL2, innerWaypoints(), END, FORWARD)
                 )    .alongWith(superstructure.intakeBallCommand()),
-                superstructure.shootBallsCommand(leds)
-        );
-
-
+                superstructure.shootBallsCommand(leds));
     }
-
-
 }
-//לירות כדורים אתחלתים מלמעלה ליסוע לכדור 7 לאסוף אותו ליסוע לכדור 5 לאסוף אותו ליסוע לפנדר למטה ולירות את הכדורים
