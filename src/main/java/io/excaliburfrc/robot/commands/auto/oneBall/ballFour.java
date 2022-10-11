@@ -25,7 +25,8 @@ public class ballFour extends SequentialCommandGroup {
           drive.followTrajectoryCommand(stop1, innerWaypoints(), ball1, FORWARD)
                 .alongWith(superstructure.intakeBallCommand()),
           drive.followTrajectoryCommand(ball1, innerWaypoints(), stop1, REVERSE),
-          drive.followTrajectoryCommand(stop1, innerWaypoints(), start, FORWARD)
+          drive.followTrajectoryCommand(stop1, innerWaypoints(), start, FORWARD),
+          superstructure.shootBallsCommand(leds)
     );
   }
 }

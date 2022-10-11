@@ -28,7 +28,7 @@ public enum Trajectories {
   public static final Translation2d OUR_CARGO_7 = new Translation2d(3.141, 4.170);
   public static final Translation2d THEIR_CARGO_7 = new Translation2d(13.476, 4.17);
 
-  public static final Translation2d OUR_TERMINAL_CARGO = new Translation2d(1.31, 1.35);
+  public static final Translation2d OUR_TERMINAL_CARGO = new Translation2d(1.31, 1.5);
   public static final Translation2d THEIR_TERMINAL_CARGO = new Translation2d(15.519, 7.074);
 
   public static Trajectory generateTrajectory(
@@ -37,8 +37,8 @@ public enum Trajectories {
     return traj;
   }
 
-  public static final TrajectoryConfig FORWARD = new TrajectoryConfig(1.2, 1).setReversed(false);
-  public static final TrajectoryConfig REVERSE = new TrajectoryConfig(0.8, 1).setReversed(true);
+  public static final TrajectoryConfig FORWARD = new TrajectoryConfig(1.4, 1.5).setReversed(false);
+  public static final TrajectoryConfig REVERSE = new TrajectoryConfig(1.4, 1.5).setReversed(true);
 
   public static List<Translation2d> innerWaypoints(Translation2d... waypoints) {
     return List.of(waypoints);
