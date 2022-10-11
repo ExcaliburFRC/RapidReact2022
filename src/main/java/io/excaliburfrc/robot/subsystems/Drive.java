@@ -20,6 +20,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -27,8 +29,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import io.excaliburfrc.lib.RunEndCommand;
 import io.excaliburfrc.robot.Constants.DrivetrainConstants;
+
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -114,11 +117,24 @@ public class Drive extends SubsystemBase {
     rotationController.enableContinuousInput(-180, 180);
   }
 
-  public Command toggleSpeedCommand(){
-    return new StartEndCommand(
-            ()-> drive.setMaxOutput(0.25),
-            ()-> drive.setMaxOutput(1)
-    );
+  public double getDegrees(){
+    return odometry.getPoseMeters().getRotation().getDegrees();
+  }
+
+  public Rotation2d getRotation(){
+    return odometry.getPoseMeters().getRotation();
+  }
+
+  public Pose2d getPose2d(){
+    return field.getRobotPose();
+  }
+
+
+  public Command setMaxOutput(double output){
+    return new InstantCommand(()-> drive.setMaxOutput(output));
+  }
+  public Command stop(){
+    return arcadeDriveCommand(()-> 0, ()-> 0);
   }
 
   public Command arcadeDriveCommand(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
@@ -127,12 +143,11 @@ public class Drive extends SubsystemBase {
 
   public Command arcadeDriveCommand(
       DoubleSupplier xSpeed, DoubleSupplier zRotation, BooleanSupplier slowMode) {
-    return new RunEndCommand(
+    return new RunCommand(
         () ->
             drive.arcadeDrive(
                 xSpeed.getAsDouble() * (slowMode.getAsBoolean() ? 0.5 : 1),
                 zRotation.getAsDouble()),
-            ()-> drive.arcadeDrive(0, 0),
         this);
   }
 
@@ -146,6 +161,15 @@ public class Drive extends SubsystemBase {
         this);
   }
 
+  private static double getDis(double x1, double y1, double x2, double y2){
+    return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  }
+
+  public Command driveDis(Translation2d translation2d, double speed, double dis){
+	  return arcadeDriveCommand(()-> speed, ()-> 0)
+			  .until(()-> dis <= getDis(translation2d.getX(), translation2d.getY(), field.getRobotPose().getX(), field.getRobotPose().getY()));
+  }
+
   @Override
   public void periodic() {
     field.setRobotPose(
@@ -157,11 +181,10 @@ public class Drive extends SubsystemBase {
   public void initSendable(SendableBuilder builder) {
     SendableRegistry.remove(gyro);
     SendableRegistry.remove(drive);
-    builder.addDoubleProperty(
-        "gyro", () -> odometry.getPoseMeters().getRotation().getDegrees(), null);
     SmartDashboard.putData("Field", field);
     builder.addDoubleProperty("distance from hub", this::getDistanceFromHub, null);
     builder.addDoubleProperty("angle turn to hub", this::getAngleFromHub, null);
+    builder.addDoubleProperty("degrees", this::getDegrees, null);
   }
 
   public double getDistanceFromHub() {
@@ -188,6 +211,9 @@ public class Drive extends SubsystemBase {
             rotationController, this::getAngleFromHub, 0, rot -> drive.arcadeDrive(0, rot), this)
         .until(() -> rotationController.getPositionError() > 5);
   }
+public Pose2d getOdometryPose(){
+    return this.field.getRobotPose();
+}
 
   public Command followTrajectoryCommand(Trajectory trajectory) {
     return resetOdometryCommand(trajectory.getInitialPose())
@@ -199,6 +225,15 @@ public class Drive extends SubsystemBase {
                 driveKinematics,
                 this::achieveVelocity,
                 this));
+  }
+
+  public Command followTrajectoryCommand(
+        Pose2d start,
+        List<Translation2d> interiorWaypoints,
+        Pose2d end,
+        TrajectoryConfig config){
+    return followTrajectoryCommand(TrajectoryGenerator.generateTrajectory(
+          start, interiorWaypoints, end, config));
   }
 
   public Command rotateToAngleCommand(double degrees) {

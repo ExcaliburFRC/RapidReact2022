@@ -13,7 +13,9 @@ public class Superstructure {
   public final Shooter shooter = new Shooter();
 
   public Command shootBallsCommand(LEDs leds) {
-    return new ParallelDeadlineGroup(
+//    return drive.arcadeDriveCommand(()-> 0, ()-> -0.3)
+//          .until(()-> drive.getDistanceFromHub() >= 0.61).andThen(
+          return new ParallelDeadlineGroup(
         new WaitUntilCommand(intake::isEmpty),
         shooter.accelerateFenderCommand(),
         new RepeatingCommand(
@@ -24,10 +26,27 @@ public class Superstructure {
         leds.setColorCommand(LedMode.VIOLET));
   }
 
+  public Command teleopShootBallCommand(Drive drive,LEDs leds){
+    return new ParallelDeadlineGroup(
+            new WaitUntilCommand(intake::isEmpty),
+            new ParallelDeadlineGroup(
+                    shooter.accelerateFenderCommand(),
+                    drive.driveDis(drive.getOdometryPose().getTranslation(), -0.3, 0.6)),
+            drive.stop(),
+            new RepeatingCommand(
+                    sequence(
+                            new WaitUntilCommand(new Trigger(shooter::isAtTargetVelocity).debounce(0.2)),
+                            intake.pullIntoShooter(Falling(shooter.ballShotTrigger)))),
+            sequence(intake.intakeTick()),
+            leds.setColorCommand(LedMode.VIOLET));
+
+  }
+
   public Command intakeBallCommand() {
     return new ConditionalCommand(
             intake.pullIntoUpper(), new InstantCommand(), intake.intakeBallTrigger)
         .andThen(intake.openPiston())
+          .andThen(new WaitCommand(0.3))
         .andThen(intake.pullIntoIntake())
         .andThen(
             new ConditionalCommand(
@@ -51,7 +70,7 @@ public class Superstructure {
   }
 
   public Command ejectBallCommand() {
-    return intake.rawEject();
+    return intake.rawEject().withTimeout(1);
   }
 
   public Command resetBallCounterCommand(int n) {

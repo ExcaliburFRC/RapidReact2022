@@ -20,29 +20,27 @@ public enum Trajectories {
   public static final Translation2d THEIR_CARGO_3 = new Translation2d(11.66, 2.03);
   public static final Translation2d OUR_CARGO_3 = new Translation2d(10.6, 0.93);
   public static final Translation2d THEIR_CARGO_4 = new Translation2d(9.23, 0.3);
-  public static final Translation2d OUR_CARGO_4 = new Translation2d(7.7, 0.3);
-  public static final Translation2d OUR_CARGO_5 = new Translation2d(5.18, 1.9);
+  public static final Translation2d OUR_CARGO_4 = new Translation2d(7.684, 0.558);
+  public static final Translation2d OUR_CARGO_5 = new Translation2d(5.06, 1.96);
   public static final Translation2d THEIR_CARGO_5 = new Translation2d(4.55, 3.25);
-  public static final Translation2d OUR_CARGO_6 = new Translation2d(15.55, 7.12);
-  public static final Translation2d THEIR_CARGO_6 = new Translation2d(6.1, 7.3);
+  public static final Translation2d OUR_CARGO_6 = new Translation2d(5, 6.15);
+  public static final Translation2d THEIR_CARGO_6 = new Translation2d(5.10, 6.14);
+  public static final Translation2d OUR_CARGO_7 = new Translation2d(3.18, 3.92);
+  public static final Translation2d THEIR_CARGO_7 = new Translation2d(13.476, 4.17);
 
-  public static final Translation2d OUR_TERMINAL_CARGO = new Translation2d(1.15, 1.115);
-  public static final Translation2d THEIR_TERMINAL_CARGO = new Translation2d(1.15, 1.115);
+  public static final Translation2d OUR_TERMINAL_CARGO = new Translation2d(1.31, 1.5);
+  public static final Translation2d THEIR_TERMINAL_CARGO = new Translation2d(15.519, 7.074);
+
+  public static final Pose2d OUR_TOP_FENDER = new Pose2d( 6.94, 5.25, Rotation2d.fromDegrees(-47.65));
 
   public static Trajectory generateTrajectory(
       Pose2d start, List<Translation2d> innerWaypoints, Pose2d end, TrajectoryConfig config) {
     var traj = TrajectoryGenerator.generateTrajectory(start, innerWaypoints, end, config);
-    var name = "trajectory " + Thread.currentThread().getStackTrace()[2].getFileName();
     return traj;
   }
 
-  public static TrajectoryConfig FORWARD() {
-    return new TrajectoryConfig(1, 1).setReversed(false);
-  }
-
-  public static TrajectoryConfig REVERSE() {
-    return new TrajectoryConfig(1, 1).setReversed(true);
-  }
+  public static final TrajectoryConfig FORWARD = new TrajectoryConfig(1.8, 1.75).setReversed(false);
+  public static final TrajectoryConfig REVERSE = new TrajectoryConfig(1.8, 1.75).setReversed(true);
 
   public static List<Translation2d> innerWaypoints(Translation2d... waypoints) {
     return List.of(waypoints);

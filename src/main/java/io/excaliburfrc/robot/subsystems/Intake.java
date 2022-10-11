@@ -22,7 +22,7 @@ import java.util.function.BooleanSupplier;
 
 public class Intake extends SubsystemBase implements AutoCloseable {
   private final AtomicInteger ballCount = new AtomicInteger(1);
-  private final AtomicBoolean allow = new AtomicBoolean(false);
+  private final AtomicBoolean allow = new AtomicBoolean(true);
 
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax upperMotor = new CANSparkMax(UPPER_MOTOR_ID, MotorType.kBrushless);
@@ -115,7 +115,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   public Command rawEject() {
-    return new StartEndCommand(
+    return openPiston()
+          .andThen(new WaitCommand(0.3))
+          .andThen(
+          new StartEndCommand(
             () -> {
               intakePiston.set(Value.kReverse);
               upperMotor.set(Speeds.upperEjectDutyCycle);
@@ -125,7 +128,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
               upperMotor.set(0);
               intakeMotor.set(0);
             },
-            this)
+            this))
         .alongWith(
             new RepeatingCommand(
                 new SequentialCommandGroup(new WaitUntilCommand(Falling(intakeBallTrigger)))))
@@ -189,7 +192,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     return result || allow.get();
   }
 
-  void resetBallCounter(int n) {
+  public void resetBallCounter(int n) {
     ballCount.set(n);
   }
 
