@@ -3,7 +3,6 @@ package io.excaliburfrc.robot.commands.auto.oneBall;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import io.excaliburfrc.robot.commands.auto.Trajectories;
 import io.excaliburfrc.robot.subsystems.Drive;
@@ -11,14 +10,13 @@ import io.excaliburfrc.robot.subsystems.LEDs;
 import io.excaliburfrc.robot.subsystems.Superstructure;
 
 import static io.excaliburfrc.robot.commands.auto.Trajectories.*;
-import static io.excaliburfrc.robot.commands.auto.oneBall.ballSeven.stop1;
 
-public class ballSix extends SequentialCommandGroup {
+public class BallSix extends SequentialCommandGroup {
   static final Pose2d start = OUR_TOP_FENDER;
   static final Translation2d ball1 = Trajectories.OUR_CARGO_6;
   static final Pose2d STOP1 = new Pose2d( 4.86, 7.7, Rotation2d.fromDegrees( -77.12));
 
-  public ballSix(Drive drive, LEDs leds, Superstructure superstructure) {
+  public BallSix(Drive drive, LEDs leds, Superstructure superstructure) {
     super(
           drive.resetOdometryCommand(start),
           superstructure.shootBallsCommand(leds),
