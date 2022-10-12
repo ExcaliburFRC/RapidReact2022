@@ -496,7 +496,7 @@
             "content": {
               "_type": "ComboBox Chooser",
               "_source0": "network_table:///SmartDashboard/Autos",
-              "_title": "/SmartDashboard/Autos"
+              "_title": "Autos"
             }
           },
           "1,3": {
@@ -518,7 +518,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///LiveWindow/Intake/Intake Cargo",
-              "_title": "/LiveWindow/Intake/Intake Cargo",
+              "_title": "lower",
               "Colors/Color when true": "#7CFC00FF",
               "Colors/Color when false": "#8B0000FF"
             }
@@ -531,7 +531,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///LiveWindow/Intake/Upper Cargo",
-              "_title": "/LiveWindow/Intake/Upper Cargo",
+              "_title": "upper",
               "Colors/Color when true": "#7CFC00FF",
               "Colors/Color when false": "#8B0000FF"
             }
@@ -544,7 +544,7 @@
             "content": {
               "_type": "Text View",
               "_source0": "network_table:///LiveWindow/Shooter/rps",
-              "_title": "/LiveWindow/Shooter/rps"
+              "_title": "rps"
             }
           },
           "0,4": {
@@ -555,7 +555,7 @@
             "content": {
               "_type": "Text View",
               "_source0": "network_table:///LiveWindow/Shooter/velocity",
-              "_title": "/LiveWindow/Shooter/velocity"
+              "_title": "velocity"
             }
           },
           "0,0": {
@@ -566,7 +566,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///LiveWindow/Ungrouped/Compressor[0]/Enabled",
-              "_title": "/LiveWindow/Ungrouped/Compressor[0]/Enabled",
+              "_title": "compressor",
               "Colors/Color when true": "#7CFC00FF",
               "Colors/Color when false": "#8B0000FF"
             }
@@ -579,7 +579,7 @@
             "content": {
               "_type": "ComboBox Chooser",
               "_source0": "network_table:///SmartDashboard/initial balls",
-              "_title": "/SmartDashboard/initial balls"
+              "_title": "initial balls"
             }
           },
           "7,0": {
@@ -604,7 +604,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///LiveWindow/Intake/Allow",
-              "_title": "/LiveWindow/Intake/Allow",
+              "_title": "Allow",
               "Colors/Color when true": "#7CFC00FF",
               "Colors/Color when false": "#8B0000FF"
             }

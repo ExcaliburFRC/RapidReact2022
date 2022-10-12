@@ -19,8 +19,8 @@ public final class Constants {
   public static final class IntakeConstants {
     public static final int INTAKE_MOTOR_ID = 40; // PDP 4
     public static final int UPPER_MOTOR_ID = 41; // PDP 11
-    public static final int UPPER_PING = 9;
-    public static final int UPPER_ECHO = 8;
+    public static final int UPPER_PING = 7;
+    public static final int UPPER_ECHO = 6;
     public static final int COLOR_LIMIT = 55;
     public static final int SONIC_LIMIT = 110;
     public static final int MAX_BALLS = 2;

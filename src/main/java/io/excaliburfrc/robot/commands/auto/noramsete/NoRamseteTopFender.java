@@ -13,7 +13,7 @@ public class NoRamseteTopFender extends SequentialCommandGroup {
   public NoRamseteTopFender(Drive drive, Superstructure superstructure, LEDs leds) {
     super(
         drive.resetOdometryCommand(new Pose2d(7.5, 4.45, fromDegrees(159.0))),
-        new BlindShootBallsCommand(superstructure.intake, superstructure.shooter, leds).withTimeout(4),
+          superstructure.shootBallsCommand(leds),
         drive.arcadeDriveCommand(() -> -0.4, () -> 0.0).withTimeout(4),
         drive.arcadeDriveCommand(() -> 0.0, () -> 0.0));
   }

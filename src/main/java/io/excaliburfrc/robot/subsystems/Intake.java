@@ -94,6 +94,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .until(intakeBallTrigger.negate());
   }
 
+  public boolean intakeFull(){
+    return upperBallTrigger.and(intakeBallTrigger).get();
+  }
+
   public Command pullIntoShooter(Trigger ballShotTrigger) {
     return new StartEndCommand(
             () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
@@ -132,7 +136,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .alongWith(
             new RepeatingCommand(
                 new SequentialCommandGroup(new WaitUntilCommand(Falling(intakeBallTrigger)))))
-        .andThen(ballCount::decrementAndGet);
+        .andThen(() -> ballCount.set(0));
   }
 
   public Command manualCommand(
@@ -171,6 +175,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
             // stop after we've shot a ball
             () -> false)
         .withTimeout(0.1);
+  }
+
+  public boolean isIntakeMotorRunning(){
+    return intakeMotor.get() > 0.1;
   }
 
   boolean isOurColor() {
@@ -232,6 +240,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
     builder.addBooleanProperty("Intake Piston", this::isOpen, null);
+    builder.addBooleanProperty("Intake motor", this::isIntakeMotorRunning, null);
   }
 
   public boolean isOpen() {

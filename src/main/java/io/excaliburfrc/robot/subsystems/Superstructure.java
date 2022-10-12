@@ -65,12 +65,11 @@ public class Superstructure {
                     // decides to output from intake or from shooter
                     intake.upperBallTrigger.negate()),
                 // decides by ball color
-                intake::isOurColor),
-            intake.closePiston());
+                intake::isOurColor));
   }
 
   public Command ejectBallCommand() {
-    return intake.rawEject().withTimeout(1);
+    return intake.rawEject().withTimeout(1).andThen(()-> intake.resetBallCounter(0));
   }
 
   public Command resetBallCounterCommand(int n) {
