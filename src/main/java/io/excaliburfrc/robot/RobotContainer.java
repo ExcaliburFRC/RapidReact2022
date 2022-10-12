@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteBottomFender;
+import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.auto.oneBall.BallFive;
 import io.excaliburfrc.robot.commands.auto.oneBall.BallFour;
 import io.excaliburfrc.robot.commands.auto.twoBalls.TwoBalls_FiveTerminal;
@@ -33,6 +35,10 @@ public class RobotContainer {
   public final SendableChooser<Integer> initialBallCounter = new SendableChooser<>();
 
   public RobotContainer() {
+    chooser.addOption(
+          "topFenderSimple", new NoRamseteTopFender(drive, superstructure, leds));
+    chooser.addOption(
+          "bottomFenderSimple", new NoRamseteBottomFender(drive, superstructure, leds));
     chooser.addOption(
             "fiveFour", new TwoBalls_FiveFour(drive, leds, superstructure));
     chooser.addOption(
