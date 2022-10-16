@@ -111,8 +111,8 @@
               "Controls/Rotation": "NONE",
               "compression": -1.0,
               "fps": -1,
-              "imageWidth": -1,
-              "imageHeight": -1
+              "imageWidth": 0,
+              "imageHeight": 0
             }
           },
           "4,0": {
@@ -265,6 +265,12 @@
                   "_type": "PID Controller",
                   "_source0": "network_table:///LiveWindow/Ungrouped/PIDController[2]",
                   "_title": "LiveWindow/Ungrouped/PIDController[2]"
+                },
+                {
+                  "_type": "Ultrasonic",
+                  "_source0": "network_table:///LiveWindow/Ungrouped/Ultrasonic[6]",
+                  "_title": "LiveWindow/Ungrouped/Ultrasonic[6]",
+                  "Unit/Unit": "INCH"
                 }
               ]
             }
@@ -328,6 +334,13 @@
                   "_type": "Text View",
                   "_source0": "network_table:///LiveWindow/Intake/ultrasonic",
                   "_title": "ultrasonic"
+                },
+                {
+                  "_type": "Boolean Box",
+                  "_source0": "network_table:///LiveWindow/Intake/Intake motor",
+                  "_title": "LiveWindow/Intake/Intake motor",
+                  "Colors/Color when true": "#7CFC00FF",
+                  "Colors/Color when false": "#8B0000FF"
                 }
               ]
             }
@@ -367,6 +380,13 @@
                   "_type": "Text View",
                   "_source0": "network_table:///LiveWindow/Drive/degrees",
                   "_title": "degrees"
+                },
+                {
+                  "_type": "Boolean Box",
+                  "_source0": "network_table:///LiveWindow/Drive/good dis from hub",
+                  "_title": "LiveWindow/Drive/good dis from hub",
+                  "Colors/Color when true": "#7CFC00FF",
+                  "Colors/Color when false": "#8B0000FF"
                 }
               ]
             }
@@ -616,16 +636,16 @@
             ],
             "content": {
               "_type": "Camera Stream",
-              "_source0": "camera_server://mmal_service_16.1-input",
-              "_title": "mmal_service_16.1-input",
+              "_source0": "camera_server://limelight-output",
+              "_title": "limelight-output",
               "Crosshair/Show crosshair": true,
               "Crosshair/Crosshair color": "#FFFFFFFF",
               "Controls/Show controls": true,
               "Controls/Rotation": "NONE",
               "compression": -1.0,
               "fps": -1,
-              "imageWidth": 0,
-              "imageHeight": 0
+              "imageWidth": -1,
+              "imageHeight": -1
             }
           }
         }

@@ -81,9 +81,10 @@ public class RobotContainer {
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
         .whenReleased(superstructure.intake.closePiston());
 
-    new Button(armJoystick::getL2Button).toggleWhenPressed(
-          new RepeatingCommand(
-          superstructure.intakeBallCommand()));
+    new Button(armJoystick::getL2ButtonPressed)
+          .toggleWhenPressed(new RepeatingCommand(
+                superstructure.intakeBallCommand())
+                .until(()-> superstructure.intake.intakeFull() || superstructure.intake.getBallCount() == 2));
 
     new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
@@ -146,11 +147,13 @@ public class RobotContainer {
           .whenReleased(superstructure.intake.closePiston());
 
 
-    new Button(()-> driveJoystick.getLeftTriggerAxis() > 0.1).toggleWhenPressed(
-          new RepeatingCommand(
-                superstructure.intakeBallCommand()).until(()-> superstructure.intake.intakeFull()));
+    new Button(()-> driveJoystick.getLeftTriggerAxis() > 0.1)
+          .toggleWhenPressed(new RepeatingCommand(
+                superstructure.intakeBallCommand())
+                .until(()-> superstructure.intake.intakeFull() || superstructure.intake.getBallCount() == 2));
 
-    new Button(driveJoystick::getLeftBumperPressed).toggleWhenPressed(superstructure.ejectBallCommand());
+    new Button(driveJoystick::getLeftBumperPressed)
+          .toggleWhenPressed(superstructure.ejectBallCommand());
 
     climber
           .climberManualCommand(
@@ -171,7 +174,8 @@ public class RobotContainer {
                       superstructure.intake::isOpen));
 
     new Button(()-> driveJoystick.getRawButtonPressed(7))
-          .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+          .toggleWhenPressed(
+                new StartEndCommand(compressor::enableDigital, compressor::disable));
 
     new Button(()-> driveJoystick.getRawButtonPressed(8))
           .toggleWhenPressed(superstructure.intake.allowCommand());

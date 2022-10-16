@@ -30,7 +30,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   final Trigger intakeBallTrigger =
       new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT).debounce(0.1);
   private final Ultrasonic upperSensor = new Ultrasonic(UPPER_PING, UPPER_ECHO);
-  final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
+  final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT).debounce(0.2);
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
@@ -57,6 +57,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     intakeMotor.setInverted(true);
     upperMotor.setInverted(true);
     Ultrasonic.setAutomaticMode(true);
+  }
+
+  public int getBallCount() {
+    return ballCount.get();
   }
 
   public Command openPiston() {
@@ -240,7 +244,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
     builder.addBooleanProperty("Intake Piston", this::isOpen, null);
-    builder.addBooleanProperty("Intake motor", this::isIntakeMotorRunning, null);
+    builder.addDoubleProperty("Ultrasonic range", upperSensor::getRangeMM, null);
   }
 
   public boolean isOpen() {
