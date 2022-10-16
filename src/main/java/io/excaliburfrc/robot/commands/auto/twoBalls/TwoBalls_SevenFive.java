@@ -25,7 +25,7 @@ public class TwoBalls_SevenFive extends SequentialCommandGroup {
                 drive.followTrajectoryCommand(STOP1, innerWaypoints(), BALL1, FORWARD),
                 drive.followTrajectoryCommand(BALL1, innerWaypoints(), BALL2, FORWARD),
                 drive.followTrajectoryCommand(BALL2, innerWaypoints(), END, FORWARD)
-                )    .alongWith(superstructure.intakeBallCommand()),
+                ).alongWith(superstructure.intakeBallsCommand()),
                 superstructure.shootBallsCommand(leds));
     }
 }

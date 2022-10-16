@@ -6,6 +6,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import io.excaliburfrc.lib.RepeatingCommand;
+import io.excaliburfrc.robot.commands.auto.noramsete.DontMove;
+import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteBottomFender;
+import io.excaliburfrc.robot.commands.auto.noramsete.NoRamseteTopFender;
 import io.excaliburfrc.robot.commands.auto.oneBall.BallFive;
 import io.excaliburfrc.robot.commands.auto.oneBall.BallFour;
 import io.excaliburfrc.robot.commands.auto.twoBalls.TwoBalls_FiveTerminal;
@@ -33,6 +37,12 @@ public class RobotContainer {
   public final SendableChooser<Integer> initialBallCounter = new SendableChooser<>();
 
   public RobotContainer() {
+    chooser.addOption(
+          "dontMove", new DontMove(drive, superstructure, leds));
+    chooser.addOption(
+          "topFenderSimple", new NoRamseteTopFender(drive, superstructure, leds));
+    chooser.addOption(
+          "bottomFenderSimple", new NoRamseteBottomFender(drive, superstructure, leds));
     chooser.addOption(
             "fiveFour", new TwoBalls_FiveFour(drive, leds, superstructure));
     chooser.addOption(
@@ -71,7 +81,8 @@ public class RobotContainer {
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
         .whenReleased(superstructure.intake.closePiston());
 
-    new Button(armJoystick::getL2Button).toggleWhenPressed(superstructure.intakeBallCommand());
+    new Button(armJoystick::getL2ButtonPressed)
+          .toggleWhenPressed(superstructure.intakeBallsCommand());
 
     new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
@@ -102,6 +113,13 @@ public class RobotContainer {
     new Button(()-> driveJoystick.getRawButtonPressed(8))
         .toggleWhenPressed(superstructure.intake.allowCommand());
 
+    new Button(armJoystick::getSquareButtonPressed)
+          .toggleWhenPressed(
+                new ConditionalCommand(
+                      superstructure.intake.closePiston(),
+                      superstructure.intake.openPiston(),
+                      superstructure.intake::isOpen));
+
 //    new Button(()-> driveJoystick.getRightStickButton())
 //          .whenPressed(
 //                new PrintCommand(drive.getOdometryPose().toString()));
@@ -122,13 +140,16 @@ public class RobotContainer {
     new Button(()-> driveJoystick.getRightTriggerAxis() > 0.1)
           .toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
-    // when intake is required
+//     when intake is required
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
           .whenReleased(superstructure.intake.closePiston());
 
-    new Button(()-> driveJoystick.getLeftTriggerAxis() > 0.1).toggleWhenPressed(superstructure.intakeBallCommand());
 
-    new Button(driveJoystick::getLeftBumperPressed).toggleWhenPressed(superstructure.ejectBallCommand());
+    new Button(()-> driveJoystick.getLeftTriggerAxis() > 0.1)
+          .toggleWhenPressed(superstructure.intakeBallsCommand());
+
+    new Button(driveJoystick::getLeftBumperPressed)
+          .toggleWhenPressed(superstructure.ejectBallCommand());
 
     climber
           .climberManualCommand(
@@ -149,7 +170,8 @@ public class RobotContainer {
                       superstructure.intake::isOpen));
 
     new Button(()-> driveJoystick.getRawButtonPressed(7))
-          .toggleWhenPressed(new StartEndCommand(compressor::enableDigital, compressor::disable));
+          .toggleWhenPressed(
+                new StartEndCommand(compressor::enableDigital, compressor::disable));
 
     new Button(()-> driveJoystick.getRawButtonPressed(8))
           .toggleWhenPressed(superstructure.intake.allowCommand());

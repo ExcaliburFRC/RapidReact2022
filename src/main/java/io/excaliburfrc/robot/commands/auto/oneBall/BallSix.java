@@ -23,7 +23,7 @@ public class BallSix extends SequentialCommandGroup {
           drive.followTrajectoryCommand(
                 start, innerWaypoints(), STOP1, REVERSE),
           drive.followTrajectoryCommand(STOP1, innerWaypoints(ball1), start, FORWARD)
-                .alongWith(superstructure.intakeBallCommand()),
+                .alongWith(superstructure.intakeBallsCommand()),
     superstructure.shootBallsCommand(leds));
   }
 }

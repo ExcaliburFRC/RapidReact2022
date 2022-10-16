@@ -30,7 +30,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   final Trigger intakeBallTrigger =
       new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT).debounce(0.1);
   private final Ultrasonic upperSensor = new Ultrasonic(UPPER_PING, UPPER_ECHO);
-  final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT);
+  final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT).debounce(0.15);
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
@@ -57,6 +57,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     intakeMotor.setInverted(true);
     upperMotor.setInverted(true);
     Ultrasonic.setAutomaticMode(true);
+  }
+
+  public int getBallCount() {
+    return ballCount.get();
   }
 
   public Command openPiston() {
@@ -94,6 +98,10 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .until(intakeBallTrigger.negate());
   }
 
+  public boolean intakeFull(){
+    return upperBallTrigger.and(intakeBallTrigger).get();
+  }
+
   public Command pullIntoShooter(Trigger ballShotTrigger) {
     return new StartEndCommand(
             () -> upperMotor.set(Speeds.upperShootDutyCycle), () -> upperMotor.set(0), this)
@@ -107,7 +115,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
                 () -> {},
                 () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
                 interrupted -> intakeMotor.set(0),
-                intakeBallTrigger.negate(),
+                intakeBallTrigger.negate().debounce(0.2),
                 this)
             .andThen(ballCount::decrementAndGet),
         new PrintCommand("did nothing"),
@@ -132,7 +140,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .alongWith(
             new RepeatingCommand(
                 new SequentialCommandGroup(new WaitUntilCommand(Falling(intakeBallTrigger)))))
-        .andThen(ballCount::decrementAndGet);
+        .andThen(() -> ballCount.set(0));
   }
 
   public Command manualCommand(
@@ -173,18 +181,22 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         .withTimeout(0.1);
   }
 
+  public boolean isIntakeMotorRunning(){
+    return intakeMotor.get() > 0.1;
+  }
+
   boolean isOurColor() {
     var red = intakeSensor.getRed();
     var blue = intakeSensor.getBlue();
     boolean result = false;
     switch (DriverStation.getAlliance()) {
       case Red:
-        DriverStation.reportWarning("RED: " + red + ", " + blue, false);
         result = red > blue;
+        DriverStation.reportWarning("Our Alliance color: " + result + ". red: " + red + ", blue: " + blue, false);
         break;
       case Blue:
-        DriverStation.reportWarning("BLUE: " + red + ", " + blue, false);
         result = red < blue;
+        DriverStation.reportWarning("Our Alliance color: " + result + ". red: " + red + ", blue: " + blue, false);
         break;
       default:
         DriverStation.reportError("DS Alliance color is invalid!", false);
@@ -232,6 +244,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     builder.addBooleanProperty("Upper Cargo", upperBallTrigger, null);
     builder.addDoubleProperty("Cargo Count", ballCount::get, null);
     builder.addBooleanProperty("Intake Piston", this::isOpen, null);
+    builder.addDoubleProperty("Ultrasonic range", upperSensor::getRangeMM, null);
   }
 
   public boolean isOpen() {

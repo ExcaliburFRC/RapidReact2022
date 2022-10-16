@@ -23,7 +23,7 @@ public class BallFive extends SequentialCommandGroup {
           superstructure.shootBallsCommand(leds),
           drive.followTrajectoryCommand(START, innerWaypoints(STOP_1), STOP_2, REVERSE),
           drive.followTrajectoryCommand(STOP_2, innerWaypoints(BALL_1), START, FORWARD)
-                .alongWith(superstructure.intakeBallCommand()),
+                .alongWith(superstructure.intakeBallsCommand()),
           superstructure.shootBallsCommand(leds));
   }
 }

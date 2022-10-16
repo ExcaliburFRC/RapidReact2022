@@ -182,6 +182,13 @@ public class Drive extends SubsystemBase {
     SendableRegistry.remove(gyro);
     SendableRegistry.remove(drive);
     SmartDashboard.putData("Field", field);
+    builder.addBooleanProperty("good dis from hub",()->getDis(HUB_POS.getX(),
+          HUB_POS.getY(),
+          field.getRobotPose().getX(),
+          field.getRobotPose().getY())>1.802&&getDis(HUB_POS.getX(),
+          HUB_POS.getY(),
+          field.getRobotPose().getX(),
+          field.getRobotPose().getY())<2.002, null);
     builder.addDoubleProperty("distance from hub", this::getDistanceFromHub, null);
     builder.addDoubleProperty("angle turn to hub", this::getAngleFromHub, null);
     builder.addDoubleProperty("degrees", this::getDegrees, null);
