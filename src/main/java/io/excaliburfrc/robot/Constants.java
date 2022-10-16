@@ -22,7 +22,7 @@ public final class Constants {
     public static final int UPPER_PING = 7;
     public static final int UPPER_ECHO = 6;
     public static final int COLOR_LIMIT = 55;
-    public static final int SONIC_LIMIT = 110;
+    public static final int SONIC_LIMIT = 150;
     public static final int MAX_BALLS = 2;
     public static final int FWD_CHANNEL = 3;
     public static final int REV_CHANNEL = 4;

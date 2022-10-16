@@ -30,7 +30,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   final Trigger intakeBallTrigger =
       new Trigger(() -> intakeSensor.getProximity() > COLOR_LIMIT).debounce(0.1);
   private final Ultrasonic upperSensor = new Ultrasonic(UPPER_PING, UPPER_ECHO);
-  final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT).debounce(0.2);
+  final Trigger upperBallTrigger = new Trigger(() -> upperSensor.getRangeMM() < SONIC_LIMIT).debounce(0.15);
   private final DoubleSolenoid intakePiston =
       new DoubleSolenoid(PneumaticsModuleType.CTREPCM, FWD_CHANNEL, REV_CHANNEL);
 
@@ -115,7 +115,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
                 () -> {},
                 () -> intakeMotor.set(Speeds.intakeEjectDutyCycle),
                 interrupted -> intakeMotor.set(0),
-                intakeBallTrigger.negate(),
+                intakeBallTrigger.negate().debounce(0.2),
                 this)
             .andThen(ballCount::decrementAndGet),
         new PrintCommand("did nothing"),
@@ -191,12 +191,12 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     boolean result = false;
     switch (DriverStation.getAlliance()) {
       case Red:
-        DriverStation.reportWarning("RED: " + red + ", " + blue, false);
         result = red > blue;
+        DriverStation.reportWarning("Our Alliance color: " + result + ". red: " + red + ", blue: " + blue, false);
         break;
       case Blue:
-        DriverStation.reportWarning("BLUE: " + red + ", " + blue, false);
         result = red < blue;
+        DriverStation.reportWarning("Our Alliance color: " + result + ". red: " + red + ", blue: " + blue, false);
         break;
       default:
         DriverStation.reportError("DS Alliance color is invalid!", false);

@@ -2,7 +2,6 @@ package io.excaliburfrc.robot.commands.auto.twoBalls;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import static edu.wpi.first.math.geometry.Rotation2d.fromDegrees;
@@ -11,8 +10,6 @@ import io.excaliburfrc.robot.commands.auto.Trajectories;
 import io.excaliburfrc.robot.subsystems.Drive;
 import io.excaliburfrc.robot.subsystems.LEDs;
 import io.excaliburfrc.robot.subsystems.Superstructure;
-
-import java.lang.module.Configuration;
 
 import static io.excaliburfrc.robot.commands.auto.Trajectories.*;
 
@@ -33,7 +30,7 @@ public class TwoBalls_FiveFour extends SequentialCommandGroup {
                 drive.followTrajectoryCommand(ball1, innerWaypoints(), ball2, FORWARD),
                 drive.followTrajectoryCommand(ball2, innerWaypoints(), END, FORWARD))
                 .deadlineWith(
-                      superstructure.intakeBallCommand()),
+                      superstructure.intakeBallsCommand()),
           superstructure.intake.closePiston(),
           superstructure.shootBallsCommand(leds));
   }

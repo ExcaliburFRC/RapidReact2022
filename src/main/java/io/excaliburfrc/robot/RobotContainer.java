@@ -82,9 +82,7 @@ public class RobotContainer {
         .whenReleased(superstructure.intake.closePiston());
 
     new Button(armJoystick::getL2ButtonPressed)
-          .toggleWhenPressed(new RepeatingCommand(
-                superstructure.intakeBallCommand())
-                .until(()-> superstructure.intake.intakeFull() || superstructure.intake.getBallCount() == 2));
+          .toggleWhenPressed(superstructure.intakeBallsCommand());
 
     new Button(armJoystick::getL1Button).toggleWhenPressed(superstructure.ejectBallCommand());
 
@@ -142,15 +140,13 @@ public class RobotContainer {
     new Button(()-> driveJoystick.getRightTriggerAxis() > 0.1)
           .toggleWhenPressed(superstructure.shootBallsCommand(leds));
 
-    // when intake is required
+//     when intake is required
     new Button(() -> CommandScheduler.getInstance().requiring(superstructure.intake) != null)
           .whenReleased(superstructure.intake.closePiston());
 
 
     new Button(()-> driveJoystick.getLeftTriggerAxis() > 0.1)
-          .toggleWhenPressed(new RepeatingCommand(
-                superstructure.intakeBallCommand())
-                .until(()-> superstructure.intake.intakeFull() || superstructure.intake.getBallCount() == 2));
+          .toggleWhenPressed(superstructure.intakeBallsCommand());
 
     new Button(driveJoystick::getLeftBumperPressed)
           .toggleWhenPressed(superstructure.ejectBallCommand());

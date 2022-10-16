@@ -23,7 +23,7 @@ public class TwoBalls_FiveTerminal extends SequentialCommandGroup {
           superstructure.shootBallsCommand(leds),
           drive.followTrajectoryCommand(START, innerWaypoints(), STOP_1, REVERSE),
           drive.followTrajectoryCommand(STOP_1, innerWaypoints(BALL_1), BALL_2, FORWARD)
-                .alongWith(superstructure.intakeBallCommand()),
+                .alongWith(superstructure.intakeBallsCommand()),
           drive.followTrajectoryCommand(BALL_2, innerWaypoints(), STOP_2, REVERSE),
           drive.followTrajectoryCommand(STOP_2, innerWaypoints(), START, FORWARD),
           superstructure.shootBallsCommand(leds)
