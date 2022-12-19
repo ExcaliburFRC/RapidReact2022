@@ -16,6 +16,83 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static final class SwerveConstants {
+
+    public static final double kTrackWidthMeters = 0.5842;//מעודכן
+    public static final double kWheelBaseMeters = 0.5842;//מעודכן
+    public static final SwerveDriveKinematics kSwerveKinematics =
+            new SwerveDriveKinematics(
+                    new Translation2d(kWheelBaseMeters/2,-kTrackWidthMeters/2),
+                    new Translation2d(kWheelBaseMeters/2,kTrackWidthMeters/2),
+                    new Translation2d(-kWheelBaseMeters/2,-kTrackWidthMeters/2),
+                    new Translation2d(-kWheelBaseMeters/2,kTrackWidthMeters/2));
+    public static final double kTeleDriveMaxSpeedMetersPerSec = 0;//הגבלה תוכנתית
+    public static final double kTeleDriveMaxAngularSpeedRadPerSec = 0;//הגבלה תוכנתית
+    public static final double kMaxAccelerationUnitsPerSec = 0;//הגבלה תוכנתית
+    public static final double kMaxAccelerationMetersPerSecSq = 0;//הגבלה תוכנתית
+    public static final double kMaxAngularAccelerationReaPerSecSq = 0;//הגבלה תוכנתית
+    public static final double kPhysicalMaxSpeedMeterPerSec = 0;//חישוב מכניקה + אלקטרוניקה
+    public static final int kFrontLeftDriveMotorId = 0;//אלקטרוניקה סטאף
+    public static final int kFrontRightDriveMotorId = 0;//אלקטרוניקה סטאף
+    public static final int kBackLeftDriveMotorId = 0;//אלקטרוניקה סטאף
+    public static final int kBackRightDriveMotorId = 0;//אלקטרוניקה סטאף
+
+
+    public static final int kFrontLeftSpinningMotorId = 0;//אלקטרוניקה סטאף
+    public static final int kFrontRightSpinningMotorId = 0;//אלקטרוניקה סטאף
+    public static final int kBackLeftSpinningMotorId = 0;//אלקטרוניקה סטאף
+    public static final int kBackRightSpinningMotorId = 0;//אלקטרוניקה סטאף
+
+
+    public static final boolean kFrontLeftDriveEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kFrontRightDriveEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kBackLeftDriveEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kBackRightDriveEncoderReverse = false;//תוכנה סטאף
+
+    public static final boolean kFrontLeftSpinningEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kFrontRightSpinningEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kBackLeftSpinningEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kBackRightSpinningEncoderReverse = false;//תוכנה סטאף
+
+    public static final boolean kFrontLeftAbsEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kFrontRightAbsEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kBackLeftAbsEncoderReverse = false;//תוכנה סטאף
+    public static final boolean kBackRightAbsEncoderReverse = false;//תוכנה סטאף
+
+    public static final int kFrontLeftAbsEncoderChannel = 0;//אלקטרוניקה סטאף
+    public static final int kFrontRightAbsEncoderChannel = 0;//אלקטרוניקה סטאף
+    public static final int kBackLeftAbsEncoderChannel = 0;//אלקטרוניקה סטאף
+    public static final int kBackRightAbsEncoderChannel = 0;//אלקטרוניקה סטאף
+
+    public static final TrajectoryConfig kConfig = new TrajectoryConfig(
+            kTeleDriveMaxSpeedMetersPerSec,
+            kMaxAccelerationMetersPerSecSq).setKinematics(kSwerveKinematics);
+    public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
+           new  TrapezoidProfile.Constraints(
+                    kTeleDriveMaxAngularSpeedRadPerSec,
+                    kMaxAngularAccelerationReaPerSecSq);
+    public static final double kPXAuto = 0;
+    public static final double kPYAuto = 0;
+    public static final double kThetaAuto = 0;
+
+    /*public static final PIDController xAutoController = new PIDController(0,0,0);//only kp needed
+    public static final PIDController yAutoController = new PIDController(0,0,0);//only kp needed
+    public static ProfiledPIDController thetaAutoController = new ProfiledPIDController(
+            0,0,0,kThetaControllerConstraints);//only kp needed*/
+
+  }
+
+  public static final class ModuleConstants {
+    //TODO update values
+    public static final double kWheelDiameterMeters = 0.1016;
+    public static final double kDriveMotorGearRatio = 8.14;
+    public static final double kTurningMotorGearRatio = 21.4285714;
+    public static final double kDriveEncoderRot2Meters = kDriveMotorGearRatio * Math.PI * kWheelDiameterMeters;
+    public static final double kTurningEncoderRot2Rad = kTurningMotorGearRatio * 2 * Math.PI;
+    public static final double kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meters / 60;
+    public static final double kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60;
+    public static final double kPTurning = 0;//תוכנה סטאף
+  }
   public static final class IntakeConstants {
     public static final int INTAKE_MOTOR_ID = 40; // PDP 4
     public static final int UPPER_MOTOR_ID = 41; // PDP 11
